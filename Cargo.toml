@@ -1,0 +1,20 @@
+[package]
+name = "rupaui"
+version = "0.1.0"
+edition = "2024"
+description = "A semantic, utility-first UI framework for Rust."
+
+[dependencies]
+# Windowing and Input
+winit = "0.30"
+
+# Graphics and Rendering
+wgpu = "22.1"
+bytemuck = { version = "1.16", features = ["derive"] }
+
+# Layout Engine
+taffy = "0.5"
+
+# Logging and Utilities
+log = "0.4"
+raw-window-handle = "0.6"
