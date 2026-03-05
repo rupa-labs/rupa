@@ -1,46 +1,67 @@
 # Rupaui 🎨
 
-**Rupaui** is a modern, cross-platform UI framework for Rust, built for artisans who demand both structured semantic components and total utility-first freedom.
+**Rupaui** is a modern, high-performance cross-platform UI framework for Rust. It is engineered for artisans who demand the perfect balance between **Semantic Structure** and **Utility-First Flexibility**.
 
-Inspired by the efficiency of TailwindCSS and the reliability of Bootstrap, Rupaui provides a high-performance rendering engine built directly on top of **WGPU**.
+Inspired by the ergonomics of TailwindCSS and the reliability of Bootstrap, Rupaui provides a type-safe, reactive engine built directly on top of **WGPU** and **Taffy**.
 
 ## 🌟 Key Features
 
-- **Utility-First API**: Compose complex styles with chainable methods (e.g., `.px(4).bg(0.1, 0.2, 0.1)`).
-- **Semantic Components**: Out-of-the-box support for meaningful UI elements like `Button`, `Panel`, and `Grid`.
-- **WGPU Powered**: GPU-accelerated rendering for buttery smooth 60/120 FPS interfaces.
-- **Deterministic Layout**: Uses the **Taffy** engine for lightning-fast Flexbox and CSS Grid calculations.
-- **Cross-Platform**: Designed to run natively on Windows, macOS, Linux, and eventually WebAssembly.
+- **Utility-First, Semantic-Support**: Compose complex visual identities using a functional API while maintaining a clean, meaningful component hierarchy.
+- **Signal-Based Reactivity**: Fine-grained state management using `Signal` and `Memo` for zero-overhead UI updates.
+- **DNA Visual (Theme Engine)**: Centralized design tokens that dictate the "factory settings" (borders, typography, variants) for all components.
+- **Artisan Palette**: A mathematically verified color system using **OKLCH** for perceptual uniformity and consistent aesthetics.
+- **Wasm & Native**: First-class support for both WebAssembly (browser) and Native Desktop (GPU-accelerated).
+- **Extensible Architecture**: Modular kerangka that allows users to freely create their own utilities and semantic elements.
 
-## 💻 Example Usage
+## 🚀 Quick Start (Modern Modular API)
 
 ```rust
-use rupaui::elements::Div;
-use rupaui::utils::Style;
+use rupaui::prelude::*;
+use rupaui::utils::{p, bg, rounded, hover, active};
 
 fn main() {
-    let my_style = Style::new()
-        .p(10.0)
-        .bg(0.9, 0.9, 0.8, 1.0)
-        .rounded(4.0);
-
-    Div::new()
-        .with_style(my_style)
-        .child("Hello from Rupaui!");
+    // 1. Define reactive state
+    let count = Signal::new(0);
+    
+    // 2. Compose UI with Semantic Components and Modular Styling
+    let my_button = Button::new("Click Me")
+        .variant(Variant::Primary)
+        .on_click({
+            let count = count.clone();
+            move || count.update(|v| *v += 1)
+        })
+        .style((
+            p(16.0),
+            rounded(8.0),
+            hover(bg(Color::Indigo(500))),
+            active(scale(0.95, 0.95, 1.0))
+        ));
 }
 ```
 
-## 🏗 Architecture
+## 🏗 Component Hierarchy
 
-Rupaui is designed with a strict **Separation of Concerns**:
-1. **Windowing**: Leverages `winit` for hardware-agnostic events.
-2. **Layout**: Uses `taffy` for geometric resolution.
-3. **Paint**: A specialized `wgpu` backend for low-level drawing calls.
-4. **Input**: A normalized tactile layer for consistent cross-OS feedback.
+Rupaui follows a strict semantic flow:
+1. **`Window`**: The physical OS viewport or browser canvas.
+2. **`Section`**: High-level structural regions (Sidebar, Header, etc.).
+3. **`Layout`**: `Container`, `Row`, and `Col` for grid-based positioning.
+4. **`Elements`**: `Button`, `Input`, `Card`, `Modal`, `Text`, `SVG`, and more.
 
-## 🛠 Status
+## 🛠 Tech Stack
 
-Rupaui is currently in **Active Development**. It is being used as the primary engine for the [Rupa Pixel Editor](https://github.com/reasnov/rupa-pixel-editor).
+- **Graphics**: WGPU (WebGPU/Vulkan/Metal/DX12)
+- **Layout**: Taffy (Flexbox & CSS Grid)
+- **Windowing**: Winit v0.30
+- **Reactivity**: Custom Signal/Memo Engine
+- **Typography**: Glyph-brush (Planned integration)
+
+## 📖 Documentation
+
+Detailed guides and API references are available in the [`/docs`](./docs/README.md) directory:
+- [Core Philosophy](./docs/core/philosophy.md)
+- [State Management](./docs/core/state-management.md)
+- [Modular Styling](./docs/styling/modular-styling.md)
+- [Theming (DNA Visual)](./docs/styling/theme.md)
 
 ---
-Built with ❤️ by Reas Vyn.
+Built with ❤️ by [Reas Vyn](https://github.com/reasnov).
