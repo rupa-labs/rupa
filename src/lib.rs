@@ -4,11 +4,13 @@ pub mod elements;
 pub mod utils;
 pub mod window;
 pub mod container;
+pub mod plugin;
 
 pub use app::App;
 pub use section::Section;
 pub use utils::Style;
 pub use window::Window;
+pub use plugin::Plugin;
 
 /// The core trait for all Rupaui components.
 /// Ensures Separation of Concerns between ID management and rendering.

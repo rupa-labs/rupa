@@ -6,7 +6,7 @@ Welcome to the **Rupaui** documentation. Rupaui is a modern, cross-platform UI f
 
 1. [**Core Philosophy**](./core/philosophy.md) - "Utility-First, Semantic-Support" and the CBRA model.
 2. [**State Management**](./core/state-management.md) - Reactive UI with Signals and Memos.
-3. [**Control Flow**](./core/control-flow.md) - Conditional rendering and list repetition.
+3. [**Plugin System**](./core/plugins.md) - **NEW!** Modularizing application logic.
 4. [**Extending Rupaui**](./core/extending.md) - Building your own utilities and elements.
 5. [**Component Attributes**](./core/attributes.md) - Dynamic metadata and data-attributes.
 6. [**Vector Math**](./core/vector-math.md) - High-precision calculations for paths and layouts.
@@ -21,7 +21,7 @@ Welcome to the **Rupaui** documentation. Rupaui is a modern, cross-platform UI f
 5. [**Forms**](./components/forms.md) - Reactive inputs and validation.
 6. [**UI Elements**](./components/elements.md) - Buttons, Alerts, Modals, etc.
 7. [**Brand**](./components/brand.md) - Responsive application identity.
-8. [**ThemeSwitcher**](./components/theme-switcher.md) - **NEW!** Theme mode toggle.
+8. [**ThemeSwitcher**](./components/theme-switcher.md) - Theme mode toggle.
 9. [**SVG Drawing**](./components/svg-drawing.md) - Vector graphics and paths.
 
 ## 🎨 Styling & Design

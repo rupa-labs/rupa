@@ -11,7 +11,7 @@ Inspired by the ergonomics of TailwindCSS and the reliability of Bootstrap, Rupa
 - **DNA Visual (Theme Engine)**: Centralized design tokens that dictate the "factory settings" (borders, typography, variants) for all components.
 - **Artisan Palette**: A mathematically verified color system using **OKLCH** for perceptual uniformity and consistent aesthetics.
 - **Wasm & Native**: First-class support for both WebAssembly (browser) and Native Desktop (GPU-accelerated).
-- **Extensible Architecture**: Modular kerangka that allows users to freely create their own utilities and semantic elements.
+- **Extensible Architecture**: Modular framework that allows users to freely create their own utilities and semantic elements.
 
 ## 🚀 Quick Start (Modern Modular API)
 

@@ -7,7 +7,7 @@ Rupaui supports state-driven styling similar to TailwindCSS, allowing you to def
 - `.hover(Modifier)`: Applied when the mouse pointer is over the element.
 - `.focus(Modifier)`: Applied when the element has keyboard focus.
 - `.active(Modifier)`: Applied when the element is being pressed/clicked.
-- `.disabled_style(Modifier)`: Applied when the component's `is_disabled` signal is true.
+- `.disabled_style(Modifier)`: Applied when the component's `disabled` signal is true.
 
 ---
 
@@ -16,7 +16,7 @@ Rupaui supports state-driven styling similar to TailwindCSS, allowing you to def
 You can pass any `StyleModifier` (atomic functions, tuples, or full Style objects) to a variant method.
 
 ```rust
-use rupaui::utils::{bg, color, rounded, p};
+use rupaui::utils::{bg, color, rounded, p, scale, translate};
 
 Button::new("Interactive Artisan")
     .style((
@@ -24,13 +24,19 @@ Button::new("Interactive Artisan")
         p(12.0),
         // Hover state
         hover(bg("indigo-600")),
-        // Active/Pressed state
+        // Active/Pressed state (adds tactile feedback)
         active((
             bg("indigo-700"),
-            translate(0.0, 2.0, 0.0)
+            scale(0.98, 0.98, 1.0),
+            translate(0.0, 1.0, 0.0)
         )),
-        // Focus state
-        focus(outline(2.0, BorderStyle::Solid, "white"))
+        // Focus state (Accessibility)
+        focus(outline(2.0, BorderStyle::Solid, "white")),
+        // Disabled state
+        disabled_style((
+            opacity(0.5),
+            cursor(Cursor::NotAllowed)
+        ))
     ));
 ```
 
@@ -38,11 +44,11 @@ Button::new("Interactive Artisan")
 
 ## 🏗 How it Works
 
-1.  **Conditional Rendering**: During the `Paint` phase, Rupaui checks the current interaction state of the component.
-2.  **Style Merging**: If a state is active (e.g., the user is hovering), the properties defined in `.hover()` are merged on top of the base style.
-3.  **Performant Storage**: Variants are stored as `Option<Box<Style>>`, meaning they consume zero extra memory if not defined.
+1.  **State Detection**: Rupaui components track internal states (Hovered, Focused, Pressed) and reactive states (Disabled).
+2.  **Style Merging**: During the `Paint` phase, active variants are merged on top of the base style in this priority order: `Base` -> `Hover` -> `Focus` -> `Active` -> `Disabled`.
+3.  **Efficiency**: Variants use `Option<Box<Style>>` to ensure zero memory overhead for components that don't use them.
 
 ## 💡 Best Practices
-- Use `.hover()` for feedback on clickable elements.
-- Always use `.focus()` for accessibility (A11y) to help keyboard users navigate.
-- Combine with `.transition()` for smooth visual changes between states.
+- Always provide a `.focus()` style for keyboard accessibility.
+- Use `.active()` to provide immediate tactile feedback during a click.
+- Combine variants with `.transition()` for professional, smooth animations.

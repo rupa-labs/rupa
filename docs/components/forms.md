@@ -6,26 +6,36 @@ Rupaui provides a complete set of semantic form components that map to Bootstrap
 
 The `Input` component handles text-based user input.
 
+### Attributes & State
 - `.label(String)`: Adds a floating or standard label.
 - `.value(Signal<String>)`: Binds the input value to a reactive signal.
 - `.state(Signal<FormState>)`: Binds the visual state (`Normal`, `Valid`, `Invalid`).
 - `.textarea()`: Converts the input into a multi-line textarea.
 
+### Functional Modifiers
+- `.disabled(Signal<bool>)`: Reactively toggles the disabled state.
+- `.readonly(Signal<bool>)`: Prevents user modification while allowing selection.
+- `.autofocus()`: Automatically focuses the element on mount.
+- `.required()`: Marks the input as mandatory for form submission.
+- `.autocomplete(String)`: Sets the browser's autocomplete hint.
+
 ```rust
 let email = Signal::new(String::new());
-let state = Signal::new(FormState::Normal);
+let is_readonly = Signal::new(false);
 
 Input::new("name@example.com")
     .label("Email Address")
     .value(email)
-    .state(state)
+    .readonly(is_readonly)
+    .autofocus()
+    .required();
 ```
 
 ---
 
 ## 🔽 Select
 
-Semantic dropdown for single selections.
+Semantic dropdown for single selections. Supports `.disabled()` and `.autofocus()`.
 
 ```rust
 let options = vec![
@@ -33,19 +43,21 @@ let options = vec![
     ("2".into(), "Two".into())
 ];
 Select::new(options)
+    .required();
 ```
 
 ---
 
 ## ✅ Checks & Radios
 
-Individual toggles for boolean or exclusive states.
+Individual toggles for boolean or exclusive states. Supports `.disabled()`.
 
 ```rust
 let is_agreed = Signal::new(false);
 
 Check::checkbox("Agree to terms")
-    .checked(is_agreed);
+    .checked(is_agreed)
+    .required();
 
 Check::radio("Exclusive option");
 ```
@@ -54,11 +66,12 @@ Check::radio("Exclusive option");
 
 ## 🎚 Range
 
-A slider for numeric input within a specific boundary.
+A slider for numeric input within a specific boundary. Supports `.disabled()`.
 
 ```rust
 let volume = Signal::new(50.0);
-Range::new(0.0, 100.0).value(volume);
+Range::new(0.0, 100.0)
+    .value(volume);
 ```
 
 ---
