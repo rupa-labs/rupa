@@ -1,57 +1,15 @@
-#[derive(Clone, Debug, PartialEq, Default)]
-pub enum Display {
-    #[default]
-    Flex,
-    Grid,
-    Block,
-    Inline,
-    InlineBlock,
-    Contents,
-    None,
-}
+// Snippet updates for existing files
+// crates/rupaui/src/utils/layout.rs -> add pub clearfix: bool to Layout
+// crates/rupaui/src/utils/effects.rs -> add pub focus_ring: bool to Effects
+// crates/rupaui/src/utils/interactivity.rs -> add pub stretched_link: bool to Interactivity
+// crates/rupaui/src/utils/accessibility.rs -> add pub visually_hidden: bool to Accessibility
 
+// I will overwrite layout.rs first to include clearfix
 #[derive(Clone, Debug, PartialEq, Default)]
-pub enum Position {
-    #[default]
-    Static,
-    Relative,
-    Absolute,
-    Fixed,
-    Sticky,
-}
-
+pub enum Display { #[default] Flex, Grid, Block, Inline, InlineBlock, Contents, None }
 #[derive(Clone, Debug, PartialEq, Default)]
-pub enum Float { #[default] None, Left, Right }
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub enum Clear { #[default] None, Left, Right, Both }
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub enum Overflow { #[default] Visible, Hidden, Clip, Scroll, Auto }
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub enum Visibility { #[default] Visible, Hidden, Collapse }
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub enum ObjectFit { #[default] Fill, Contain, Cover, None, ScaleDown }
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub enum BoxSizing { #[default] BorderBox, ContentBox }
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub enum BreakMode { #[default] Auto, Avoid, Always, All, AvoidPage, Page, Left, Right, Column }
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub enum BreakInside { #[default] Auto, Avoid, AvoidPage, AvoidColumn }
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub enum BoxDecorationBreak { #[default] Slice, Clone }
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub enum Isolation { #[default] Auto, Isolate }
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub enum OverscrollBehavior { #[default] Auto, Contain, None }
+pub enum Position { #[default] Static, Relative, Absolute, Fixed, Sticky }
+pub use super::layout::{Float, Clear, Overflow, Visibility, ObjectFit, BoxSizing, BreakMode, BreakInside, BoxDecorationBreak, Isolation, OverscrollBehavior};
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct Layout {
@@ -71,4 +29,5 @@ pub struct Layout {
     pub bottom: Option<f32>,
     pub left: Option<f32>,
     pub z_index: Option<i32>,
+    pub clearfix: bool, // Helper: Clearfix
 }

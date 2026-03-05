@@ -19,6 +19,7 @@ pub mod interactivity;
 pub mod svg;
 pub mod accessibility;
 pub mod vector;
+pub mod responsive;
 pub mod theme;
 pub mod modifiers;
 
@@ -41,6 +42,7 @@ pub use interactivity::*;
 pub use svg::*;
 pub use accessibility::*;
 pub use vector::Vec2;
-pub use theme::Theme;
+pub use responsive::Breakpoint;
+pub use theme::{Theme, Variant, ColorMode};
 pub use modifiers::{StyleModifier, p, m, bg, w, h, rounded};
 pub(crate) use id::generate_id;

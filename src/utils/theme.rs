@@ -4,14 +4,35 @@ use once_cell::sync::Lazy;
 use crate::utils::color::Color;
 use crate::utils::style::Style;
 
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub enum ColorMode {
+    #[default]
+    Dark,
+    Light,
+    System,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Variant {
+    Primary,
+    Secondary,
+    Success,
+    Danger,
+    Warning,
+    Info,
+    Light,
+    Dark,
+    Link,
+}
+
 /// Design Tokens for Rupaui.
-/// Acts like CSS Variables for colors, spacing, and component presets.
 #[derive(Debug, Clone, Default)]
 pub struct Theme {
+    pub mode: ColorMode,
     pub colors: HashMap<String, Color>,
+    pub variants: HashMap<Variant, Color>,
     pub spacing: HashMap<String, f32>,
     pub styles: HashMap<String, Style>,
-    pub custom: HashMap<String, String>,
 }
 
 static CURRENT_THEME: Lazy<Arc<RwLock<Theme>>> = Lazy::new(|| {
@@ -19,24 +40,29 @@ static CURRENT_THEME: Lazy<Arc<RwLock<Theme>>> = Lazy::new(|| {
 });
 
 impl Theme {
-    /// Access the global active theme.
     pub fn current() -> Theme {
         CURRENT_THEME.read().unwrap().clone()
     }
 
-    /// Update the global theme.
-    pub fn update<F>(f: F) 
-    where F: FnOnce(&mut Theme) {
+    pub fn update<F>(f: F) where F: FnOnce(&mut Theme) {
         let mut theme = CURRENT_THEME.write().unwrap();
         f(&mut theme);
     }
 
-    /// Default theme based on the Rupa Artisan aesthetic.
     pub fn default_artisan() -> Self {
         let mut colors = HashMap::new();
-        colors.insert("primary".to_string(), Color::Indigo(600));
-        colors.insert("secondary".to_string(), Color::Slate(600));
-        colors.insert("accent".to_string(), Color::Amber(400));
+        let mut variants = HashMap::new();
+        
+        // Semantic Variants mapping to Artisan Palette
+        variants.insert(Variant::Primary, Color::Indigo(600));
+        variants.insert(Variant::Secondary, Color::Slate(600));
+        variants.insert(Variant::Success, Color::Emerald(500));
+        variants.insert(Variant::Danger, Color::Red(500));
+        variants.insert(Variant::Warning, Color::Amber(400));
+        variants.insert(Variant::Info, Color::Cyan(400));
+        variants.insert(Variant::Light, Color::Slate(100));
+        variants.insert(Variant::Dark, Color::Slate(900));
+
         colors.insert("background".to_string(), Color::Slate(950));
         colors.insert("surface".to_string(), Color::Slate(900));
         colors.insert("text".to_string(), Color::Slate(50));
@@ -49,27 +75,21 @@ impl Theme {
         spacing.insert("xl".to_string(), 32.0);
 
         Self {
+            mode: ColorMode::Dark,
             colors,
+            variants,
             spacing,
             styles: HashMap::new(),
-            custom: HashMap::new(),
         }
     }
 
-    // --- Accessors ---
+    pub fn variant(v: Variant) -> Color {
+        let theme = CURRENT_THEME.read().unwrap();
+        theme.variants.get(&v).cloned().unwrap_or(Color::Slate(500))
+    }
 
     pub fn color(name: &str) -> Color {
         let theme = CURRENT_THEME.read().unwrap();
         theme.colors.get(name).cloned().unwrap_or(Color::Semantic(name.to_string(), None))
-    }
-
-    pub fn space(name: &str) -> f32 {
-        let theme = CURRENT_THEME.read().unwrap();
-        *theme.spacing.get(name).unwrap_or(&0.0)
-    }
-
-    pub fn style(name: &str) -> Style {
-        let theme = CURRENT_THEME.read().unwrap();
-        theme.styles.get(name).cloned().unwrap_or_default()
     }
 }
