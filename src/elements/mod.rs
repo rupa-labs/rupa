@@ -12,6 +12,7 @@ pub mod overlay;
 pub mod helpers;
 pub mod brand;
 pub mod control_flow;
+pub mod theme_switcher;
 
 pub use div::Div;
 pub use text::Text;
@@ -26,3 +27,4 @@ pub use overlay::{Modal, Offcanvas, Toast};
 pub use helpers::{VStack, HStack, Vr, Ratio};
 pub use brand::Brand;
 pub use control_flow::{Show, ForEach};
+pub use theme_switcher::ThemeSwitcher;

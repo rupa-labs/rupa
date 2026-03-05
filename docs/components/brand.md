@@ -2,40 +2,38 @@
 
 The `Brand` component is a specialized semantic element for application identity, supporting logos, names, and built-in responsiveness.
 
-## 📐 Basic Usage
+## 📐 Theme-Aware Logos
 
-Create a brand with a name and an optional logo.
+Since logos are static images, they might not look good on both light and dark backgrounds. Rupaui allows you to define variants for each theme mode.
 
 ```rust
 use rupaui::elements::Brand;
 
 let my_brand = Brand::new("Rupa Editor")
-    .logo("assets/rupa-logo.png");
+    .logo(
+        "assets/logo-default.png", // Fallback
+        Some("assets/logo-light.png".into()), // For Light Mode
+        Some("assets/logo-dark.png".into())   // For Dark Mode
+    );
 ```
 
 ---
 
 ## 📱 Responsiveness
 
-The `Brand` component can automatically switch to "Logo Only" mode on small screens to save space.
+The `Brand` component can automatically switch to "Logo Only" mode on small screens.
 
-- `.collapse_at(Breakpoint)`: Define the breakpoint where the text label should be hidden.
+- `.collapse_at(Breakpoint)`: Define the threshold for hiding the text label.
 
 ```rust
-use rupaui::utils::Breakpoint;
-
 Brand::new("Artisan's Atelier")
-    .logo("logo.png")
-    .collapse_at(Breakpoint::Md); // Shows only logo on Sm and Xs screens.
+    .logo("logo.png", None, None)
+    .collapse_at(Breakpoint::Md); 
 ```
 
 ---
 
-## ♿ Accessibility
-
-By default, the `Brand` component uses the `Link` role, assuming it will navigate to the home page. It automatically includes an ARIA label.
-
 ## 🗝 Key Features
-- **Responsive by Design**: Built-in logic for handling identity display on different viewports.
-- **Identity First**: Combines vector/raster logos with semantic text labels.
-- **Wasm Optimized**: Uses simple threshold checks for layout switching.
+- **Dynamic Switching**: Automatically selects the appropriate logo based on `Theme::current().mode`.
+- **Identity First**: Ensures brand consistency across different system appearance settings.
+- **A11y Integrated**: Uses ARIA roles to ensure the identity is accessible to screen readers.
