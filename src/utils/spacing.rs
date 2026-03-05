@@ -7,10 +7,6 @@ pub struct Spacing {
 }
 
 impl Spacing {
-    pub fn new(top: f32, right: f32, bottom: f32, left: f32) -> Self {
-        Self { top, right, bottom, left }
-    }
-
     pub fn all(val: f32) -> Self {
         Self { top: val, right: val, bottom: val, left: val }
     }
@@ -25,5 +21,27 @@ impl Spacing {
         self.top = val;
         self.bottom = val;
         self
+    }
+}
+
+pub trait IntoSpacing {
+    fn into_spacing(self) -> Spacing;
+}
+
+impl IntoSpacing for f32 {
+    fn into_spacing(self) -> Spacing {
+        Spacing::all(self)
+    }
+}
+
+impl IntoSpacing for (f32, f32) {
+    fn into_spacing(self) -> Spacing {
+        Spacing { top: self.0, right: self.1, bottom: self.0, left: self.1 }
+    }
+}
+
+impl IntoSpacing for (f32, f32, f32, f32) {
+    fn into_spacing(self) -> Spacing {
+        Spacing { top: self.0, right: self.1, bottom: self.2, left: self.3 }
     }
 }
