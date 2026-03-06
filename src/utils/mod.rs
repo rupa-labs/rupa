@@ -37,5 +37,6 @@ pub use accessibility::{Accessibility, Role};
 pub use attributes::Attributes;
 pub use events::EventListeners;
 pub use scale::Scale;
-pub use layout::Display;
-pub use flex::FlexDirection;
+pub use layout::{Display, Position, Overflow};
+pub use flex::{FlexDirection, AlignItems, JustifyContent};
+pub use typography::TextAlign;

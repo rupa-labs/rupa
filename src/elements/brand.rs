@@ -1,4 +1,4 @@
-use crate::utils::{Style, generate_id, StyleModifier, Theme, Accessibility, Attributes};
+use crate::utils::{Style, generate_id, StyleModifier, Theme, Accessibility, Attributes, Color, TextAlign};
 use crate::Component;
 use crate::renderer::{Renderer, Texture};
 use taffy::prelude::*;
@@ -36,11 +36,18 @@ impl Component for Brand {
     fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
         let layout = taffy.layout(node).unwrap();
         let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
-        let color = style.typography.color.clone().unwrap_or(crate::utils::Color::White(1.0)).to_rgba();
-        renderer.draw_text(&self.name, layout.location.x + 40.0, layout.location.y + 10.0, 18.0, color);
-        renderer.draw_rect(layout.location.x, layout.location.y, 32.0, 32.0, [0.39, 0.45, 1.0, 1.0], style.rounding.top_left);
+        let color = style.typography.color.clone().unwrap_or(Color::white(1.0)).to_rgba();
+        renderer.draw_text(&self.name, layout.location.x + 40.0, layout.location.y + 10.0, 18.0, color, TextAlign::Left);
+        renderer.draw_rect(layout.location.x, layout.location.y, 32.0, 32.0, [0.39, 0.45, 1.0, 1.0], style.rounding.nw);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, _d: f32) {}
     fn on_drag(&self, _d: crate::utils::Vec2) {}
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_brand_creation() { let brand = Brand::new("Rupa Art"); assert_eq!(brand.name, "Rupa Art"); }
 }

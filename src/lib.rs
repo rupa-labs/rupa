@@ -6,6 +6,7 @@ pub mod window;
 pub mod container;
 pub mod plugin;
 pub mod renderer;
+pub mod prelude;
 
 pub use app::App;
 pub use section::Section;

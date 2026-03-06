@@ -1,7 +1,6 @@
 use crate::utils::{Style, StyleModifier, generate_id, Attributes, Theme, Accessibility, Overflow, Vec2, Signal};
 use crate::Component;
 use crate::container::Children;
-use crate::elements::Text;
 use crate::renderer::Renderer;
 use taffy::prelude::*;
 
@@ -27,7 +26,6 @@ impl Div {
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
     pub fn style(mut self, modifier: impl StyleModifier) -> Self { modifier.apply(&mut self.style); self }
     pub fn child(mut self, child: Box<dyn Component>) -> Self { self.children.add(child); self }
-    pub fn text(mut self, content: impl Into<String>) -> Self { self.children.add(Box::new(Text::new(content))); self }
 }
 
 impl Component for Div {
@@ -42,7 +40,7 @@ impl Component for Div {
         let layout = taffy.layout(node).unwrap();
         let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
         if let Some(color) = style.background.color.clone() {
-            renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.top_left);
+            renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw);
         }
         let needs_clip = self.style.layout.overflow_x != Overflow::Visible || self.style.layout.overflow_y != Overflow::Visible;
         if needs_clip { renderer.push_clip(layout.location.x, layout.location.y, layout.size.width, layout.size.height, render_pass); }

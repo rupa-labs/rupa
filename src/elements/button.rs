@@ -20,53 +20,25 @@ impl From<Scale> for ButtonSize {
 }
 
 pub struct Button {
-    pub id: String,
-    pub label: String,
-    pub variant: Variant,
-    pub size: ButtonSize,
-    pub disabled: Signal<bool>,
-    pub is_loading: Signal<bool>,
-    pub style: Style,
-    pub attributes: Attributes,
-    pub events: EventListeners,
-    pub accessibility: Accessibility,
-    // --- Slots ---
-    pub prefix: Option<Box<dyn Component>>,
-    pub suffix: Option<Box<dyn Component>>,
+    pub id: String, pub label: String, pub variant: Variant, pub size: ButtonSize, pub disabled: Signal<bool>, pub is_loading: Signal<bool>, pub style: Style, pub attributes: Attributes, pub events: EventListeners, pub accessibility: Accessibility,
+    pub prefix: Option<Box<dyn Component>>, pub suffix: Option<Box<dyn Component>>,
 }
 
 impl Button {
     pub fn new(label: impl Into<String>) -> Self {
         let theme = Theme::current();
-        let mut style = Style::default();
-        theme.apply_defaults(&mut style);
+        let mut style = Style::default(); theme.apply_defaults(&mut style);
         let primary_color = theme.variants.get(&Variant::Primary).cloned().unwrap_or(Color::Semantic("primary".into(), None));
         style.background.color = Some(primary_color);
-
-        Self {
-            id: generate_id(), label: label.into(), variant: Variant::Primary, size: ButtonSize::Md,
-            disabled: Signal::new(false), is_loading: Signal::new(false), style,
-            attributes: Attributes::new(), events: EventListeners::default(),
-            accessibility: Accessibility { role: Role::Button, ..Default::default() },
-            prefix: None, suffix: None,
-        }
+        Self { id: generate_id(), label: label.into(), variant: Variant::Primary, size: ButtonSize::Md, disabled: Signal::new(false), is_loading: Signal::new(false), style, attributes: Attributes::new(), events: EventListeners::default(), accessibility: Accessibility { role: Role::Button, ..Default::default() }, prefix: None, suffix: None }
     }
-
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
     pub fn a11y(mut self, acc: Accessibility) -> Self { self.accessibility = acc; self }
     pub fn attr(mut self, key: impl Into<String>, value: impl Into<String>) -> Self { self.attributes.set(key, value); self }
     pub fn get_attr(&self, key: &str) -> Option<&String> { self.attributes.get(key) }
-
-    // --- Slot Setters ---
     pub fn prefix(mut self, component: Box<dyn Component>) -> Self { self.prefix = Some(component); self }
     pub fn suffix(mut self, component: Box<dyn Component>) -> Self { self.suffix = Some(component); self }
-
-    pub fn variant(mut self, v: Variant) -> Self {
-        self.variant = v;
-        self.style.background.color = Some(Theme::variant(v));
-        self
-    }
-
+    pub fn variant(mut self, v: Variant) -> Self { self.variant = v.clone(); self.style.background.color = Some(Theme::variant(v)); self }
     pub fn size(mut self, s: impl Into<ButtonSize>) -> Self {
         let s = s.into(); self.size = s.clone();
         match s {
@@ -79,53 +51,44 @@ impl Button {
         }
         self
     }
-
     pub fn on_click(mut self, f: impl Fn() + Send + Sync + 'static) -> Self { self.events.on_click = Some(Arc::new(f)); self }
-    pub fn style(mut self, modifier: impl StyleModifier) -> Self { modifier.apply(&mut self.style); self }
+
+    pub fn trigger(&self) {
+        if !self.disabled.get() {
+            if let Some(ref cb) = self.events.on_click {
+                (cb)();
+            }
+        }
+    }
+
+    pub fn style(mut self, modifier: impl StyleModifier) -> Self {
+ modifier.apply(&mut self.style); self }
 }
 
 impl Component for Button {
     fn id(&self) -> &str { &self.id }
     fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
-        let mut style = self.style.to_taffy();
-        // Force flex row for slots
-        style.display = Display::Flex;
-        style.flex_direction = FlexDirection::Row;
-        style.align_items = Some(AlignItems::Center);
-        style.gap = taffy::geometry::Size { width: length(8.0), height: length(8.0) };
-
+        let mut style = self.style.to_taffy(); style.display = Display::Flex; style.flex_direction = FlexDirection::Row; style.align_items = Some(AlignItems::Center);
         let node = taffy.new_leaf(style).unwrap();
         if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
-        
-        // Layout slots if present
         if let Some(ref p) = self.prefix { p.layout(taffy, Some(node)); }
         if let Some(ref s) = self.suffix { s.layout(taffy, Some(node)); }
-        
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>) {
         let layout = taffy.layout(node).unwrap();
         let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
-        
-        if let Some(color) = style.background.color.clone() {
-            renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.top_left);
-        }
-        
-        // Draw slots and label
-        renderer.draw_text(&self.label, layout.location.x + 8.0, layout.location.y + 4.0, 14.0, [1.0, 1.0, 1.0, 1.0]);
-        
+        if let Some(color) = style.background.color.clone() { renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw); }
+        renderer.draw_text(&self.label, layout.location.x + 8.0, layout.location.y + 4.0, 14.0, [1.0, 1.0, 1.0, 1.0], crate::utils::TextAlign::Left);
         let children_nodes = taffy.children(node).unwrap();
-        if let Some(ref p) = self.prefix { if let Some(n) = children_nodes.get(0) { p.paint(renderer, taffy, *n, false); } }
-        // ... simplified suffix logic
+        if let Some(ref p) = self.prefix { if let Some(n) = children_nodes.get(0) { p.paint(renderer, taffy, *n, false, render_pass); } }
     }
-    fn on_click(&self) {
-        if !self.disabled.get() { if let Some(ref cb) = self.events.on_click { (cb)(); } }
-    }
+    fn on_click(&self) { if !self.disabled.get() { if let Some(ref cb) = self.events.on_click { (cb)(); } } }
+    fn on_scroll(&self, _: f32) {}
+    fn on_drag(&self, _: crate::utils::Vec2) {}
 }
 
-pub struct CloseButton { 
-    pub id: String, pub disabled: Signal<bool>, pub style: Style, pub attributes: Attributes, pub accessibility: Accessibility 
-}
+pub struct CloseButton { pub id: String, pub disabled: Signal<bool>, pub style: Style, pub attributes: Attributes, pub accessibility: Accessibility }
 impl CloseButton {
     pub fn new() -> Self { Self { id: generate_id(), disabled: Signal::new(false), style: Style::default(), attributes: Attributes::new(), accessibility: Accessibility { role: Role::Button, ..Default::default() } } }
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
@@ -137,16 +100,16 @@ impl Component for CloseButton {
         if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
         let layout = taffy.layout(node).unwrap();
         renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, [1.0, 0.0, 0.0, 1.0], 0.0);
     }
     fn on_click(&self) {}
+    fn on_scroll(&self, _: f32) {}
+    fn on_drag(&self, _: crate::utils::Vec2) {}
 }
 
-pub struct ButtonGroup { 
-    pub id: String, pub style: Style, pub attributes: Attributes, pub children: Children, pub accessibility: Accessibility
-}
+pub struct ButtonGroup { pub id: String, pub style: Style, pub attributes: Attributes, pub children: Children, pub accessibility: Accessibility }
 impl ButtonGroup {
     pub fn new() -> Self {
         let mut style = Style::default(); style.layout.display = crate::utils::Display::Flex;
@@ -163,24 +126,17 @@ impl Component for ButtonGroup {
         self.children.layout_all(taffy, node);
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool) {
-        self.children.paint_all(renderer, taffy, node, is_group_hovered || self.style.is_group);
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>) {
+        self.children.paint_all(renderer, taffy, node, is_group_hovered || self.style.is_group, render_pass);
     }
     fn on_click(&self) {}
+    fn on_scroll(&self, delta: f32) { self.children.list.iter().for_each(|c| c.on_scroll(delta)); }
+    fn on_drag(&self, delta: crate::utils::Vec2) { self.children.list.iter().for_each(|c| c.on_drag(delta)); }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::{Variant, Scale};
-    use crate::elements::Text;
-
     #[test]
-    fn test_button_slots() {
-        let btn = Button::new("With Slots")
-            .prefix(Box::new(Text::new("->")))
-            .suffix(Box::new(Text::new("<-")));
-        assert!(btn.prefix.is_some());
-        assert!(btn.suffix.is_some());
-    }
+    fn test_button_creation() { let btn = Button::new("Test"); assert_eq!(btn.label, "Test"); assert_eq!(btn.variant, Variant::Primary); }
 }

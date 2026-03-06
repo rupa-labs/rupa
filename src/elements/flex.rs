@@ -42,7 +42,7 @@ impl Component for Flex {
         let layout = taffy.layout(node).unwrap();
         let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
         if let Some(color) = style.background.color.clone() {
-            renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.top_left);
+            renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw);
         }
         let needs_clip = self.style.layout.overflow_x != Overflow::Visible || self.style.layout.overflow_y != Overflow::Visible;
         if needs_clip { renderer.push_clip(layout.location.x, layout.location.y, layout.size.width, layout.size.height, render_pass); }
@@ -55,4 +55,12 @@ impl Component for Flex {
     fn on_click(&self) {}
     fn on_scroll(&self, delta: f32) { if self.style.layout.overflow_y == Overflow::Scroll { self.scroll_offset.update(|o| o.y += delta); } }
     fn on_drag(&self, delta: Vec2) { if self.style.layout.overflow_x == Overflow::Scroll || self.style.layout.overflow_y == Overflow::Scroll { self.scroll_offset.update(|o| { o.x += delta.x; o.y += delta.y; }); } }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::utils::FlexDirection;
+    #[test]
+    fn test_flex_properties() { let flex = Flex::new().direction(FlexDirection::Row).gap(20.0); assert_eq!(flex.style.flex.flex_direction, FlexDirection::Row); assert_eq!(flex.style.flex.gap, Some(20.0)); }
 }

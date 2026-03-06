@@ -40,7 +40,15 @@ impl Component for ThemeSwitcher {
     fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>) {
         self.get_button().paint(renderer, taffy, node, is_group_hovered, render_pass);
     }
-    fn on_click(&self) { self.get_button().on_click(); }
+    fn on_click(&self) { self.get_button().trigger(); }
     fn on_scroll(&self, _d: f32) {}
     fn on_drag(&self, _d: crate::utils::Vec2) {}
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::utils::{Theme, ColorMode};
+    #[test]
+    fn test_theme_cycling() { Theme::update(|t| t.mode = ColorMode::Dark); assert_eq!(Theme::current().mode, ColorMode::Dark); ThemeSwitcher::cycle_mode(); assert_eq!(Theme::current().mode, ColorMode::Light); }
 }

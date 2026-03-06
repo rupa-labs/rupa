@@ -1,4 +1,4 @@
-use crate::utils::{Style, generate_id, StyleModifier, Vec2, Attributes, Accessibility};
+use crate::utils::{Style, generate_id, StyleModifier, Vec2, Attributes, Accessibility, Theme};
 use crate::Component;
 use crate::renderer::Renderer;
 use taffy::prelude::*;
@@ -31,7 +31,6 @@ impl Component for Icon {
     }
     fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
         let layout = taffy.layout(node).unwrap();
-        // Placeholder for real SVG icon rendering logic
         renderer.draw_rect(layout.location.x, layout.location.y, self.size, self.size, self.color, 2.0);
     }
     fn on_click(&self) {}
@@ -45,9 +44,11 @@ pub struct SvgCanvas {
 
 impl SvgCanvas {
     pub fn new() -> Self {
-        Self { id: generate_id(), paths: Vec::new(), style: Style::default(), attributes: Attributes::default(), accessibility: Accessibility::default() }
+        let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
+        Self { id: generate_id(), paths: Vec::new(), style, attributes: Attributes::default(), accessibility: Accessibility::default() }
     }
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
+    pub fn style(mut self, modifier: impl StyleModifier) -> Self { modifier.apply(&mut self.style); self }
     pub fn add_path(&mut self, path: Path) { self.paths.push(path); }
 }
 

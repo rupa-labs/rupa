@@ -1,4 +1,4 @@
-use crate::utils::{Style, generate_id, StyleModifier, Theme, Color, Variant, Accessibility, Attributes, Signal};
+use crate::utils::{Style, generate_id, StyleModifier, Theme, Color, Variant, Accessibility, Attributes, Signal, TextAlign};
 use crate::Component;
 use crate::renderer::Renderer;
 use taffy::prelude::*;
@@ -96,7 +96,36 @@ impl Component for Badge {
         let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
         let color = style.background.color.clone().unwrap_or(Color::Semantic("primary".into(), None));
         renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), 10.0);
-        renderer.draw_text(&self.label, layout.location.x + 6.0, layout.location.y + 2.0, 12.0, [1.0, 1.0, 1.0, 1.0]);
+        renderer.draw_text(&self.label, layout.location.x + 6.0, layout.location.y + 2.0, 12.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
+    }
+    fn on_click(&self) {}
+    fn on_scroll(&self, _d: f32) {}
+    fn on_drag(&self, _d: crate::utils::Vec2) {}
+}
+
+pub struct Spinner {
+    pub id: String,
+    pub style: Style,
+}
+
+impl Spinner {
+    pub fn new() -> Self {
+        Self { id: generate_id(), style: Style::default() }
+    }
+}
+
+impl Component for Spinner {
+    fn id(&self) -> &str { &self.id }
+    fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
+        let mut s = taffy::style::Style::default();
+        s.size = Size { width: length(24.0), height: length(24.0) };
+        let node = taffy.new_leaf(s).unwrap();
+        if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
+        node
+    }
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
+        let layout = taffy.layout(node).unwrap();
+        renderer.draw_rect(layout.location.x, layout.location.y, 24.0, 24.0, [0.5, 0.5, 0.5, 1.0], 12.0);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, _d: f32) {}
@@ -133,7 +162,7 @@ impl Component for Alert {
         let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
         let color = style.background.color.clone().unwrap_or(Color::Semantic("surface".into(), None));
         renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), 4.0);
-        renderer.draw_text(&self.message, layout.location.x + 16.0, layout.location.y + 12.0, 14.0, [1.0, 1.0, 1.0, 1.0]);
+        renderer.draw_text(&self.message, layout.location.x + 16.0, layout.location.y + 12.0, 14.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, _d: f32) {}

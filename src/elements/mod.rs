@@ -18,7 +18,7 @@ pub mod viewport;
 
 pub use div::Div;
 pub use text::Text;
-pub use svg::SvgCanvas;
+pub use svg::{SvgCanvas, Icon};
 pub use layout::{Container, Row, Col};
 pub use forms::{Input, Checkbox, Switch, Radio, Select, Label};
 pub use button::{Button, CloseButton, ButtonGroup};

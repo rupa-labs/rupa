@@ -56,24 +56,18 @@ impl Component for Section {
         node
     }
 
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>) {
         let layout = taffy.layout(node).unwrap();
-        
-        let style = if is_group_hovered && self.style.group_hover.is_some() {
-            self.style.group_hover.as_ref().unwrap()
-        } else {
-            &self.style
-        };
-
+        let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
         if let Some(color) = style.background.color.clone() {
-            renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.top_left);
+            renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw);
         }
-        self.children.paint_all(renderer, taffy, node, is_group_hovered || self.style.is_group);
+        self.children.paint_all(renderer, taffy, node, is_group_hovered || self.style.is_group, render_pass);
     }
 
-    fn on_click(&self) {
-        // Section usually delegates or handles broad layout clicks
-    }
+    fn on_click(&self) {}
+    fn on_scroll(&self, _delta: f32) {}
+    fn on_drag(&self, _delta: crate::utils::Vec2) {}
 }
 
 #[cfg(test)]
