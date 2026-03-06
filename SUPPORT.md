@@ -23,7 +23,7 @@ When reporting a bug, please provide:
 
 ## 📧 Private Contact
 
-For security-related issues or private inquiries, please contact the maintainers at **reasnov.app@gmail.com**.
+For security-related issues or private inquiries, please contact the maintainers at **reasnov.official@gmail.com**.
 
 ---
 

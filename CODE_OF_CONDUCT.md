@@ -34,7 +34,7 @@ This Code of Conduct applies within all project spaces, and also applies when an
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project leaders at reasnov.app@gmail.com. All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project leaders at reasnov.official@gmail.com. All complaints will be reviewed and investigated promptly and fairly.
 
 ---
 *Adapted from the Contributor Covenant, version 2.1.*

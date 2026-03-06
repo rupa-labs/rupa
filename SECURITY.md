@@ -12,7 +12,7 @@ We currently provide security updates for the following versions of Rupaui:
 
 We take the security of Rupaui seriously. If you believe you have found a security vulnerability, please do not open a public issue. Instead, please report it to us privately.
 
-**Contact:** reasnov.app@gmail.com
+**Contact:** reasnov.official@gmail.com
 
 Please include the following in your report:
 - A description of the vulnerability.
