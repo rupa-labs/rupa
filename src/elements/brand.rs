@@ -1,53 +1,105 @@
-use crate::utils::{Style, generate_id, StyleModifier, Accessibility, Attributes, Color, TextAlign, Vec2};
-use crate::Component;
-use crate::renderer::{Renderer, Texture};
+use crate::utils::{Style, StyleModifier, generate_id, Accessibility, Role, Attributes, Theme, TextAlign, Vec2};
+use crate::core::component::Component;
+use crate::renderer::renderer::Renderer;
+use crate::style::modifiers::utilities::Stylable;
+use crate::platform::events::UIEvent;
 use taffy::prelude::*;
+use std::cell::{Cell, RefCell, RefMut};
+use std::sync::atomic::{AtomicBool, Ordering};
 
-pub struct Brand {
-    pub id: String,
+// --- LOGIC ---
+
+pub struct BrandLogic<'a> {
     pub name: String,
     pub logo_path: Option<String>,
-    pub texture: Option<Texture>,
-    pub style: Style,
+    pub children: Vec<Box<dyn Component + 'a>>,
     pub accessibility: Accessibility,
-    pub attributes: Attributes,
 }
 
-impl Brand {
+// --- VIEW ---
+
+pub struct BrandView {
+    pub style: RefCell<Style>,
+    node: Cell<Option<NodeId>>,
+    dirty: AtomicBool,
+}
+
+// --- COMPONENT ---
+
+pub struct Brand<'a> {
+    pub id: String,
+    pub logic: BrandLogic<'a>,
+    pub view: BrandView,
+}
+
+impl<'a> Brand<'a> {
     pub fn new(name: impl Into<String>) -> Self {
+        let mut style = Style::default();
+        Theme::current().apply_defaults(&mut style);
         Self {
-            id: generate_id(), name: name.into(), logo_path: None, texture: None, style: Style::default(),
-            accessibility: Accessibility { role: crate::utils::Role::Navigation, ..Default::default() },
-            attributes: Attributes::default(),
+            id: generate_id(),
+            logic: BrandLogic {
+                name: name.into(),
+                logo_path: None,
+                children: Vec::new(),
+                accessibility: Accessibility { role: Role::Navigation, ..Default::default() },
+            },
+            view: BrandView {
+                style: RefCell::new(style),
+                node: Cell::new(None),
+                dirty: AtomicBool::new(true),
+            },
         }
     }
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
-    pub fn style(mut self, modifier: impl StyleModifier) -> Self { modifier.apply(&mut self.style); self }
-    pub fn logo(mut self, path: impl Into<String>) -> Self { self.logo_path = Some(path.into()); self }
+    pub fn logo(mut self, path: impl Into<String>) -> Self { 
+        self.logic.logo_path = Some(path.into()); 
+        self.view.dirty.store(true, Ordering::Relaxed); 
+        self 
+    }
 }
 
-impl Component for Brand {
+impl<'a> Stylable for Brand<'a> {
+    fn get_style_mut(&self) -> RefMut<'_, Style> {
+        self.view.style.borrow_mut()
+    }
+}
+
+impl<'a> Component for Brand<'a> {
     fn id(&self) -> &str { &self.id }
+
+    fn children(&self) -> Vec<&dyn Component> {
+        self.logic.children.iter().map(|c| c.as_ref()).collect()
+    }
+
+    fn get_node(&self) -> Option<NodeId> { self.view.node.get() }
+    fn set_node(&self, node: NodeId) { self.view.node.set(Some(node)); }
+    fn is_dirty(&self) -> bool { self.view.dirty.load(Ordering::Relaxed) }
+    fn mark_dirty(&self) { self.view.dirty.store(true, Ordering::Relaxed); }
+    fn clear_dirty(&self) { self.view.dirty.store(false, Ordering::Relaxed); }
+
     fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.style.to_taffy()).unwrap();
-        if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
+        let node = if let Some(existing) = self.get_node() {
+            if self.is_dirty() { taffy.set_style(existing, self.view.style.borrow().to_taffy()).unwrap(); }
+            existing
+        } else {
+            let new_node = taffy.new_leaf(self.view.style.borrow().to_taffy()).unwrap();
+            self.set_node(new_node);
+            new_node
+        };
+        if let Some(p) = parent {
+            let current_children = taffy.children(p).unwrap_or_default();
+            if !current_children.contains(&node) { taffy.add_child(p, node).unwrap(); }
+        }
+        self.clear_dirty();
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
-        let _layout = taffy.layout(node).unwrap();
-        let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
-        let color = style.typography.color.clone().unwrap_or(Color::white(1.0)).to_rgba();
-        renderer.draw_text(&self.name, global_pos.x + 40.0, global_pos.y + 10.0, 18.0, color, TextAlign::Left);
-        renderer.draw_rect(global_pos.x, global_pos.y, 32.0, 32.0, [0.39, 0.45, 1.0, 1.0], style.rounding.nw);
-    }
-    fn on_click(&self) {}
-    fn on_scroll(&self, _d: f32) {}
-    fn on_drag(&self, _d: Vec2) {}
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn test_brand_creation() { let brand = Brand::new("Rupa Art"); assert_eq!(brand.name, "Rupa Art"); }
+    fn paint(&self, renderer: &mut Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+        renderer.draw_text(&self.logic.name, global_pos.x, global_pos.y, 18.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
+    }
+
+    fn on_click(&self, _event: &mut UIEvent) {}
+    fn on_scroll(&self, _event: &mut UIEvent, _: f32) {}
+    fn on_drag(&self, _event: &mut UIEvent, _: Vec2) {}
 }

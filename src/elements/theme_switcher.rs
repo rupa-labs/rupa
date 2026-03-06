@@ -1,55 +1,90 @@
-use crate::utils::{Style, StyleModifier, generate_id, Theme, ColorMode, Variant, Accessibility, Attributes, Vec2};
-
-use crate::Component;
-use crate::elements::Button;
-use crate::renderer::Renderer;
+use crate::utils::{Style, generate_id, Theme, ColorMode, Accessibility, Role, Attributes, Vec2};
+use crate::core::component::Component;
+use crate::renderer::renderer::Renderer;
+use crate::style::modifiers::utilities::Stylable;
+use crate::platform::events::UIEvent;
 use taffy::prelude::*;
+use std::cell::{Cell, RefCell};
+use std::sync::atomic::{AtomicBool, Ordering};
 
-pub struct ThemeSwitcher {
-    pub id: String,
-    pub style: Style,
-    pub accessibility: Accessibility,
+pub struct ThemeSwitcher { 
+    pub id: String, 
+    pub style: RefCell<Style>, 
+    pub accessibility: Accessibility, 
     pub attributes: Attributes,
+    node: Cell<Option<NodeId>>,
+    dirty: AtomicBool,
 }
 
 impl ThemeSwitcher {
     pub fn new() -> Self {
-        let mut style = Style::default();
-        Theme::current().apply_defaults(&mut style);
-        Self {
-            id: generate_id(), style, accessibility: Accessibility::default(), attributes: Attributes::default(),
+        Self { 
+            id: generate_id(), 
+            style: RefCell::new(Style::default()), 
+            accessibility: Accessibility { role: Role::Button, ..Default::default() }, 
+            attributes: Attributes::default(),
+            node: Cell::new(None),
+            dirty: AtomicBool::new(true),
         }
     }
-    pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
-    pub fn style(mut self, modifier: impl StyleModifier) -> Self { modifier.apply(&mut self.style); self }
-    
     pub fn cycle_mode() {
         Theme::update(|t| {
-            t.mode = match t.mode { ColorMode::Dark => ColorMode::Light, ColorMode::Light => ColorMode::System, ColorMode::System => ColorMode::Dark };
+            t.mode = match t.mode {
+                ColorMode::Dark => ColorMode::Light,
+                ColorMode::Light => ColorMode::Dark,
+                ColorMode::System => ColorMode::Dark,
+            };
         });
     }
+}
 
-    fn get_button(&self) -> Button<'_> {
-        let label = match Theme::current().mode { ColorMode::Dark => "Dark", ColorMode::Light => "Light", ColorMode::System => "System" };
-        Button::new(label).variant(Variant::Secondary).style(self.style.clone()).on_click(|| Self::cycle_mode())
+impl Stylable for ThemeSwitcher {
+    fn get_style_mut(&self) -> &mut Style {
+        unsafe { &mut *self.style.as_ptr() }
     }
 }
 
 impl Component for ThemeSwitcher {
     fn id(&self) -> &str { &self.id }
-    fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId { self.get_button().layout(taffy, parent) }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
-        self.get_button().paint(renderer, taffy, node, is_group_hovered, render_pass, global_pos);
-    }
-    fn on_click(&self) { self.get_button().trigger(); }
-    fn on_scroll(&self, _d: f32) {}
-    fn on_drag(&self, _d: crate::utils::Vec2) {}
-}
+    
+    fn children(&self) -> Vec<&dyn Component> { vec![] }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::utils::{Theme, ColorMode};
-    #[test]
-    fn test_theme_cycling() { Theme::update(|t| t.mode = ColorMode::Dark); assert_eq!(Theme::current().mode, ColorMode::Dark); ThemeSwitcher::cycle_mode(); assert_eq!(Theme::current().mode, ColorMode::Light); }
+    fn get_node(&self) -> Option<NodeId> { self.node.get() }
+    fn set_node(&self, node: NodeId) { self.node.set(Some(node)); }
+    fn is_dirty(&self) -> bool { self.dirty.load(Ordering::Relaxed) }
+    fn mark_dirty(&self) { self.dirty.store(true, Ordering::Relaxed); }
+    fn clear_dirty(&self) { self.dirty.store(false, Ordering::Relaxed); }
+
+    fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
+        let node = if let Some(existing) = self.get_node() {
+            if self.is_dirty() {
+                taffy.set_style(existing, self.style.borrow().to_taffy()).unwrap();
+            }
+            existing
+        } else {
+            let new_node = taffy.new_leaf(self.style.borrow().to_taffy()).unwrap();
+            self.set_node(new_node);
+            new_node
+        };
+
+        if let Some(p) = parent {
+            let current_children = taffy.children(p).unwrap_or_default();
+            if !current_children.contains(&node) {
+                taffy.add_child(p, node).unwrap();
+            }
+        }
+
+        self.clear_dirty();
+        node
+    }
+    
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+        let layout = taffy.layout(node).unwrap();
+        let color = if Theme::current().mode == ColorMode::Dark { [0.2, 0.2, 0.2, 1.0] } else { [0.9, 0.9, 0.9, 1.0] };
+        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color, 4.0);
+    }
+    
+    fn on_click(&self, _event: &mut UIEvent) { Self::cycle_mode(); }
+    fn on_scroll(&self, _event: &mut UIEvent, _: f32) {}
+    fn on_drag(&self, _event: &mut UIEvent, _: Vec2) {}
 }

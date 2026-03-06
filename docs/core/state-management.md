@@ -13,10 +13,13 @@ count.update(|v| *v += 1); // Automatically triggers Redraw
 ```
 
 ## Memos
-`Memo<T, D>` is used for derived state that requires expensive calculations. A Memo will only be recalculated if its source Signal changes.
+`Memo<T>` is used for derived state that requires calculations. A Memo takes a closure that computes its value.
 
 ```rust
-let is_even = Memo::new(count.clone(), |v| v % 2 == 0);
+let is_even = Memo::new({
+    let count = count.clone();
+    move || count.get() % 2 == 0
+});
 ```
 
 ## Reactivity in Components

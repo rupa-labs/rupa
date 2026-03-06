@@ -2,6 +2,78 @@
 
 Welcome to the **Rupaui** documentation. Rupaui is a modern, cross-platform UI framework built with Rust, designed for artisans who value semantic structure and utility-first flexibility.
 
+## 🚀 Architecture Pipeline
+
+```mermaid
+flowchart TD
+
+A[Application Start] --> B[Create App Instance]
+
+B --> C[Register Plugins]
+C --> D[Build Root Component]
+
+D --> E[Initialize Event Loop]
+E --> F[Create Window winit]
+
+F --> G[Initialize GPU Renderer]
+G --> H[Initialize wgpu Device]
+H --> I[Create Render Pipeline]
+
+I --> J[Enter Event Loop]
+
+J --> K{Event Type}
+
+K -->|User Input| L[Platform Event Layer]
+K -->|System Event| M[Window Resize / Close]
+K -->|Redraw Request| N[Frame Pipeline]
+
+L --> O[Event Dispatch System]
+O --> P[Element Tree Event Propagation]
+P --> Q[Component Event Handlers]
+
+Q --> R[State Mutation]
+R --> S[Mark Tree Dirty]
+S --> T[Request Redraw]
+
+T --> J
+
+M --> U[Resize Renderer]
+U --> J
+
+N --> V[Clear Previous Layout]
+
+V --> W[Build Element Tree]
+W --> X[Create Element Nodes]
+
+X --> Y[Layout Phase]
+
+Y --> Z[Traverse Element Tree]
+Z --> AA[Generate Taffy Nodes]
+AA --> AB[Compute Layout Taffy]
+
+AB --> AC[Render Phase]
+
+AC --> AD[Traverse Element Tree]
+AD --> AE[Generate Draw Commands]
+
+AE --> AF[Batch Renderer Commands]
+
+AF --> AG[Begin GPU Render Pass]
+
+AG --> AH[Execute Batches]
+AH --> AI[Draw Geometry]
+AI --> AJ[Render Text]
+AJ --> AK[Render SVG]
+
+AK --> AL[Submit Command Buffer]
+
+AL --> AM[Present Frame]
+
+AM --> AN[Request Next Frame]
+
+AN --> J
+```
+
 ## 🏗 Core Framework
 - [Philosophy](./core/philosophy.md)
 - [State Management](./core/state-management.md)

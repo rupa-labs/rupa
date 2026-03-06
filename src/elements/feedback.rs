@@ -1,170 +1,374 @@
-use crate::utils::{Style, generate_id, StyleModifier, Theme, Color, Variant, Accessibility, Attributes, Signal, TextAlign, Vec2};
-use crate::Component;
-use crate::renderer::Renderer;
+use crate::utils::{Style, generate_id, Signal, Theme, Color, Accessibility, Attributes, Vec2};
+use crate::core::component::Component;
+use crate::renderer::renderer::Renderer;
+use crate::style::modifiers::utilities::Stylable;
+use crate::platform::events::UIEvent;
 use taffy::prelude::*;
+use std::cell::{Cell, RefCell, RefMut};
+use std::sync::atomic::{AtomicBool, Ordering};
 
-pub struct Progress {
-    pub id: String,
-    pub value: Signal<f32>,
-    pub style: Style,
+// --- SPINNER ---
+
+pub struct SpinnerLogic {
+    pub is_animating: Signal<bool>,
 }
 
-impl Progress {
-    pub fn new(value: Signal<f32>) -> Self {
-        Self { id: generate_id(), value, style: Style::default() }
-    }
-    pub fn style(mut self, modifier: impl StyleModifier) -> Self { modifier.apply(&mut self.style); self }
-}
-
-impl Component for Progress {
-    fn id(&self) -> &str { &self.id }
-    fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
-        let mut s = self.style.to_taffy();
-        if s.size.height == Dimension::Auto { s.size.height = length(10.0); }
-        let node = taffy.new_leaf(s).unwrap();
-        if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
-        node
-    }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, [0.2, 0.2, 0.2, 1.0], 5.0);
-        let fill_w = layout.size.width * self.value.get().clamp(0.0, 1.0);
-        let color = self.style.background.color.clone().unwrap_or(Color::Semantic("primary".into(), None)).to_rgba();
-        renderer.draw_rect(global_pos.x, global_pos.y, fill_w, layout.size.height, color, 5.0);
-    }
-    fn on_click(&self) {}
-    fn on_scroll(&self, _d: f32) {}
-    fn on_drag(&self, _d: Vec2) {}
-}
-
-pub struct Skeleton {
-    pub id: String,
-    pub style: Style,
-}
-
-impl Skeleton {
-    pub fn new() -> Self {
-        Self { id: generate_id(), style: Style::default() }
-    }
-    pub fn style(mut self, modifier: impl StyleModifier) -> Self { modifier.apply(&mut self.style); self }
-}
-
-impl Component for Skeleton {
-    fn id(&self) -> &str { &self.id }
-    fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.style.to_taffy()).unwrap();
-        if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
-        node
-    }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, [0.15, 0.15, 0.15, 1.0], 4.0);
-    }
-    fn on_click(&self) {}
-    fn on_scroll(&self, _d: f32) {}
-    fn on_drag(&self, _d: Vec2) {}
-}
-
-pub struct Badge {
-    pub id: String,
-    pub label: String,
-    pub variant: Variant,
-    pub style: Style,
-    pub accessibility: Accessibility,
-    pub attributes: Attributes,
-}
-
-impl Badge {
-    pub fn new(label: impl Into<String>) -> Self {
-        let mut style = Style::default();
-        Theme::current().apply_defaults(&mut style);
-        style.padding = crate::utils::spacing::Spacing::all(4.0);
-        style.rounding = crate::utils::border::Rounding::all(99.0);
-        Self { id: generate_id(), label: label.into(), variant: Variant::Primary, style, accessibility: Accessibility::default(), attributes: Attributes::default() }
-    }
-}
-
-impl Component for Badge {
-    fn id(&self) -> &str { &self.id }
-    fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.style.to_taffy()).unwrap();
-        if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
-        node
-    }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
-        let color = style.background.color.clone().unwrap_or(Color::Semantic("primary".into(), None));
-        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), 10.0);
-        renderer.draw_text(&self.label, global_pos.x + 6.0, global_pos.y + 2.0, 12.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
-    }
-    fn on_click(&self) {}
-    fn on_scroll(&self, _d: f32) {}
-    fn on_drag(&self, _d: Vec2) {}
+pub struct SpinnerView {
+    pub style: RefCell<Style>,
+    node: Cell<Option<NodeId>>,
+    dirty: AtomicBool,
 }
 
 pub struct Spinner {
     pub id: String,
-    pub style: Style,
+    pub logic: SpinnerLogic,
+    pub view: SpinnerView,
 }
 
 impl Spinner {
     pub fn new() -> Self {
-        Self { id: generate_id(), style: Style::default() }
+        Self {
+            id: generate_id(),
+            logic: SpinnerLogic { is_animating: Signal::new(true) },
+            view: SpinnerView {
+                style: RefCell::new(Style::default()),
+                node: Cell::new(None),
+                dirty: AtomicBool::new(true),
+            },
+        }
     }
+}
+
+impl Stylable for Spinner {
+    fn get_style_mut(&self) -> RefMut<'_, Style> { self.view.style.borrow_mut() }
 }
 
 impl Component for Spinner {
     fn id(&self) -> &str { &self.id }
+    fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn get_node(&self) -> Option<NodeId> { self.view.node.get() }
+    fn set_node(&self, node: NodeId) { self.view.node.set(Some(node)); }
+    fn is_dirty(&self) -> bool { self.view.dirty.load(Ordering::Relaxed) }
+    fn mark_dirty(&self) { self.view.dirty.store(true, Ordering::Relaxed); }
+    fn clear_dirty(&self) { self.view.dirty.store(false, Ordering::Relaxed); }
+
     fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
-        let mut s = taffy::style::Style::default();
-        s.size = Size { width: length(24.0), height: length(24.0) };
-        let node = taffy.new_leaf(s).unwrap();
-        if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
+        let node = if let Some(existing) = self.get_node() {
+            if self.is_dirty() { taffy.set_style(existing, self.view.style.borrow().to_taffy()).unwrap(); }
+            existing
+        } else {
+            let new_node = taffy.new_leaf(self.view.style.borrow().to_taffy()).unwrap();
+            self.set_node(new_node);
+            new_node
+        };
+        if let Some(p) = parent {
+            let current_children = taffy.children(p).unwrap_or_default();
+            if !current_children.contains(&node) { taffy.add_child(p, node).unwrap(); }
+        }
+        self.clear_dirty();
         node
     }
+
     fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
-        let _layout = taffy.layout(node).unwrap();
-        renderer.draw_rect(global_pos.x, global_pos.y, 24.0, 24.0, [0.5, 0.5, 0.5, 1.0], 12.0);
+        let layout = taffy.layout(node).unwrap();
+        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, [0.5, 0.5, 0.5, 1.0], layout.size.width / 2.0);
     }
-    fn on_click(&self) {}
-    fn on_scroll(&self, _d: f32) {}
-    fn on_drag(&self, _d: Vec2) {}
+    
+    fn on_click(&self, _event: &mut UIEvent) {}
+    fn on_scroll(&self, _event: &mut UIEvent, _: f32) {}
+    fn on_drag(&self, _event: &mut UIEvent, _: Vec2) {}
+}
+
+// --- PROGRESS ---
+
+pub struct ProgressLogic {
+    pub value: Signal<f32>,
+}
+
+pub struct ProgressView {
+    pub style: RefCell<Style>,
+    node: Cell<Option<NodeId>>,
+    dirty: AtomicBool,
+}
+
+pub struct Progress {
+    pub id: String,
+    pub logic: ProgressLogic,
+    pub view: ProgressView,
+}
+
+impl Progress {
+    pub fn new(value: Signal<f32>) -> Self {
+        Self {
+            id: generate_id(),
+            logic: ProgressLogic { value },
+            view: ProgressView {
+                style: RefCell::new(Style::default()),
+                node: Cell::new(None),
+                dirty: AtomicBool::new(true),
+            },
+        }
+    }
+}
+
+impl Stylable for Progress {
+    fn get_style_mut(&self) -> RefMut<'_, Style> { self.view.style.borrow_mut() }
+}
+
+impl Component for Progress {
+    fn id(&self) -> &str { &self.id }
+    fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn get_node(&self) -> Option<NodeId> { self.view.node.get() }
+    fn set_node(&self, node: NodeId) { self.view.node.set(Some(node)); }
+    fn is_dirty(&self) -> bool { self.view.dirty.load(Ordering::Relaxed) }
+    fn mark_dirty(&self) { self.view.dirty.store(true, Ordering::Relaxed); }
+    fn clear_dirty(&self) { self.view.dirty.store(false, Ordering::Relaxed); }
+
+    fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
+        let node = if let Some(existing) = self.get_node() {
+            if self.is_dirty() { taffy.set_style(existing, self.view.style.borrow().to_taffy()).unwrap(); }
+            existing
+        } else {
+            let new_node = taffy.new_leaf(self.view.style.borrow().to_taffy()).unwrap();
+            self.set_node(new_node);
+            new_node
+        };
+        if let Some(p) = parent {
+            let current_children = taffy.children(p).unwrap_or_default();
+            if !current_children.contains(&node) { taffy.add_child(p, node).unwrap(); }
+        }
+        self.clear_dirty();
+        node
+    }
+
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+        let layout = taffy.layout(node).unwrap();
+        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, [0.2, 0.2, 0.2, 1.0], 4.0);
+        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width * self.logic.value.get(), layout.size.height, [0.0, 0.5, 1.0, 1.0], 4.0);
+    }
+    
+    fn on_click(&self, _event: &mut UIEvent) {}
+    fn on_scroll(&self, _event: &mut UIEvent, _: f32) {}
+    fn on_drag(&self, _event: &mut UIEvent, _: Vec2) {}
+}
+
+// --- BADGE ---
+
+pub struct BadgeLogic {
+    pub label: String,
+}
+
+pub struct BadgeView {
+    pub style: RefCell<Style>,
+    node: Cell<Option<NodeId>>,
+    dirty: AtomicBool,
+}
+
+pub struct Badge {
+    pub id: String,
+    pub logic: BadgeLogic,
+    pub view: BadgeView,
+}
+
+impl Badge {
+    pub fn new(label: impl Into<String>) -> Self {
+        Self {
+            id: generate_id(),
+            logic: BadgeLogic { label: label.into() },
+            view: BadgeView {
+                style: RefCell::new(Style::default()),
+                node: Cell::new(None),
+                dirty: AtomicBool::new(true),
+            },
+        }
+    }
+}
+
+impl Stylable for Badge {
+    fn get_style_mut(&self) -> RefMut<'_, Style> { self.view.style.borrow_mut() }
+}
+
+impl Component for Badge {
+    fn id(&self) -> &str { &self.id }
+    fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn get_node(&self) -> Option<NodeId> { self.view.node.get() }
+    fn set_node(&self, node: NodeId) { self.view.node.set(Some(node)); }
+    fn is_dirty(&self) -> bool { self.view.dirty.load(Ordering::Relaxed) }
+    fn mark_dirty(&self) { self.view.dirty.store(true, Ordering::Relaxed); }
+    fn clear_dirty(&self) { self.view.dirty.store(false, Ordering::Relaxed); }
+
+    fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
+        let node = if let Some(existing) = self.get_node() {
+            if self.is_dirty() { taffy.set_style(existing, self.view.style.borrow().to_taffy()).unwrap(); }
+            existing
+        } else {
+            let new_node = taffy.new_leaf(self.view.style.borrow().to_taffy()).unwrap();
+            self.set_node(new_node);
+            new_node
+        };
+        if let Some(p) = parent {
+            let current_children = taffy.children(p).unwrap_or_default();
+            if !current_children.contains(&node) { taffy.add_child(p, node).unwrap(); }
+        }
+        self.clear_dirty();
+        node
+    }
+
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+        let layout = taffy.layout(node).unwrap();
+        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, [0.0, 0.7, 0.3, 1.0], 10.0);
+    }
+    
+    fn on_click(&self, _event: &mut UIEvent) {}
+    fn on_scroll(&self, _event: &mut UIEvent, _: f32) {}
+    fn on_drag(&self, _event: &mut UIEvent, _: Vec2) {}
+}
+
+// --- SKELETON ---
+
+pub struct SkeletonLogic {
+    pub is_loading: Signal<bool>,
+}
+
+pub struct SkeletonView {
+    pub style: RefCell<Style>,
+    node: Cell<Option<NodeId>>,
+    dirty: AtomicBool,
+}
+
+pub struct Skeleton {
+    pub id: String,
+    pub logic: SkeletonLogic,
+    pub view: SkeletonView,
+}
+
+impl Skeleton {
+    pub fn new() -> Self {
+        Self {
+            id: generate_id(),
+            logic: SkeletonLogic { is_loading: Signal::new(true) },
+            view: SkeletonView {
+                style: RefCell::new(Style::default()),
+                node: Cell::new(None),
+                dirty: AtomicBool::new(true),
+            },
+        }
+    }
+}
+
+impl Stylable for Skeleton {
+    fn get_style_mut(&self) -> RefMut<'_, Style> { self.view.style.borrow_mut() }
+}
+
+impl Component for Skeleton {
+    fn id(&self) -> &str { &self.id }
+    fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn get_node(&self) -> Option<NodeId> { self.view.node.get() }
+    fn set_node(&self, node: NodeId) { self.view.node.set(Some(node)); }
+    fn is_dirty(&self) -> bool { self.view.dirty.load(Ordering::Relaxed) }
+    fn mark_dirty(&self) { self.view.dirty.store(true, Ordering::Relaxed); }
+    fn clear_dirty(&self) { self.view.dirty.store(false, Ordering::Relaxed); }
+
+    fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
+        let node = if let Some(existing) = self.get_node() {
+            if self.is_dirty() { taffy.set_style(existing, self.view.style.borrow().to_taffy()).unwrap(); }
+            existing
+        } else {
+            let new_node = taffy.new_leaf(self.view.style.borrow().to_taffy()).unwrap();
+            self.set_node(new_node);
+            new_node
+        };
+        if let Some(p) = parent {
+            let current_children = taffy.children(p).unwrap_or_default();
+            if !current_children.contains(&node) { taffy.add_child(p, node).unwrap(); }
+        }
+        self.clear_dirty();
+        node
+    }
+
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+        let layout = taffy.layout(node).unwrap();
+        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, [0.3, 0.3, 0.3, 1.0], 4.0);
+    }
+    
+    fn on_click(&self, _event: &mut UIEvent) {}
+    fn on_scroll(&self, _event: &mut UIEvent, _: f32) {}
+    fn on_drag(&self, _event: &mut UIEvent, _: Vec2) {}
+}
+
+// --- ALERT ---
+
+pub struct AlertLogic {
+    pub message: String,
+    pub variant: Variant,
+}
+
+pub struct AlertView {
+    pub style: RefCell<Style>,
+    node: Cell<Option<NodeId>>,
+    dirty: AtomicBool,
 }
 
 pub struct Alert {
     pub id: String,
-    pub message: String,
-    pub variant: Variant,
-    pub style: Style,
-    pub accessibility: Accessibility,
-    pub attributes: Attributes,
+    pub logic: AlertLogic,
+    pub view: AlertView,
 }
 
 impl Alert {
     pub fn new(message: impl Into<String>) -> Self {
-        let mut style = Style::default();
-        Theme::current().apply_defaults(&mut style);
-        style.padding = crate::utils::spacing::Spacing::all(16.0);
-        Self { id: generate_id(), message: message.into(), variant: Variant::Info, style, accessibility: Accessibility { role: crate::utils::Role::Alert, ..Default::default() }, attributes: Attributes::default() }
+        use crate::utils::Variant;
+        Self {
+            id: generate_id(),
+            logic: AlertLogic { 
+                message: message.into(),
+                variant: Variant::Danger, 
+            },
+            view: AlertView {
+                style: RefCell::new(Style::default()),
+                node: Cell::new(None),
+                dirty: AtomicBool::new(true),
+            },
+        }
     }
+}
+
+impl Stylable for Alert {
+    fn get_style_mut(&self) -> RefMut<'_, Style> { self.view.style.borrow_mut() }
 }
 
 impl Component for Alert {
     fn id(&self) -> &str { &self.id }
+    fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn get_node(&self) -> Option<NodeId> { self.view.node.get() }
+    fn set_node(&self, node: NodeId) { self.view.node.set(Some(node)); }
+    fn is_dirty(&self) -> bool { self.view.dirty.load(Ordering::Relaxed) }
+    fn mark_dirty(&self) { self.view.dirty.store(true, Ordering::Relaxed); }
+    fn clear_dirty(&self) { self.view.dirty.store(false, Ordering::Relaxed); }
+
     fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.style.to_taffy()).unwrap();
-        if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
+        let node = if let Some(existing) = self.get_node() {
+            if self.is_dirty() { taffy.set_style(existing, self.view.style.borrow().to_taffy()).unwrap(); }
+            existing
+        } else {
+            let new_node = taffy.new_leaf(self.view.style.borrow().to_taffy()).unwrap();
+            self.set_node(new_node);
+            new_node
+        };
+        if let Some(p) = parent {
+            let current_children = taffy.children(p).unwrap_or_default();
+            if !current_children.contains(&node) { taffy.add_child(p, node).unwrap(); }
+        }
+        self.clear_dirty();
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
         let layout = taffy.layout(node).unwrap();
-        let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
-        let color = style.background.color.clone().unwrap_or(Color::Semantic("surface".into(), None));
-        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), 4.0);
-        renderer.draw_text(&self.message, global_pos.x + 16.0, global_pos.y + 12.0, 14.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
+        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, [0.8, 0.2, 0.2, 1.0], 4.0);
     }
-    fn on_click(&self) {}
-    fn on_scroll(&self, _d: f32) {}
-    fn on_drag(&self, _d: Vec2) {}
+    
+    fn on_click(&self, _event: &mut UIEvent) {}
+    fn on_scroll(&self, _event: &mut UIEvent, _: f32) {}
+    fn on_drag(&self, _event: &mut UIEvent, _: Vec2) {}
 }

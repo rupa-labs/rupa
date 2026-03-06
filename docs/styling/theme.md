@@ -10,13 +10,13 @@ Color::Oklch(0.6, 0.12, 250.0, 1.0) // Lightness, Chroma, Hue, Alpha
 ```
 
 ## Unified Scale
-The framework implements a 10-step scale for all dimensions:
+The framework implements a 10-step scale for dimensions, spacing, and typography:
 `Xs`, `Sm`, `Md` (Default), `Lg`, `Xl`, `Xl2`, `Xl3`, `Xl4`, `Xl5`, `Xl6`.
 
 Applications:
 - **Button:** `.size(Scale::Lg)`
-- **Sizing:** `.w_scale(Scale::Xl)`
-- **Spacing:** `.p_scale(Scale::Md)`
+- **Spacing:** `p_scale(Scale::Md)`
+- **Layout Gap:** `gap_scale(Scale::Sm)`
 - **Breakpoints:** `Breakpoint::Xl2`
 
 ## Theme Defaults
