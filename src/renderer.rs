@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use winit::window::Window as WinitWindow;
 use wgpu::*;
+use wgpu::util::StagingBelt;
 use bytemuck::{Pod, Zeroable};
 use wgpu_glyph::{ab_glyph, GlyphBrush, GlyphBrushBuilder, Section, Text, Layout};
 use crate::utils::{Vec2, TextAlign};
@@ -21,7 +22,12 @@ impl Texture {
         let (width, height) = (img.width(), img.height());
         let size = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
         let texture = device.create_texture(&wgpu::TextureDescriptor { label, size, mip_level_count: 1, sample_count: 1, dimension: wgpu::TextureDimension::D2, format: wgpu::TextureFormat::Rgba8UnormSrgb, usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST, view_formats: &[] });
-        queue.write_texture(wgpu::ImageCopyTexture { aspect: wgpu::TextureAspect::All, texture: &texture, mip_level: 0, origin: wgpu::Origin3d::ZERO }, &rgba, wgpu::ImageDataLayout { offset: 0, bytes_per_row: Some(4 * width), rows_per_image: Some(height) }, size);
+        queue.write_texture(
+            wgpu::ImageCopyTexture { aspect: wgpu::TextureAspect::All, texture: &texture, mip_level: 0, origin: wgpu::Origin3d::ZERO },
+            &rgba,
+            wgpu::ImageDataLayout { offset: 0, bytes_per_row: Some(4 * width), rows_per_image: Some(height) },
+            size,
+        );
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor { mag_filter: wgpu::FilterMode::Nearest, min_filter: wgpu::FilterMode::Nearest, ..Default::default() });
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor { layout, entries: &[wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&view) }, wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&sampler) }], label: Some("diffuse_bind_group") });
@@ -31,7 +37,8 @@ impl Texture {
 
 pub struct Renderer {
     pub surface: Surface<'static>, pub device: Device, pub queue: Queue, pub config: SurfaceConfiguration, pub size: winit::dpi::PhysicalSize<u32>, pub window: Arc<WinitWindow>,
-    render_pipeline: RenderPipeline, vertex_buffer: Buffer, index_buffer: Buffer, texture_bind_group_layout: BindGroupLayout, default_texture: Texture, glyph_brush: GlyphBrush<()>,
+    render_pipeline: RenderPipeline, vertex_buffer: Buffer, index_buffer: Buffer, _texture_bind_group_layout: BindGroupLayout, default_texture: Texture, glyph_brush: GlyphBrush<()>,
+    staging_belt: StagingBelt,
     vertices: Vec<Vertex>, indices: Vec<u32>, max_batch_size: usize,
     pub camera_offset: Vec2, pub camera_zoom: f32,
 }
@@ -40,7 +47,7 @@ impl Renderer {
     pub async fn new(window: Arc<WinitWindow>) -> Self {
         let size = window.inner_size();
         let instance = Instance::new(InstanceDescriptor { backends: Backends::all(), ..Default::default() });
-        let surface = unsafe { instance.create_surface(window.clone()) }.expect("Failed to create surface");
+        let surface = instance.create_surface(window.clone()).expect("Failed to create surface");
         let adapter = instance.request_adapter(&RequestAdapterOptions { power_preference: PowerPreference::HighPerformance, compatible_surface: Some(&surface), force_fallback_adapter: false }).await.unwrap();
         let (device, queue) = adapter.request_device(&DeviceDescriptor { label: Some("Rupaui Device"), ..Default::default() }, None).await.unwrap();
         let surface_caps = surface.get_capabilities(&adapter);
@@ -64,7 +71,8 @@ impl Renderer {
         let index_buffer = device.create_buffer(&BufferDescriptor { label: Some("Index Buffer"), size: (std::mem::size_of::<u32>() * max_batch_size * 6) as BufferAddress, usage: BufferUsages::INDEX | BufferUsages::COPY_DST, mapped_at_creation: false });
         let inter_regular = ab_glyph::FontArc::try_from_slice(include_bytes!("../../../src/fonts/inter/Inter-Regular.ttf")).unwrap();
         let glyph_brush = GlyphBrushBuilder::using_font(inter_regular).build(&device, config.format);
-        Self { window, surface, device, queue, config, size, render_pipeline, vertex_buffer, index_buffer, texture_bind_group_layout, default_texture, glyph_brush, vertices: Vec::with_capacity(max_batch_size * 4), indices: Vec::with_capacity(max_batch_size * 6), max_batch_size, camera_offset: Vec2::zero(), camera_zoom: 1.0 }
+        let staging_belt = StagingBelt::new(1024);
+        Self { window, surface, device, queue, config, size, render_pipeline, vertex_buffer, index_buffer, _texture_bind_group_layout: texture_bind_group_layout, default_texture, glyph_brush, staging_belt, vertices: Vec::with_capacity(max_batch_size * 4), indices: Vec::with_capacity(max_batch_size * 6), max_batch_size, camera_offset: Vec2::zero(), camera_zoom: 1.0 }
     }
 
     pub fn draw_rect(&mut self, x: f32, y: f32, w: f32, h: f32, color: [f32; 4], radius: f32) {
@@ -84,22 +92,10 @@ impl Renderer {
     }
 
     pub fn draw_text(&mut self, content: &str, x: f32, y: f32, size: f32, color: [f32; 4], align: TextAlign) {
-        let tx = (x + self.camera_offset.x) * self.camera_zoom;
-        let ty = (y + self.camera_offset.y) * self.camera_zoom;
+        let tx = (x + self.camera_offset.x) * self.camera_zoom; let ty = (y + self.camera_offset.y) * self.camera_zoom;
         let tsize = size * self.camera_zoom;
-        let horizontal_align = match align {
-            TextAlign::Left => wgpu_glyph::HorizontalAlign::Left,
-            TextAlign::Center => wgpu_glyph::HorizontalAlign::Center,
-            TextAlign::Right => wgpu_glyph::HorizontalAlign::Right,
-            _ => wgpu_glyph::HorizontalAlign::Left,
-        };
-        self.glyph_brush.queue(Section {
-            screen_position: (tx, ty),
-            bounds: (self.size.width as f32, self.size.height as f32),
-            text: vec![Text::new(content).with_color(color).with_scale(tsize)],
-            layout: Layout::default().h_align(horizontal_align),
-            ..Default::default()
-        });
+        let horizontal_align = match align { TextAlign::Left => wgpu_glyph::HorizontalAlign::Left, TextAlign::Center => wgpu_glyph::HorizontalAlign::Center, TextAlign::Right => wgpu_glyph::HorizontalAlign::Right, _ => wgpu_glyph::HorizontalAlign::Left };
+        self.glyph_brush.queue(Section { screen_position: (tx, ty), bounds: (self.size.width as f32, self.size.height as f32), text: vec![Text::new(content).with_color(color).with_scale(tsize)], layout: Layout::default().h_align(horizontal_align), ..Default::default() });
     }
 
     pub fn push_clip(&mut self, x: f32, y: f32, w: f32, h: f32, render_pass: &mut RenderPass<'_>) {
@@ -112,13 +108,11 @@ impl Renderer {
     pub fn begin_frame(&mut self) -> Result<(SurfaceTexture, TextureView, CommandEncoder), SurfaceError> { self.vertices.clear(); self.indices.clear(); let output = self.surface.get_current_texture()?; let view = output.texture.create_view(&TextureViewDescriptor::default()); let encoder = self.device.create_command_encoder(&CommandEncoderDescriptor { label: Some("Rupaui Frame Encoder") }); Ok((output, view, encoder)) }
     pub fn flush_batches<'a>(&'a mut self, render_pass: &mut RenderPass<'a>) { if self.indices.is_empty() { return; } self.queue.write_buffer(&self.vertex_buffer, 0, bytemuck::cast_slice(&self.vertices)); self.queue.write_buffer(&self.index_buffer, 0, bytemuck::cast_slice(&self.indices)); render_pass.set_pipeline(&self.render_pipeline); render_pass.set_bind_group(0, &self.default_texture.bind_group, &[]); render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..)); render_pass.set_index_buffer(self.index_buffer.slice(..), IndexFormat::Uint32); render_pass.draw_indexed(0..self.indices.len() as u32, 0, 0..1); self.vertices.clear(); self.indices.clear(); }
     pub fn end_frame(&mut self, output: SurfaceTexture, mut encoder: CommandEncoder) {
-        // wgpu_glyph 0.23 draw_queued wants &Device, &Queue, &mut CommandEncoder... Wait, actually it wants &mut StagingBelt? 
-        // No, looking at wgpu_glyph docs, it might differ. Let's check common patterns.
-        // Usually: glyph_brush.draw_queued(device, staging_belt, encoder, view, width, height)
-        // I don't have a staging belt in my Renderer yet. I should add it.
-        log::warn!("StagingBelt missing for text rendering");
+        self.glyph_brush.draw_queued(&self.device, &mut self.staging_belt, &mut encoder, &output.texture.create_view(&TextureViewDescriptor::default()), self.size.width, self.size.height).unwrap();
+        self.staging_belt.finish();
         self.queue.submit(std::iter::once(encoder.finish()));
         output.present();
+        self.staging_belt.recall();
     }
 }
 

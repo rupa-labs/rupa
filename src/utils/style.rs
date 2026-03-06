@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use taffy::prelude::*;
-use super::spacing::{Spacing, IntoSpacing};
-use super::border::{Border, Rounding, Outline, BorderStyle};
-use super::background::{Background, BackgroundAttachment, BackgroundClip, BackgroundOrigin, BackgroundRepeat, BackgroundSize};
+use super::spacing::{Spacing};
+use super::border::{Border, Rounding, Outline};
+use super::background::{Background};
 use super::color::Color;
 use super::layout::{Layout as RupaLayout, Display as RupaDisplay, Position as RupaPosition, Overflow as RupaOverflow};
 use super::flex::{Flex as RupaFlex, FlexDirection as RupaFlexDirection, FlexWrap as RupaFlexWrap, AlignItems as RupaAlignItems, JustifyContent as RupaJustifyContent};
@@ -54,37 +54,31 @@ impl Style {
 
     pub fn to_taffy(&self) -> taffy::style::Style {
         let mut t = taffy::style::Style::default();
-        
         t.display = match self.layout.display {
             RupaDisplay::Flex => taffy::style::Display::Flex,
             RupaDisplay::Grid => taffy::style::Display::Grid,
             RupaDisplay::None => taffy::style::Display::None,
             _ => taffy::style::Display::Block,
         };
-
         t.position = match self.layout.position {
             RupaPosition::Relative => taffy::style::Position::Relative,
             RupaPosition::Absolute => taffy::style::Position::Absolute,
             _ => taffy::style::Position::Relative,
         };
-
         t.flex_direction = match self.flex.flex_direction {
             RupaFlexDirection::Row => taffy::style::FlexDirection::Row,
             RupaFlexDirection::Col => taffy::style::FlexDirection::Column,
             RupaFlexDirection::RowReverse => taffy::style::FlexDirection::RowReverse,
             RupaFlexDirection::ColReverse => taffy::style::FlexDirection::ColumnReverse,
         };
-
         t.flex_wrap = match self.flex.flex_wrap {
             RupaFlexWrap::Wrap => taffy::style::FlexWrap::Wrap,
             RupaFlexWrap::WrapReverse => taffy::style::FlexWrap::WrapReverse,
             _ => taffy::style::FlexWrap::NoWrap,
         };
-
         t.flex_grow = self.flex.flex_grow;
         t.flex_shrink = self.flex.flex_shrink;
         if let Some(basis) = self.flex.flex_basis { t.flex_basis = length(basis); }
-        
         if let Some(ref align) = self.flex.align_items {
             t.align_items = Some(match align {
                 RupaAlignItems::Center => taffy::style::AlignItems::Center,
@@ -94,7 +88,6 @@ impl Style {
                 RupaAlignItems::Baseline => taffy::style::AlignItems::Baseline,
             });
         }
-
         if let Some(ref justify) = self.flex.justify_content {
             t.justify_content = Some(match justify {
                 RupaJustifyContent::Center => taffy::style::JustifyContent::Center,
@@ -105,25 +98,9 @@ impl Style {
                 RupaJustifyContent::SpaceEvenly => taffy::style::JustifyContent::SpaceEvenly,
             });
         }
-
-        if let Some(gap) = self.flex.gap {
-            t.gap = taffy::geometry::Size { width: length(gap), height: length(gap) };
-        }
-
-        t.padding = taffy::geometry::Rect {
-            left: length(self.padding.left),
-            right: length(self.padding.right),
-            top: length(self.padding.top),
-            bottom: length(self.padding.bottom),
-        };
-
-        t.margin = taffy::geometry::Rect {
-            left: length(self.margin.left),
-            right: length(self.margin.right),
-            top: length(self.margin.top),
-            bottom: length(self.margin.bottom),
-        };
-
+        if let Some(gap) = self.flex.gap { t.gap = taffy::geometry::Size { width: length(gap), height: length(gap) }; }
+        t.padding = taffy::geometry::Rect { left: length(self.padding.left), right: length(self.padding.right), top: length(self.padding.top), bottom: length(self.padding.bottom) };
+        t.margin = taffy::geometry::Rect { left: length(self.margin.left), right: length(self.margin.right), top: length(self.margin.top), bottom: length(self.margin.bottom) };
         if let Some(w) = self.sizing.width { t.size.width = length(w); }
         if let Some(h) = self.sizing.height { t.size.height = length(h); }
         if let Some(min_w) = self.sizing.min_width { t.min_size.width = length(min_w); }
@@ -131,18 +108,8 @@ impl Style {
         if let Some(max_w) = self.sizing.max_width { t.max_size.width = length(max_w); }
         if let Some(max_h) = self.sizing.max_height { t.max_size.height = length(max_h); }
         t.aspect_ratio = self.sizing.aspect_ratio;
-
-        t.overflow.x = match self.layout.overflow_x {
-            RupaOverflow::Hidden => taffy::style::Overflow::Hidden,
-            RupaOverflow::Scroll => taffy::style::Overflow::Scroll,
-            _ => taffy::style::Overflow::Visible,
-        };
-        t.overflow.y = match self.layout.overflow_y {
-            RupaOverflow::Hidden => taffy::style::Overflow::Hidden,
-            RupaOverflow::Scroll => taffy::style::Overflow::Scroll,
-            _ => taffy::style::Overflow::Visible,
-        };
-
+        t.overflow.x = match self.layout.overflow_x { RupaOverflow::Hidden => taffy::style::Overflow::Hidden, RupaOverflow::Scroll => taffy::style::Overflow::Scroll, _ => taffy::style::Overflow::Visible };
+        t.overflow.y = match self.layout.overflow_y { RupaOverflow::Hidden => taffy::style::Overflow::Hidden, RupaOverflow::Scroll => taffy::style::Overflow::Scroll, _ => taffy::style::Overflow::Visible };
         t
     }
 
@@ -160,11 +127,10 @@ impl Style {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn test_style_to_taffy_full() {
         let mut s = Style::new();
-        s.padding = Spacing::all(10.0);
+        s.padding = crate::utils::spacing::Spacing::all(10.0);
         let t = s.to_taffy();
         assert!(matches!(t.padding.left, LengthPercentage::Length(val) if val == 10.0));
     }

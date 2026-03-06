@@ -16,29 +16,20 @@ pub use plugin::Plugin;
 pub use renderer::Renderer;
 
 use taffy::prelude::*;
+use crate::utils::Vec2;
 
-/// The core trait for all Rupaui components.
-/// Ensures Separation of Concerns between ID management, layout, and rendering.
 pub trait Component {
-    /// Returns the unique identity of the component.
     fn id(&self) -> &str;
     
-    /// The layout phase where the component defines its size and position in the Taffy tree.
     fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId;
 
-    /// The primary rendering phase where the component draws its primitives using the Renderer.
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>);
+    /// Paint phase now includes global_pos to handle relative-to-absolute coordinate mapping.
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2);
 
-    /// Handles click events.
     fn on_click(&self);
-
-    /// Handles scroll/wheel events.
     fn on_scroll(&self, delta: f32);
+    fn on_drag(&self, delta: Vec2);
 
-    /// Handles drag/mouse move events with delta.
-    fn on_drag(&self, delta: crate::utils::Vec2);
-
-    /// Utility to trigger a generic render (for backward compatibility or debugging).
     fn render(&self) {
         log::trace!("Component::render() called for {}", self.id());
     }

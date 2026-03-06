@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::{RwLock};
 use once_cell::sync::Lazy;
 use crate::utils::color::Color;
 use crate::utils::style::Style;

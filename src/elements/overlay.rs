@@ -1,15 +1,15 @@
-use crate::utils::{Style, generate_id, StyleModifier, Signal, Theme, Color, Accessibility, Attributes};
+use crate::utils::{Style, generate_id, Signal, Theme, Color, Accessibility, Attributes, TextAlign, Vec2};
 use crate::Component;
 use crate::container::Children;
 use crate::renderer::Renderer;
 use taffy::prelude::*;
 
-pub struct Modal {
-    pub id: String, pub is_open: Signal<bool>, pub style: Style, pub accessibility: Accessibility, pub attributes: Attributes, pub children: Children,
-    pub header: Option<Box<dyn Component>>, pub footer: Option<Box<dyn Component>>,
+pub struct Modal<'a> {
+    pub id: String, pub is_open: Signal<bool>, pub style: Style, pub accessibility: Accessibility, pub attributes: Attributes, pub children: Children<'a>,
+    pub header: Option<Box<dyn Component + 'a>>, pub footer: Option<Box<dyn Component + 'a>>,
 }
 
-impl Modal {
+impl<'a> Modal<'a> {
     pub fn new(is_open: Signal<bool>) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
         style.background.color = Some(Color::Semantic("surface".into(), None));
@@ -19,7 +19,7 @@ impl Modal {
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
 }
 
-impl Component for Modal {
+impl<'a> Component for Modal<'a> {
     fn id(&self) -> &str { &self.id }
     fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
         if !self.is_open.get() { return taffy.new_leaf(taffy::style::Style { display: taffy::style::Display::None, ..Default::default() }).unwrap(); }
@@ -30,11 +30,11 @@ impl Component for Modal {
         if let Some(ref f) = self.footer { f.layout(taffy, Some(node)); }
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
         if !self.is_open.get() { return; }
         let layout = taffy.layout(node).unwrap();
-        if let Some(color) = self.style.background.color.clone() { renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), 12.0); }
-        self.children.paint_all(renderer, taffy, node, is_group_hovered, render_pass);
+        if let Some(color) = self.style.background.color.clone() { renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), 12.0); }
+        self.children.paint_all(renderer, taffy, node, is_group_hovered, render_pass, global_pos, 0);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, d: f32) { if self.is_open.get() { self.children.list.iter().for_each(|c| c.on_scroll(d)); } }
@@ -50,12 +50,12 @@ impl Component for Tooltip {
         if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
         let layout = taffy.layout(node).unwrap();
-        renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, [0.1, 0.1, 0.1, 0.9], 4.0);
-        renderer.draw_text(&self.text, layout.location.x + 4.0, layout.location.y + 2.0, 12.0, [1.0, 1.0, 1.0, 1.0], crate::utils::TextAlign::Left);
+        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, [0.1, 0.1, 0.1, 0.9], 4.0);
+        renderer.draw_text(&self.text, global_pos.x + 4.0, global_pos.y + 2.0, 12.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, _: f32) {}
-    fn on_drag(&self, _: crate::utils::Vec2) {}
+    fn on_drag(&self, _: Vec2) {}
 }

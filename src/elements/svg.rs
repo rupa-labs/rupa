@@ -29,9 +29,9 @@ impl Component for Icon {
         if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
-        let layout = taffy.layout(node).unwrap();
-        renderer.draw_rect(layout.location.x, layout.location.y, self.size, self.size, self.color, 2.0);
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+        let _layout = taffy.layout(node).unwrap();
+        renderer.draw_rect(global_pos.x, global_pos.y, self.size, self.size, self.color, 2.0);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, _d: f32) {}
@@ -59,15 +59,15 @@ impl Component for SvgCanvas {
         if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
         let layout = taffy.layout(node).unwrap();
         let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
         if let Some(color) = style.background.color.clone() {
-            renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), 0.0);
+            renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), 0.0);
         }
         for path in &self.paths {
             for point in &path.points {
-                renderer.draw_rect(layout.location.x + point.x, layout.location.y + point.y, path.thickness, path.thickness, path.color, 0.0);
+                renderer.draw_rect(global_pos.x + point.x, global_pos.y + point.y, path.thickness, path.thickness, path.color, 0.0);
             }
         }
     }

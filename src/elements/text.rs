@@ -1,4 +1,4 @@
-use crate::utils::{Style, StyleModifier, generate_id, Theme, Color, Attributes, Accessibility, TextAlign};
+use crate::utils::{Style, StyleModifier, generate_id, Theme, Color, Attributes, Accessibility, Vec2};
 use crate::Component;
 use crate::renderer::Renderer;
 use taffy::prelude::*;
@@ -19,15 +19,15 @@ impl Component for Text {
         if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
-        let layout = taffy.layout(node).unwrap();
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+        let _layout = taffy.layout(node).unwrap();
         let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
         let color = style.typography.color.clone().unwrap_or(Color::white(1.0)).to_rgba();
-        renderer.draw_text(&self.content, layout.location.x, layout.location.y, style.typography.base_size(), color, style.typography.align.clone());
+        renderer.draw_text(&self.content, global_pos.x, global_pos.y, style.typography.base_size(), color, style.typography.align.clone());
     }
     fn on_click(&self) {}
     fn on_scroll(&self, _: f32) {}
-    fn on_drag(&self, _: crate::utils::Vec2) {}
+    fn on_drag(&self, _: Vec2) {}
 }
 
 #[cfg(test)]

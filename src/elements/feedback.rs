@@ -1,4 +1,4 @@
-use crate::utils::{Style, generate_id, StyleModifier, Theme, Color, Variant, Accessibility, Attributes, Signal, TextAlign};
+use crate::utils::{Style, generate_id, StyleModifier, Theme, Color, Variant, Accessibility, Attributes, Signal, TextAlign, Vec2};
 use crate::Component;
 use crate::renderer::Renderer;
 use taffy::prelude::*;
@@ -25,16 +25,16 @@ impl Component for Progress {
         if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
         let layout = taffy.layout(node).unwrap();
-        renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, [0.2, 0.2, 0.2, 1.0], 5.0);
+        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, [0.2, 0.2, 0.2, 1.0], 5.0);
         let fill_w = layout.size.width * self.value.get().clamp(0.0, 1.0);
         let color = self.style.background.color.clone().unwrap_or(Color::Semantic("primary".into(), None)).to_rgba();
-        renderer.draw_rect(layout.location.x, layout.location.y, fill_w, layout.size.height, color, 5.0);
+        renderer.draw_rect(global_pos.x, global_pos.y, fill_w, layout.size.height, color, 5.0);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, _d: f32) {}
-    fn on_drag(&self, _d: crate::utils::Vec2) {}
+    fn on_drag(&self, _d: Vec2) {}
 }
 
 pub struct Skeleton {
@@ -56,13 +56,13 @@ impl Component for Skeleton {
         if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
         let layout = taffy.layout(node).unwrap();
-        renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, [0.15, 0.15, 0.15, 1.0], 4.0);
+        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, [0.15, 0.15, 0.15, 1.0], 4.0);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, _d: f32) {}
-    fn on_drag(&self, _d: crate::utils::Vec2) {}
+    fn on_drag(&self, _d: Vec2) {}
 }
 
 pub struct Badge {
@@ -91,16 +91,16 @@ impl Component for Badge {
         if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
         let layout = taffy.layout(node).unwrap();
         let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
         let color = style.background.color.clone().unwrap_or(Color::Semantic("primary".into(), None));
-        renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), 10.0);
-        renderer.draw_text(&self.label, layout.location.x + 6.0, layout.location.y + 2.0, 12.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
+        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), 10.0);
+        renderer.draw_text(&self.label, global_pos.x + 6.0, global_pos.y + 2.0, 12.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, _d: f32) {}
-    fn on_drag(&self, _d: crate::utils::Vec2) {}
+    fn on_drag(&self, _d: Vec2) {}
 }
 
 pub struct Spinner {
@@ -123,13 +123,13 @@ impl Component for Spinner {
         if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
-        let layout = taffy.layout(node).unwrap();
-        renderer.draw_rect(layout.location.x, layout.location.y, 24.0, 24.0, [0.5, 0.5, 0.5, 1.0], 12.0);
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+        let _layout = taffy.layout(node).unwrap();
+        renderer.draw_rect(global_pos.x, global_pos.y, 24.0, 24.0, [0.5, 0.5, 0.5, 1.0], 12.0);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, _d: f32) {}
-    fn on_drag(&self, _d: crate::utils::Vec2) {}
+    fn on_drag(&self, _d: Vec2) {}
 }
 
 pub struct Alert {
@@ -157,14 +157,14 @@ impl Component for Alert {
         if let Some(p) = parent { taffy.add_child(p, node).unwrap(); }
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
         let layout = taffy.layout(node).unwrap();
         let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
         let color = style.background.color.clone().unwrap_or(Color::Semantic("surface".into(), None));
-        renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), 4.0);
-        renderer.draw_text(&self.message, layout.location.x + 16.0, layout.location.y + 12.0, 14.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
+        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), 4.0);
+        renderer.draw_text(&self.message, global_pos.x + 16.0, global_pos.y + 12.0, 14.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, _d: f32) {}
-    fn on_drag(&self, _d: crate::utils::Vec2) {}
+    fn on_drag(&self, _d: Vec2) {}
 }

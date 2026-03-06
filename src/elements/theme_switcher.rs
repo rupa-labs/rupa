@@ -1,4 +1,5 @@
-use crate::utils::{Style, StyleModifier, generate_id, Theme, ColorMode, Variant, Accessibility, Attributes};
+use crate::utils::{Style, StyleModifier, generate_id, Theme, ColorMode, Variant, Accessibility, Attributes, Vec2};
+
 use crate::Component;
 use crate::elements::Button;
 use crate::renderer::Renderer;
@@ -28,7 +29,7 @@ impl ThemeSwitcher {
         });
     }
 
-    fn get_button(&self) -> Button {
+    fn get_button(&self) -> Button<'_> {
         let label = match Theme::current().mode { ColorMode::Dark => "Dark", ColorMode::Light => "Light", ColorMode::System => "System" };
         Button::new(label).variant(Variant::Secondary).style(self.style.clone()).on_click(|| Self::cycle_mode())
     }
@@ -37,8 +38,8 @@ impl ThemeSwitcher {
 impl Component for ThemeSwitcher {
     fn id(&self) -> &str { &self.id }
     fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId { self.get_button().layout(taffy, parent) }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>) {
-        self.get_button().paint(renderer, taffy, node, is_group_hovered, render_pass);
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+        self.get_button().paint(renderer, taffy, node, is_group_hovered, render_pass, global_pos);
     }
     fn on_click(&self) { self.get_button().trigger(); }
     fn on_scroll(&self, _d: f32) {}

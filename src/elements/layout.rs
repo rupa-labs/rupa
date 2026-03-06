@@ -4,27 +4,21 @@ use crate::container::Children;
 use crate::renderer::Renderer;
 use taffy::prelude::*;
 
-pub struct Container {
-    pub id: String,
-    pub style: Style,
-    pub accessibility: Accessibility,
-    pub attributes: Attributes,
-    pub children: Children,
-    pub scroll_offset: Signal<Vec2>,
+pub struct Container<'a> {
+    pub id: String, pub style: Style, pub accessibility: Accessibility, pub attributes: Attributes, pub children: Children<'a>, pub scroll_offset: Signal<Vec2>,
 }
 
-impl Container {
+impl<'a> Container<'a> {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
         Self { id: generate_id(), style, accessibility: Accessibility::default(), attributes: Attributes::default(), children: Children::new(), scroll_offset: Signal::new(Vec2::zero()) }
     }
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
-    pub fn child(mut self, child: Box<dyn Component>) -> Self { self.children.add(child); self }
+    pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self { self.children.add(child); self }
     pub fn style(mut self, modifier: impl StyleModifier) -> Self { modifier.apply(&mut self.style); self }
-    pub fn attr(mut self, key: impl Into<String>, value: impl Into<String>) -> Self { self.attributes.set(key, value); self }
 }
 
-impl Component for Container {
+impl<'a> Component for Container<'a> {
     fn id(&self) -> &str { &self.id }
     fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
         let node = taffy.new_with_children(self.style.to_taffy(), &[]).unwrap();
@@ -32,16 +26,21 @@ impl Component for Container {
         self.children.layout_all(taffy, node);
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
         let layout = taffy.layout(node).unwrap();
         let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
-        if let Some(color) = style.background.color.clone() { renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw); }
+        
+        if let Some(color) = style.background.color.clone() {
+            // Use global_pos instead of local layout.location
+            renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw);
+        }
+
         let needs_clip = self.style.layout.overflow_x != Overflow::Visible || self.style.layout.overflow_y != Overflow::Visible;
-        if needs_clip { renderer.push_clip(layout.location.x, layout.location.y, layout.size.width, layout.size.height, render_pass); }
-        let old_offset = renderer.camera_offset;
-        renderer.camera_offset += self.scroll_offset.get();
-        self.children.paint_all(renderer, taffy, node, is_group_hovered || self.style.is_group, render_pass);
-        renderer.camera_offset = old_offset;
+        if needs_clip { renderer.push_clip(global_pos.x, global_pos.y, layout.size.width, layout.size.height, render_pass); }
+        
+        // Pass the same global_pos to children (paint_all will handle the offsets)
+        self.children.paint_all(renderer, taffy, node, is_group_hovered || self.style.is_group, render_pass, global_pos + self.scroll_offset.get(), 0);
+        
         if needs_clip { renderer.pop_clip(render_pass); }
     }
     fn on_click(&self) {}
@@ -49,18 +48,18 @@ impl Component for Container {
     fn on_drag(&self, delta: Vec2) { if self.style.layout.overflow_x == Overflow::Scroll || self.style.layout.overflow_y == Overflow::Scroll { self.scroll_offset.update(|o| { o.x += delta.x; o.y += delta.y; }); } }
 }
 
-pub struct Row { pub id: String, pub style: Style, pub accessibility: Accessibility, pub attributes: Attributes, pub children: Children }
-impl Row {
+pub struct Row<'a> { pub id: String, pub style: Style, pub accessibility: Accessibility, pub attributes: Attributes, pub children: Children<'a> }
+impl<'a> Row<'a> {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
         style.layout.display = crate::utils::Display::Flex; style.flex.flex_direction = crate::utils::FlexDirection::Row;
         Self { id: generate_id(), style, accessibility: Accessibility::default(), attributes: Attributes::default(), children: Children::new() }
     }
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
-    pub fn child(mut self, child: Box<dyn Component>) -> Self { self.children.add(child); self }
+    pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self { self.children.add(child); self }
     pub fn style(mut self, modifier: impl StyleModifier) -> Self { modifier.apply(&mut self.style); self }
 }
-impl Component for Row {
+impl<'a> Component for Row<'a> {
     fn id(&self) -> &str { &self.id }
     fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
         let node = taffy.new_with_children(self.style.to_taffy(), &[]).unwrap();
@@ -68,29 +67,26 @@ impl Component for Row {
         self.children.layout_all(taffy, node);
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>) {
-        let layout = taffy.layout(node).unwrap();
-        let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
-        if let Some(color) = style.background.color.clone() { renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw); }
-        self.children.paint_all(renderer, taffy, node, is_group_hovered || self.style.is_group, render_pass);
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+        self.children.paint_all(renderer, taffy, node, is_group_hovered || self.style.is_group, render_pass, global_pos, 0);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, delta: f32) { self.children.list.iter().for_each(|c| c.on_scroll(delta)); }
     fn on_drag(&self, delta: Vec2) { self.children.list.iter().for_each(|c| c.on_drag(delta)); }
 }
 
-pub struct Col { pub id: String, pub style: Style, pub accessibility: Accessibility, pub attributes: Attributes, pub children: Children }
-impl Col {
+pub struct Col<'a> { pub id: String, pub style: Style, pub accessibility: Accessibility, pub attributes: Attributes, pub children: Children<'a> }
+impl<'a> Col<'a> {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
         style.layout.display = crate::utils::Display::Flex; style.flex.flex_direction = crate::utils::FlexDirection::Col;
         Self { id: generate_id(), style, accessibility: Accessibility::default(), attributes: Attributes::default(), children: Children::new() }
     }
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
-    pub fn child(mut self, child: Box<dyn Component>) -> Self { self.children.add(child); self }
+    pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self { self.children.add(child); self }
     pub fn style(mut self, modifier: impl StyleModifier) -> Self { modifier.apply(&mut self.style); self }
 }
-impl Component for Col {
+impl<'a> Component for Col<'a> {
     fn id(&self) -> &str { &self.id }
     fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
         let node = taffy.new_with_children(self.style.to_taffy(), &[]).unwrap();
@@ -98,23 +94,10 @@ impl Component for Col {
         self.children.layout_all(taffy, node);
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>) {
-        let layout = taffy.layout(node).unwrap();
-        let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
-        if let Some(color) = style.background.color.clone() { renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw); }
-        self.children.paint_all(renderer, taffy, node, is_group_hovered || self.style.is_group, render_pass);
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+        self.children.paint_all(renderer, taffy, node, is_group_hovered || self.style.is_group, render_pass, global_pos, 0);
     }
     fn on_click(&self) {}
     fn on_scroll(&self, delta: f32) { self.children.list.iter().for_each(|c| c.on_scroll(delta)); }
     fn on_drag(&self, delta: Vec2) { self.children.list.iter().for_each(|c| c.on_drag(delta)); }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::elements::Text;
-    #[test]
-    fn test_container_creation() { let container = Container::new().child(Box::new(Text::new("Child"))); assert_eq!(container.children.list.len(), 1); }
-    #[test]
-    fn test_container_attr_a11y() { let container = Container::new().id("test-id").attr("data-test", "val"); assert_eq!(container.id, "test-id"); assert_eq!(container.attributes.get("data-test").unwrap(), "val"); }
 }

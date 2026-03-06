@@ -1,4 +1,4 @@
-use crate::utils::{Style, generate_id, StyleModifier, Signal, Vec2};
+use crate::utils::{Style, generate_id, Signal, Vec2};
 use crate::Component;
 use crate::renderer::Renderer;
 use taffy::prelude::*;
@@ -12,6 +12,9 @@ impl Viewport {
         Self { id: generate_id(), style: Style::default(), content, offset: Signal::new(Vec2::zero()), zoom: Signal::new(1.0), zoomable: true, pannable: true }
     }
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
+    pub fn zoomable(mut self, enabled: bool) -> Self { self.zoomable = enabled; self }
+    pub fn pannable(mut self, enabled: bool) -> Self { self.pannable = enabled; self }
+    pub fn style(mut self, _modifier: impl crate::utils::modifiers::StyleModifier) -> Self { _modifier.apply(&mut self.style); self }
 }
 
 impl Component for Viewport {
@@ -22,11 +25,11 @@ impl Component for Viewport {
         self.content.layout(taffy, Some(node));
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
         let old_offset = renderer.camera_offset; let old_zoom = renderer.camera_zoom;
         renderer.camera_offset = self.offset.get(); renderer.camera_zoom = self.zoom.get();
         let children = taffy.children(node).unwrap();
-        if let Some(content_node) = children.get(0) { self.content.paint(renderer, taffy, *content_node, is_group_hovered, render_pass); }
+        if let Some(content_node) = children.get(0) { self.content.paint(renderer, taffy, *content_node, is_group_hovered, render_pass, global_pos); }
         renderer.camera_offset = old_offset; renderer.camera_zoom = old_zoom;
     }
     fn on_click(&self) { self.content.on_click(); }

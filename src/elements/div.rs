@@ -4,16 +4,16 @@ use crate::container::Children;
 use crate::renderer::Renderer;
 use taffy::prelude::*;
 
-pub struct Div {
+pub struct Div<'a> {
     pub id: String,
     pub style: Style,
     pub accessibility: Accessibility,
     pub attributes: Attributes,
-    pub children: Children,
+    pub children: Children<'a>,
     pub scroll_offset: Signal<Vec2>,
 }
 
-impl Div {
+impl<'a> Div<'a> {
     pub fn new() -> Self {
         let mut style = Style::default();
         Theme::current().apply_defaults(&mut style);
@@ -25,10 +25,10 @@ impl Div {
     }
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
     pub fn style(mut self, modifier: impl StyleModifier) -> Self { modifier.apply(&mut self.style); self }
-    pub fn child(mut self, child: Box<dyn Component>) -> Self { self.children.add(child); self }
+    pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self { self.children.add(child); self }
 }
 
-impl Component for Div {
+impl<'a> Component for Div<'a> {
     fn id(&self) -> &str { &self.id }
     fn layout(&self, taffy: &mut TaffyTree<()>, parent: Option<NodeId>) -> NodeId {
         let node = taffy.new_with_children(self.style.to_taffy(), &[]).unwrap();
@@ -36,18 +36,15 @@ impl Component for Div {
         self.children.layout_all(taffy, node);
         node
     }
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>) {
+    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
         let layout = taffy.layout(node).unwrap();
         let style = if is_group_hovered && self.style.group_hover.is_some() { self.style.group_hover.as_ref().unwrap() } else { &self.style };
         if let Some(color) = style.background.color.clone() {
-            renderer.draw_rect(layout.location.x, layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw);
+            renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw);
         }
         let needs_clip = self.style.layout.overflow_x != Overflow::Visible || self.style.layout.overflow_y != Overflow::Visible;
-        if needs_clip { renderer.push_clip(layout.location.x, layout.location.y, layout.size.width, layout.size.height, render_pass); }
-        let old_offset = renderer.camera_offset;
-        renderer.camera_offset += self.scroll_offset.get();
-        self.children.paint_all(renderer, taffy, node, is_group_hovered || self.style.is_group, render_pass);
-        renderer.camera_offset = old_offset;
+        if needs_clip { renderer.push_clip(global_pos.x, global_pos.y, layout.size.width, layout.size.height, render_pass); }
+        self.children.paint_all(renderer, taffy, node, is_group_hovered || self.style.is_group, render_pass, global_pos + self.scroll_offset.get());
         if needs_clip { renderer.pop_clip(render_pass); }
     }
     fn on_click(&self) {}
