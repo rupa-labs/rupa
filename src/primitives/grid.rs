@@ -1,68 +1,72 @@
-use crate::utils::{Style, generate_id, StyleModifier, Display, Attributes, Accessibility, Overflow, Vec2, Signal};
+use crate::support::{Style, generate_id, Vec2, Display};
 use crate::core::component::Component;
-use crate::elements::layout::container::Children;
-use crate::renderer::renderer::Renderer;
+use crate::core::ViewCore;
+use crate::renderer::{Renderer, TextMeasurer};
 use crate::style::modifiers::utilities::Stylable;
-use crate::platform::events::UIEvent;
+use crate::platform::dispatcher::UIEvent;
+use crate::scene::SceneNode;
+use crate::elements::layout::container::Children;
 use taffy::prelude::*;
-use std::cell::{Cell, RefCell, RefMut};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::cell::{RefMut};
 
+// --- LOGIC ---
+pub struct GridLogic<'a> {
+    pub children: Children<'a>,
+}
+
+// --- VIEW ---
+pub struct GridView {
+    pub core: ViewCore,
+}
+
+impl GridView {
+    pub fn new() -> Self {
+        let mut style = Style::default();
+        style.layout.display = Display::Grid;
+        Self { core: ViewCore::new(style) }
+    }
+}
+
+// --- COMPONENT ---
 pub struct Grid<'a> {
     pub id: String,
-    pub style: RefCell<Style>,
-    pub attributes: Attributes,
-    pub accessibility: Accessibility,
-    pub children: Children<'a>,
-    pub scroll_offset: Signal<Vec2>,
-    node: Cell<Option<NodeId>>,
-    dirty: AtomicBool,
+    pub logic: GridLogic<'a>,
+    pub view: GridView,
 }
 
 impl<'a> Grid<'a> {
     pub fn new() -> Self {
-        let mut style = Style::default();
-        style.layout.display = Display::Grid;
         Self {
-            id: generate_id(), 
-            style: RefCell::new(style), 
-            attributes: Attributes::default(),
-            accessibility: Accessibility::default(), 
-            children: Children::new(),
-            scroll_offset: Signal::new(Vec2::zero()),
-            node: Cell::new(None),
-            dirty: AtomicBool::new(true),
+            id: generate_id(),
+            logic: GridLogic { children: Children::new() },
+            view: GridView::new(),
         }
     }
-    pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
-    pub fn columns(mut self, count: u16) -> Self { self.style.borrow_mut().layout.columns = Some(count); self.mark_dirty(); self }
-    pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self { self.children.add(child); self.mark_dirty(); self }
+    pub fn child(mut self, c: Box<dyn Component + 'a>) -> Self { self.logic.children.add(c); self.view.core.mark_dirty(); self }
 }
 
 impl<'a> Stylable for Grid<'a> {
-    fn get_style_mut(&self) -> RefMut<'_, Style> {
-        self.style.borrow_mut()
-    }
+    fn get_style_mut(&self) -> RefMut<'_, Style> { self.view.core.get_style_mut() }
 }
 
 impl<'a> Component for Grid<'a> {
     fn id(&self) -> &str { &self.id }
-    
-    fn children(&self) -> Vec<&dyn Component> { self.children.get_all() }
-    
-    fn get_node(&self) -> Option<NodeId> { self.node.get() }
-    fn set_node(&self, node: NodeId) { self.node.set(Some(node)); }
-    fn is_dirty(&self) -> bool { self.dirty.load(Ordering::Relaxed) }
-    fn mark_dirty(&self) { self.dirty.store(true, Ordering::Relaxed); }
-    fn clear_dirty(&self) { self.dirty.store(false, Ordering::Relaxed); }
+    fn children(&self) -> Vec<&dyn Component> { self.logic.children.get_all() }
+    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
+    fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
+    fn mark_dirty(&self) { self.view.core.mark_dirty(); }
+    fn clear_dirty(&self) { self.view.core.clear_dirty(); }
 
     fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
-        let node = if let Some(existing) = self.get_node() {
-            if self.is_dirty() { taffy.set_style(existing, self.style.borrow().to_taffy()).unwrap(); }
-            existing
+        let node = if let Some(existing) = self.view.core.get_node() {
+            if self.view.core.is_dirty() { 
+                taffy.set_style(existing.raw(), self.view.core.get_style_mut().to_taffy()).unwrap(); 
+            }
+            existing.raw()
         } else {
-            let new_node = taffy.new_with_children(self.style.borrow().to_taffy(), &[]).unwrap();
-            self.set_node(new_node);
+            let new_node = taffy.new_with_children(self.view.core.get_style_mut().to_taffy(), &[]).unwrap();
+            self.view.core.set_node(SceneNode::from(new_node));
             new_node
         };
 
@@ -71,42 +75,21 @@ impl<'a> Component for Grid<'a> {
             if !current_children.contains(&node) { taffy.add_child(p, node).unwrap(); }
         }
 
-        self.children.layout_all(taffy, measurer, node);
-        self.clear_dirty();
+        self.logic.children.layout_all(taffy, measurer, node);
+        self.view.core.clear_dirty();
         node
     }
-    
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style_ref = self.style.borrow();
-        let style: &Style = if is_group_hovered && style_ref.group_hover.is_some() { 
-            style_ref.group_hover.as_ref().unwrap() 
-        } else { &style_ref };
-        
-        if let Some(color) = style.background.color.clone() {
-            renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw);
-        }
 
-        let needs_clip = style.layout.overflow_x != Overflow::Visible || style.layout.overflow_y != Overflow::Visible;
-        if needs_clip { 
-            renderer.push_clip(global_pos.x, global_pos.y, layout.size.width, layout.size.height, render_pass); 
+    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
+        let layout = taffy.layout(node).unwrap();
+        let style_ref = self.view.core.style.borrow();
+        if let Some(color) = style_ref.background.color.clone() {
+            renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), style_ref.rounding.nw);
         }
-        
-        self.children.paint_all(renderer, taffy, node, is_group_hovered || style.is_group, render_pass, global_pos + self.scroll_offset.get(), 0);
-        
-        if needs_clip { renderer.pop_clip(render_pass); }
+        self.logic.children.paint_all(renderer, taffy, node, is_group_hovered || style_ref.is_group, global_pos, 0);
     }
-    
-    fn on_click(&self, _event: &mut UIEvent) {}
-    fn on_scroll(&self, event: &mut UIEvent, delta: f32) { 
-        if self.style.borrow().layout.overflow_y == Overflow::Scroll { self.scroll_offset.update(|o| o.y += delta); } 
-        self.children.list.iter().for_each(|c| c.on_scroll(event, delta));
-    }
-    fn on_drag(&self, event: &mut UIEvent, delta: Vec2) { 
-        let style = self.style.borrow();
-        if style.layout.overflow_x == Overflow::Scroll || style.layout.overflow_y == Overflow::Scroll { 
-            self.scroll_offset.update(|o| { o.x += delta.x; o.y += delta.y; }); 
-        } 
-        self.children.list.iter().for_each(|c| c.on_drag(event, delta));
-    }
+
+    fn on_click(&self, _: &mut UIEvent) {}
+    fn on_scroll(&self, _: &mut UIEvent, _: f32) {}
+    fn on_drag(&self, _: &mut UIEvent, _: Vec2) {}
 }

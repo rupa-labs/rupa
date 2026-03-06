@@ -1,29 +1,33 @@
 # Module: TUI Runner (`tui/mod.rs`) 🖥️🏃
 
-This module implements the specific Hardware Abstraction for terminal environments. It replaces pixels with characters and windows with raw terminal buffers.
+The TUI Runner is the platform shell for terminal environments. It replaces the window-based loop with a polling system optimized for character-based interfaces.
 
 ---
 
-## 🏗️ Core Responsibilities
+## 🧠 Internal Anatomy
 
-1.  **Terminal Handshake:** Manages switching to Raw Mode and the Alternate Screen buffer.
-2.  **Polling Loop:** Runs a lightweight loop that waits for `crossterm` events (Keys, Mouse, Resize).
-3.  **Input Decoding:** Translates ANSI escape sequences and terminal signals into Rupaui's standardized `InputEvent`.
-4.  **Automatic Cleanup:** Ensures the terminal is restored to its original state on application exit or panic.
+### 1. Polling Lifecycle
+- **Mechanism:** A while-loop that uses `poll_event`. 
+- **Efficiency:** The loop remains idle until a terminal signal (Key, Mouse, or Resize) is received, keeping CPU usage near zero when the app is inactive.
 
----
-
-## 🗝️ Key API Elements
-
-### `struct TuiRunner`
-The engine room of the Terminal backend:
-- `run()`: Initializes the terminal and starts the polling loop.
-- `handle_redraw()`: Calculates layout via `PlatformCore` and prepares character buffers (L2).
-- `dispatch_event()`: Feeds translated terminal input into the `InputDispatcher`.
+### 2. Composition Shell
+- **Composition:** Wraps **`PlatformCore`** (L1), **`TerminalInterface`** (L1), and **`TuiRenderer`** (L2).
+- **Responsibility:** Maps terminal cell coordinates to the framework's logical Vec2 system.
 
 ---
 
-## 🔄 Interaction
-- **L1 (HAL) -> L2 (TUI Renderer):** Triggers the rendering of characters to the terminal stdout.
-- **L1 (HAL) -> L1 (PlatformCore):** Uses the core for layout and tree management.
-- **L1 (HAL) -> L1 (InputDispatcher):** Propagates translated ANSI signals into the framework.
+## 🗝️ Logic & Flow
+
+### Redraw Handling
+1. Calls `self.core.compute_layout()`.
+2. Triggers `root.paint()` using the `TuiRenderer`.
+3. Calls `renderer.present()` to flush ANSI codes to the stdout.
+
+### Input Decoding
+Translates Crossterm enums into standardized `InputEvent` variants.
+
+---
+
+## 🔄 Interaction Flow
+- **L1 (HAL) -> L1 (Terminal):** Manages raw mode and alternate screen setup.
+- **L1 (HAL) -> L2 (TUI Renderer):** Drives the character-based painting process.

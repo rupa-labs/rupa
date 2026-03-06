@@ -1,5 +1,5 @@
-use crate::utils::vector::Vec2;
-use crate::utils::typography::TextAlign;
+use crate::support::vector::Vec2;
+use crate::support::typography::TextAlign;
 use crate::renderer::{Renderer, RenderCore};
 use std::io::{Write, stdout};
 

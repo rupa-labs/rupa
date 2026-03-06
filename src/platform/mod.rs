@@ -10,8 +10,8 @@ pub mod tui;
 use crate::core::component::Component;
 use crate::core::plugin::PluginRegistry;
 use crate::scene::SceneCore;
-use crate::utils::vector::Vec2;
-use crate::utils::Theme;
+use crate::support::vector::Vec2;
+use crate::support::Theme;
 use std::error::Error;
 use taffy::prelude::NodeId;
 

@@ -1,53 +1,36 @@
-# Rupaui Plugin System
+# Module: Plugin System (`plugin.rs`) 🔌
 
-The Plugin System allows you to modularize your application logic and extend Rupaui's core capabilities. This is inspired by the modular patterns found in modern Rust engines like Bevy.
+The Plugin system is the primary architectural vehicle for extending Rupaui without modifying the core framework.
 
-## 📐 Defining a Plugin
+---
 
-To create a plugin, implement the `Plugin` trait.
+## 🧠 Internal Anatomy
+
+### 1. The Build Hook
+Plugins implement the `Plugin` trait, which requires a `build()` method. This method is executed during the **Application Bootstrap (L8)**, granting the plugin mutable access to the `App` instance.
+
+### 2. Dependency Injection
+Plugins are typically used to:
+- Register custom theme presets.
+- Initialize global state.
+- Attach platform-specific hooks.
+
+---
+
+## 🗝️ API Anatomy
+
+- `trait Plugin`: The contract for all extensions.
+- `struct PluginRegistry`: The internal container managed by `App`.
+
+## 💻 Implementation Example
 
 ```rust
-use rupaui::prelude::*;
-use rupaui::utils::{Theme, Variant, Color};
+struct MyThemePlugin;
 
-pub struct MyArtisanPlugin;
-
-impl Plugin for MyArtisanPlugin {
-    fn name(&self) -> &str { "MyArtisanPlugin" }
-
+impl Plugin for MyThemePlugin {
+    fn name(&self) -> &str { "CustomTheme" }
     fn build(&self, _app: &mut App) {
-        // 1. Register custom theme defaults
-        Theme::update(|t| {
-            t.variants.insert(Variant::Primary, Color::Rose(500));
-        });
-        
-        log::info!("Artisan Plugin initialized!");
+        Theme::update(|t| t.borders.radius = 4.0);
     }
 }
 ```
-
----
-
-## 🏗 Registering Plugins
-
-Plugins are registered during the `App` initialization phase.
-
-```rust
-fn main() {
-    App::new("Rupa Editor")
-        .add_plugin(MyArtisanPlugin)
-        .run();
-}
-```
-
----
-
-## 🚀 Key Benefits
-- **Modularity**: Keep your feature logic separated into independent crates or modules.
-- **Reusability**: Share common plugins (like an Analytics plugin or a specialized UI Kit) across multiple Rupaui projects.
-- **Bootstrapping**: Plugins provide a dedicated phase to configure global states, themes, and design tokens before the main UI loop starts.
-
-## 🗝 Practical Uses
-- **Theme Plugins**: A plugin that only handles Dark/Light mode logic.
-- **Service Plugins**: Integrating API clients or external database connections.
-- **A11y Plugins**: Automatically enforcing specific accessibility rules across the entire app.

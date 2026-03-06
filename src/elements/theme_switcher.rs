@@ -1,4 +1,4 @@
-use crate::utils::{Style, generate_id, Theme, ColorMode, Accessibility, Role, Attributes, Vec2};
+use crate::support::{Style, generate_id, Theme, ColorMode, Accessibility, Role, Attributes, Vec2};
 use crate::core::component::Component;
 use crate::renderer::renderer::Renderer;
 use crate::style::modifiers::utilities::Stylable;

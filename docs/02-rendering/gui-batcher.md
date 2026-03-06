@@ -1,31 +1,29 @@
 # Module: GUI Batcher (`gui/batcher.rs`) 🟦
 
-The Batcher is the efficiency engine of the GUI backend. It minimizes CPU-to-GPU communication by grouping similar geometric shapes into monolithic buffers.
+The Batcher is the efficiency engine of the GPU pipeline. It solves the performance bottleneck of "over-communication" between the CPU and GPU.
 
 ---
 
-## 🏗️ Core Responsibilities
+## 🧠 Internal Anatomy
 
-1.  **Vertex Management:** Manages internal vectors for `Vertex` and `Index` data.
-2.  **GPU Buffer Provisioning:** Creates and updates high-speed VRAM buffers (`vertex_buffer`, `index_buffer`).
-3.  **Automatic Indexing:** Automatically generates triangle indices for 2D quads (rectangles).
+### 1. Data Aggregation
+The Batcher maintains growing vectors of **Vertices** and **Indices**. Every time `draw_rect` is called in the renderer, the Batcher appends 4 vertices and 6 indices to these collections.
+
+### 2. VRAM Syncing
+- **Mechanism:** Uses `device.create_buffer_init` to map RAM vectors directly into high-speed VRAM.
+- **Auto-Clearing:** The batch is automatically cleared after every `flush()` call to prepare for the next frame.
 
 ---
 
-## 🗝️ Key API Elements
-
-### `struct Batcher`
-- `new(device, max_batch_size)`: Allocates fixed-size GPU buffers based on the requested capacity.
-- `add_rect(vertices)`: Appends a 4-vertex quad to the current pending batch.
-- `flush(queue, render_pass)`: Writes pending data to the GPU and executes the draw command.
+## 🗝️ API Anatomy
 
 ### `struct Vertex`
-The binary layout of a single point in space:
-- `position`: Normalized device coordinates.
-- `color`: RGBA array.
-- `rect_size` & `radius`: Metadata for SDF corner rounding.
+The binary layout expected by the WGSL shader:
+- `position`: x, y coordinates.
+- `color`: rgba values.
+- `rect_size` / `radius`: Metadata used by the fragment shader to calculate SDF rounding.
 
 ---
 
-## 🔄 Interaction
-- **L2 (Renderer) -> L2 (Batcher):** Feeds calculated vertex data from components.
+## 🚀 Performance
+By grouping geometry, we reduce "Draw Calls" from thousands to just a handful per frame, maintaining a steady 60+ FPS even with complex UIs.

@@ -2,8 +2,7 @@ pub use crate::core::component::Component;
 pub use crate::platform::{App, RupauiEvent, request_redraw};
 
 // Layout Elements
-pub use crate::elements::layout::section::Section;
-pub use crate::elements::layout::container::Container;
+pub use crate::elements::layout::{Section, Container, VStack, HStack};
 pub use crate::elements::viewport::Viewport;
 
 // Base Elements
@@ -44,22 +43,22 @@ pub use crate::elements::control_flow::{Show, ForEach};
 // Primitives
 pub use crate::primitives::{div::Div, flex::Flex, grid::Grid};
 
-// Core Utilities
-pub use crate::utils::{
+// Core Support (Infrastructure)
+pub use crate::support::{
     Vec2, 
-    Style, 
-    StyleModifier, 
-    Theme, 
-    Color, 
-    Variant, 
-    Scale,
     Signal, 
-    Memo
+    Memo,
+    Readable,
+    generate_id
 };
 
-// Styling Utilities (Commonly used)
-pub use crate::style::modifiers::utilities::Stylable;
-pub use crate::utils::modifiers::{
+// DNA Visual & Styling (Ecosystem - L9)
+pub use crate::style::utilities::style::Style;
+pub use crate::style::utilities::color::Color;
+pub use crate::style::utilities::scale::Scale;
+pub use crate::style::modifiers::base::{StyleModifier, Stylable};
+pub use crate::style::modifiers::theme::{Theme, Variant};
+pub use crate::style::modifiers::{
     p, px, py, m, mx, my, 
     bg, rounded, rounded_full,
     w, h, w_full, h_full,

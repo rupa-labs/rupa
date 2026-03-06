@@ -3,7 +3,7 @@ pub mod terminal;
 use std::time::Duration;
 use crossterm::event::{Event, KeyCode as CrossKeyCode, MouseEventKind, MouseButton as CrossMouseButton};
 use crate::core::component::Component;
-use crate::utils::vector::Vec2;
+use crate::support::vector::Vec2;
 use crate::platform::dispatcher::InputDispatcher;
 use crate::platform::events::*;
 use crate::platform::PlatformCore;

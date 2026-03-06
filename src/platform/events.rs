@@ -1,4 +1,4 @@
-use crate::utils::vector::Vec2;
+use crate::support::vector::Vec2;
 
 /// Standardized input events that are platform-agnostic.
 /// Layer 1 (HAL) is responsible for converting native events into these types.

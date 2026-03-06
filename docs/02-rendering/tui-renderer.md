@@ -1,27 +1,27 @@
 # Module: TUI Renderer (`tui/mod.rs`) ⌨️
 
-The TUI Renderer implements character-based drawing for terminal environments. It replaces pixels with Unicode characters and ANSI colors.
+The TUI Renderer is the terminal-based implementation of the visual pipeline. It translates geometric coordinates into a grid of characters and ANSI colors.
 
 ---
 
-## 🏗️ Core Responsibilities
+## 🧠 Internal Anatomy
 
-1.  **Grid Management:** Manages a 2D buffer of cells, each containing a character and its foreground/background colors.
-2.  **Diff-Rendering:** Maintains a "Previous Frame" buffer to calculate only the changes, minimizing flickering and terminal bandwidth usage.
-3.  **Box Drawing:** Translates rectangular geometry into Unicode box-drawing sequences (`┌`, `─`, `┐`, etc).
-4.  **ANSI Translation:** Converts high-precision OKLCH colors into their nearest 24-bit ANSI equivalents for terminal display.
+### 1. Cell Buffer (The Framebuffer)
+The renderer maintains a 1D vector of `TuiCell` structs, mapped to a 2D coordinate system. Each cell contains a character symbol and RGB colors for both foreground and background.
 
----
-
-## 🗝️ Key API Elements
-
-### `struct TuiRenderer`
-- `new(width, height)`: Initializes the cell buffers.
-- `draw_rect(...)`: Paints box-drawing characters into the current buffer.
-- `draw_text(...)`: Writes strings into the buffer at specific coordinates.
-- `present()`: Synchronizes the buffer with the terminal's `stdout`.
+### 2. Double Buffering & Diffing
+- **Mechanism:** It stores the `prev_buffer`. 
+- **Optimization:** During `present()`, it only prints ANSI escape codes for cells that have changed compared to the previous frame. This eliminates terminal flickering and reduces bandwidth.
 
 ---
 
-## 🔄 Interaction
-- **L2 (HAL Runner) -> L2 (TUI Renderer):** Triggers the grid resolution and output phase.
+## 🗝️ API Anatomy
+
+- `new(w, h)`: Allocates the virtual character grid.
+- `draw_rect()`: Uses Unicode box-drawing characters (`┌`, `─`, `┐`) to "paint" outlines into the buffer.
+- `present()`: Flushes the diff-calculated buffer to the terminal `stdout`.
+
+---
+
+## 🔄 Interaction Flow
+- **L2 (TUI Renderer) -> L1 (Terminal):** Sends raw ANSI sequences to the active terminal stdout.

@@ -1,4 +1,4 @@
-use crate::utils::{Signal, generate_id, Vec2};
+use crate::support::{Signal, generate_id, Vec2};
 use crate::core::component::Component;
 use crate::renderer::renderer::Renderer;
 use crate::platform::events::UIEvent;

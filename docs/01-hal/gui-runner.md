@@ -1,29 +1,34 @@
 # Module: GUI Runner (`gui/mod.rs`) 🖼️🏃
 
-This module implements the specific Hardware Abstraction for graphical environments (Desktop/Web). It manages the marriage between Winit's event loop and WGPU's rendering pipeline.
+The GUI Runner is the implementation of the platform shell for graphical environments. it bridges the asynchronous world of Winit with the high-performance drawing of WGPU.
 
 ---
 
-## 🏗️ Core Responsibilities
+## 🧠 Internal Anatomy
 
-1.  **Winit Application Handling:** Implements the `ApplicationHandler` trait to manage OS window lifecycle events.
-2.  **GPU Frame Orchestration:** Coordinates when the renderer should start and end a frame based on `RedrawRequested` signals.
-3.  **Input Translation:** Converts native Winit events into Rupaui's standardized `InputEvent` format.
-4.  **DPI Management:** Synchronizes logical and physical scaling factors to keep the UI sharp.
+### 1. Winit Handler
+- **Mechanism:** Implements `ApplicationHandler`. It listens for native OS signals (Resume, Suspend, Resize) and translates them into framework-ready instructions.
 
----
-
-## 🗝️ Key API Elements
-
-### `struct GuiRunner`
-The engine room of the GUI backend:
-- `handle_redraw()`: Triggers the Layout (L3) and Paint (L2) phases using `PlatformCore`.
-- `dispatch_event()`: Feeds translated events into the `InputDispatcher`.
-- `run_app()`: The entry point that consumes the current thread and starts the Winit loop.
+### 2. Composition Shell
+- **Composition:** It wraps **`PlatformCore`** (L1) and **`GuiRenderer`** (L2).
+- **Responsibility:** Coordinates the "Big Loop" (Input -> Layout -> Paint -> Present).
 
 ---
 
-## 🔄 Interaction
-- **L1 (HAL) -> L2 (Rendering):** Manages the WGPU device and triggers render passes.
-- **L1 (HAL) -> L1 (PlatformCore):** Uses the core for layout calculations and component management.
-- **L1 (HAL) -> L1 (InputDispatcher):** Propagates translated OS signals into the framework.
+## 🗝️ Logic & Flow
+
+### Redraw Handling
+When `RedrawRequested` is triggered:
+1. It queries `self.core.compute_layout()`.
+2. It initializes a WGPU frame via the renderer.
+3. It traverses the tree to execute `component.paint()`.
+4. It calls `renderer.present()` to flip the GPU buffers.
+
+### Event Dispatching
+Translates native Winit mouse/keyboard enums into `InputEvent` before passing them to the `InputDispatcher`.
+
+---
+
+## 🔄 Interaction Flow
+- **L1 (HAL) -> L2 (Renderer):** Manages the WGPU device lifecycle.
+- **L1 (HAL) -> L1 (PlatformCore):** Coordinates tree updates.

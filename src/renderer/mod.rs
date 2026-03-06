@@ -1,5 +1,5 @@
-use crate::utils::vector::Vec2;
-use crate::utils::typography::TextAlign;
+use crate::support::vector::Vec2;
+use crate::support::typography::TextAlign;
 
 #[cfg(feature = "gui")]
 pub mod gui;

@@ -7,7 +7,7 @@ pub enum Role { #[default] None, Button, Link, Checkbox, Menu, MenuItem, Navigat
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Accessibility {
     pub forced_color_adjust: ForcedColorAdjust,
-    pub role: crate::utils::Role,
+    pub role: crate::support::Role,
     pub label: Option<String>,
     pub description: Option<String>,
     pub labelled_by: Option<String>,

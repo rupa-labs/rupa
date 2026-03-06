@@ -1,34 +1,31 @@
 # Module: Layout Engine (`layout.rs`) 📐
 
-The Layout Engine is the mathematical brain of Layer 3. It translates abstract artisan styles into concrete physical coordinates, now with support for dynamic content measurement.
+The Layout Engine is the mathematical unit of Layer 3. It serves as the formal wrapper for the **Taffy** layout algorithm, providing a bridge between artisan styles and physical coordinates.
 
 ---
 
-## 🏗️ Core Responsibilities
+## 🧠 Internal Anatomy
 
-1.  **Taffy Orchestration:** Manages the lifecycle of the Taffy tree and triggers geometric resolution.
-2.  **Content-Aware Sizing:** Integrates with the **Text Measurement Pipeline** to ensure that components containing text (like Buttons or Labels) calculate their size based on actual glyph dimensions.
-3.  **Recursive Tree Traversal:** Coordinates the `layout` calls across the component hierarchy, passing the necessary measurers down the tree.
+### 1. Taffy Integration
+- **Role:** Dependency Wrapping.
+- **Mechanism:** Maintains an internal `TaffyTree`. It isolates Taffy's complex API from the rest of Rupaui, ensuring that we can swap layout providers in the future without breaking the framework.
 
----
-
-## 🗝️ Key API Elements
-
-### `struct LayoutEngine`
-- `compute(root, measurer, width, height)`: The primary execution point. It now requires a `&dyn TextMeasurer` to resolve content-dependent sizes.
-
----
-
-## 🔄 The Measurement Bridge
-
-Rupaui solves the "Blind Layout" problem by using a bridge between Layer 3 and Layer 2:
-1.  **Layout Phase:** Taffy encounters a Text-based node.
-2.  **Callback:** It triggers a `MeasureFunc` stored within the node.
-3.  **Measurement:** The `MeasureFunc` uses the provided `TextMeasurer` (from Layer 2) to get the real pixel/cell width and height.
-4.  **Resolution:** Taffy uses these dimensions to finalize the positions of parent and sibling elements.
+### 2. Recursive Building
+During the `compute()` phase, the engine:
+1. Clears the previous tree.
+2. Recursively calls `component.layout()`.
+3. Links the resulting `NodeId`s according to the component hierarchy.
+4. Executes the final `taffy.compute_layout()` pass.
 
 ---
 
-## 🔄 Interaction
-- **L3 (Layout Engine) -> L2 (TextMeasurer):** Requests dimensions for specific strings and font sizes.
-- **L3 (Layout Engine) -> L5 (Component):** Provides the context needed for components to define their own measurement logic.
+## 🗝️ API Anatomy
+
+- `new()`: Initializes the Taffy workspace.
+- `compute(root, measurer, w, h)`: The high-level resolution command. It requires a `TextMeasurer` (L2) to account for dynamic content sizing.
+
+---
+
+## 🔄 Interaction Flow
+- **L3 (Layout Engine) -> L5 (Component):** Triggers the tree-wide `layout()` calls.
+- **L3 (Layout Engine) -> L2 (Measurer):** Requests real-time text dimensions.

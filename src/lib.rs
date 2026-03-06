@@ -6,5 +6,5 @@ pub mod renderer;
 pub mod graphic;
 pub mod platform;
 pub mod style;
-pub mod utils;
+pub mod support;
 pub mod prelude;

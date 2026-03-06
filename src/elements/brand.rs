@@ -1,8 +1,10 @@
-use crate::utils::{Style, StyleModifier, generate_id, Accessibility, Role, Attributes, Theme, TextAlign, Vec2};
+use crate::support::{Style, StyleModifier, generate_id, Accessibility, Role, Attributes, Theme, TextAlign, Vec2};
 use crate::core::component::Component;
-use crate::renderer::renderer::Renderer;
+use crate::core::ViewCore;
+use crate::renderer::{Renderer, TextMeasurer};
 use crate::style::modifiers::utilities::Stylable;
 use crate::platform::events::UIEvent;
+use crate::scene::SceneNode;
 use taffy::prelude::*;
 use std::cell::{Cell, RefCell, RefMut};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -19,9 +21,37 @@ pub struct BrandLogic<'a> {
 // --- VIEW ---
 
 pub struct BrandView {
-    pub style: RefCell<Style>,
-    node: Cell<Option<NodeId>>,
-    dirty: AtomicBool,
+    pub core: ViewCore,
+}
+
+impl BrandView {
+    pub fn new() -> Self {
+        let mut style = Style::default();
+        Theme::current().apply_defaults(&mut style);
+        Self { core: ViewCore::new(style) }
+    }
+
+    pub fn compute_layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
+        let t_style = self.core.get_style_mut().to_taffy();
+        let node = if let Some(existing) = self.core.get_node() {
+            if self.core.is_dirty() { taffy.set_style(existing.raw(), t_style).unwrap(); }
+            existing.raw()
+        } else {
+            let new_node = taffy.new_leaf(t_style).unwrap();
+            self.core.set_node(SceneNode::from(new_node));
+            new_node
+        };
+        if let Some(p) = parent {
+            let cur = taffy.children(p).unwrap_or_default();
+            if !cur.contains(&node) { taffy.add_child(p, node).unwrap(); }
+        }
+        self.core.clear_dirty();
+        node
+    }
+
+    pub fn render(&self, renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, logic: &BrandLogic, global_pos: Vec2) {
+        renderer.draw_text(&logic.name, global_pos.x, global_pos.y, 18.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
+    }
 }
 
 // --- COMPONENT ---
@@ -34,8 +64,6 @@ pub struct Brand<'a> {
 
 impl<'a> Brand<'a> {
     pub fn new(name: impl Into<String>) -> Self {
-        let mut style = Style::default();
-        Theme::current().apply_defaults(&mut style);
         Self {
             id: generate_id(),
             logic: BrandLogic {
@@ -44,59 +72,36 @@ impl<'a> Brand<'a> {
                 children: Vec::new(),
                 accessibility: Accessibility { role: Role::Navigation, ..Default::default() },
             },
-            view: BrandView {
-                style: RefCell::new(style),
-                node: Cell::new(None),
-                dirty: AtomicBool::new(true),
-            },
+            view: BrandView::new(),
         }
     }
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
     pub fn logo(mut self, path: impl Into<String>) -> Self { 
         self.logic.logo_path = Some(path.into()); 
-        self.view.dirty.store(true, Ordering::Relaxed); 
+        self.view.core.mark_dirty(); 
         self 
     }
 }
 
 impl<'a> Stylable for Brand<'a> {
-    fn get_style_mut(&self) -> RefMut<'_, Style> {
-        self.view.style.borrow_mut()
-    }
+    fn get_style_mut(&self) -> RefMut<'_, Style> { self.view.core.get_style_mut() }
 }
 
 impl<'a> Component for Brand<'a> {
     fn id(&self) -> &str { &self.id }
-
-    fn children(&self) -> Vec<&dyn Component> {
-        self.logic.children.iter().map(|c| c.as_ref()).collect()
-    }
-
-    fn get_node(&self) -> Option<NodeId> { self.view.node.get() }
-    fn set_node(&self, node: NodeId) { self.view.node.set(Some(node)); }
-    fn is_dirty(&self) -> bool { self.view.dirty.load(Ordering::Relaxed) }
-    fn mark_dirty(&self) { self.view.dirty.store(true, Ordering::Relaxed); }
-    fn clear_dirty(&self) { self.view.dirty.store(false, Ordering::Relaxed); }
+    fn children(&self) -> Vec<&dyn Component> { self.logic.children.iter().map(|c| c.as_ref()).collect() }
+    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
+    fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
+    fn mark_dirty(&self) { self.view.core.mark_dirty(); }
+    fn clear_dirty(&self) { self.view.core.clear_dirty(); }
 
     fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
-        let node = if let Some(existing) = self.get_node() {
-            if self.is_dirty() { taffy.set_style(existing, self.view.style.borrow().to_taffy()).unwrap(); }
-            existing
-        } else {
-            let new_node = taffy.new_leaf(self.view.style.borrow().to_taffy()).unwrap();
-            self.set_node(new_node);
-            new_node
-        };
-        if let Some(p) = parent {
-            let current_children = taffy.children(p).unwrap_or_default();
-            if !current_children.contains(&node) { taffy.add_child(p, node).unwrap(); }
-        }
-        self.clear_dirty();
-        node
+        self.view.compute_layout(taffy, measurer, parent)
     }
 
-    fn paint(&self, renderer: &mut Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
-        renderer.draw_text(&self.logic.name, global_pos.x, global_pos.y, 18.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
+    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
+        self.view.render(renderer, taffy, node, &self.logic, global_pos);
     }
 
     fn on_click(&self, _event: &mut UIEvent) {}

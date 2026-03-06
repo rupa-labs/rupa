@@ -1,5 +1,5 @@
 use crate::style::utilities::color::Color;
-use crate::utils::vector::Vec2;
+use crate::support::vector::Vec2;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum PathSegment {
@@ -7,7 +7,7 @@ pub enum PathSegment {
     LineTo(Vec2),
     CurveTo(Vec2, Vec2, Vec2), // Control1, Control2, End
     QuadTo(Vec2, Vec2),        // Control, End
-    ArcTo { radius: Vec2, rotation: f32, large_arc: bool, sweep: bool, end: crate::utils::Vec2 },
+    ArcTo { radius: Vec2, rotation: f32, large_arc: bool, sweep: bool, end: crate::support::Vec2 },
     Close,
 }
 

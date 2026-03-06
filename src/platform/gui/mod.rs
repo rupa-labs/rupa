@@ -10,7 +10,7 @@ use winit::keyboard::{PhysicalKey, KeyCode as WinitKeyCode};
 use crate::core::component::Component;
 use crate::renderer::Renderer as _;
 use crate::renderer::gui::renderer::Renderer;
-use crate::utils::vector::Vec2;
+use crate::support::vector::Vec2;
 use crate::platform::gui::window::Window;
 use crate::platform::dispatcher::InputDispatcher;
 use crate::platform::{RupauiEvent, PlatformCore, events::*};

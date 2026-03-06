@@ -1,22 +1,41 @@
-# Table Utilities
+# API Reference: Content & Disclosure 📦
 
-Rupaui provides specialized utilities for managing data-heavy table layouts with precision and semantic clarity.
+Containers used for structuring data and managing the visual density of the interface.
 
-## 📊 Table Layout
+---
 
-- `.table_layout(TableLayout)`: Choose between `Auto` (content-based) or `Fixed` (width-based).
-- `.border_collapse(BorderCollapse)`: Choose between `Collapse` or `Separate`.
-- `.table_gap(x, y)`: Set the spacing between table cells (when borders are separate).
-- `.caption_side(CaptionSide)`: Position the table caption (`Top` or `Bottom`).
+## 🏗️ Card
+### `Card::new() -> Self`
+A surfaced grouping element.
 
-```rust
-Style::new()
-    .table_layout(TableLayout::Fixed)
-    .border_collapse(BorderCollapse::Collapse)
-    .w(1000.0)
-```
+| Method | Argument | Description |
+| :--- | :--- | :--- |
+| `.header(Box<dyn Component>)` | Component | Attaches a top section. |
+| `.child(Box<dyn Component>)`  | Component | Appends a child to the card body. |
+| `.footer(Box<dyn Component>)` | Component | Attaches a bottom section. |
 
-## 🗝 Key Types
-- **TableLayout**: `Auto`, `Fixed`.
-- **BorderCollapse**: `Collapse`, `Separate`.
-- **CaptionSide**: `Top`, `Bottom`.
+---
+
+## 🏗️ Accordion
+### `Accordion::new(title: impl Into<String>, expanded: Signal<bool>) -> Self`
+A collapsible content box.
+
+| Method | Argument | Description |
+| :--- | :--- | :--- |
+| `.child(Box<dyn Component>)` | Component | Appends a child to the collapsible area. |
+
+---
+
+## 🏗️ Table
+### `Table::new(headers: Vec<String>, rows: Vec<TableRow>) -> Self`
+A grid component for structured data.
+
+| Method | Argument | Description |
+| :--- | :--- | :--- |
+| `TableRow { cells }` | `Vec<String>` | Standard struct for row data. |
+
+---
+
+## 🎨 Common Layout (Stylable)
+- `.style(p(f32))` used to set inner gutters.
+- `.style(bg(Color))` to change surface background.

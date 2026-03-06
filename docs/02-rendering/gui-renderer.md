@@ -1,27 +1,28 @@
 # Module: GUI Renderer (`gui/renderer.rs`) 🎨
 
-The GUI Renderer is the WGPU-based implementation of the `Renderer` trait. It coordinates high-performance hardware-accelerated drawing for desktop and web environments.
+The GUI Renderer is the orchestration unit for hardware-accelerated drawing. It manages the GPU pipeline and coordinates the flow of geometric and typographic data.
 
 ---
 
-## 🏗️ Core Responsibilities
+## 🧠 Internal Anatomy
 
-1.  **WGPU Coordination:** Manages the `Device`, `Queue`, and `Surface` connection to the physical GPU.
-2.  **Frame Orchestration:** Handles the transition between geometry and text render passes.
-3.  **Camera & Transformation:** Applies `RenderCore` transforms (zoom/offset) to all vertex data before submission to the GPU.
-4.  **Resource Cleanup:** Ensures that staging belts and encoders are cleared correctly after every frame.
+### 1. Resource Management
+Maintains the active handles for the **WGPU Device**, **Queue**, and **Surface**. It is responsible for the frame lifecycle: `begin_frame` (acquiring a swapchain texture) and `present` (submitting command buffers).
 
----
-
-## 🗝️ Key API Elements
-
-### `struct GuiRenderer`
-- `new(window)`: Asynchronously initializes the WGPU state.
-- `begin_frame()`: Prepares the command encoder and acquires the next surface texture.
-- `present()`: Flushes the `Batcher`, prepares `TextRenderer`, and submits the final command buffer.
+### 2. Composition Shell
+- **Composition:** Wraps `RenderCore` (L2), `Batcher` (L2), `TextRenderer` (L2), and `StagingBelt` (WGPU).
+- **Responsibility:** It acts as the traffic controller, sending rectangle requests to the Batcher and string data to the Text Engine.
 
 ---
 
-## 🔄 Interaction
-- **L2 (HAL Runner) -> L2 (GUI Renderer):** Triggers the frame lifecycle.
-- **L2 (GUI Renderer) -> L2 (Batcher/Text):** Delegates specific drawing tasks to sub-engines.
+## 🗝️ API Anatomy
+
+- `new(window)`: Performs the async handshake with the physical GPU.
+- `resize()`: Synchronizes the swapchain with new window dimensions.
+- `draw_rect()`: Transforms coordinates using the camera state before buffering vertex data.
+
+---
+
+## 🔄 Interaction Flow
+- **L2 (GUI Renderer) -> L2 (Batcher):** Feeds calculated vertex data.
+- **L2 (GUI Renderer) -> L2 (Text Engine):** Supplies shaped text buffers for rendering.

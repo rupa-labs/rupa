@@ -1,33 +1,31 @@
 # Module: Renderer Interface (`mod.rs`) 🎼
 
-This module defines the universal contract for all visual output in Rupaui. It provides the abstractions necessary to ensure that higher layers (3-9) remain backend-agnostic.
+This module defines the **Agnostic Bridge** for all visual output. It provides the universal contract that allows the framework to speak a single language to various hardware backends.
 
 ---
 
-## 🏗️ Core Responsibilities
+## 🧠 Internal Anatomy
 
-1.  **RenderCore Struct:** Centralizes the shared state for all renderers, such as the viewport size, camera offset, and zoom level. This enables "Composition over Inheritance".
-2.  **Renderer Trait:** The primary interface for issuing draw commands. It abstracts away the platform-specific details of GPU buffers or Terminal ANSI codes.
-3.  **Backend Management:** Dynamically exposes the `gui` and `tui` sub-modules based on compilation features.
+### 1. RenderCore (The Spacial Heart)
+- **Role:** Shared State Container.
+- **Responsibility:** Stores the "Visual Perspective" of the application, including the camera zoom level, camera offset (panning), and the logical canvas size. It is composed into specific backend renderers.
+
+### 2. The Universal Contract (`trait Renderer`)
+- **Role:** Architectural Boundary.
+- **Responsibility:** Defines the primitive drawing methods (`draw_rect`, `draw_text`) and clipping management. By requiring every backend to implement this trait, Rupaui ensures that components remain platform-independent.
 
 ---
 
-## 🗝️ Key API Elements
-
-### `struct RenderCore`
-- `logical_size`: The dimensions of the available drawing area in logical units.
-- `camera_offset`: 2D vector for panning the UI.
-- `camera_zoom`: Scaling factor for zooming.
+## 🗝️ API Anatomy
 
 ### `trait Renderer`
-The source of truth for drawing:
-- `draw_rect(...)`: Commands the backend to draw a quad.
-- `draw_text(...)`: Commands the backend to render shaped text.
-- `push_clip(...)` / `pop_clip(...)`: Defines a sub-region for drawing.
-- `present()`: Finalizes the frame and sends it to the hardware.
+- `core()` / `core_mut()`: Access to the shared spacial state.
+- `draw_rect()`: Unified method for geometry.
+- `draw_text()`: Unified method for typography.
+- `present()`: The "Flush" command that sends data to the hardware.
 
 ---
 
-## 🔄 Interaction
-- **L2 -> L3:** Provides spatial data to the Layout Engine.
-- **L2 -> L5:** Receives paint instructions from UI Components.
+## 🔄 Interaction Flow
+- **L2 (Orchestrator) -> L2 (Backend):** Delegates commands based on feature flags.
+- **L5 (Component) -> L2 (Renderer):** Components call these methods during their `paint()` phase.

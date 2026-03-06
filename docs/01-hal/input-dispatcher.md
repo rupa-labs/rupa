@@ -1,31 +1,37 @@
 # Module: Input Dispatcher (`dispatcher.rs`) 🎯
 
-The Input Dispatcher is the logic bridge that connects standardized input signals to specific UI components. It determines "who" was interacted with and "what" action should be triggered.
+The Input Dispatcher is the sensory processing unit of Rupaui. It connects standardized input signals to the correct UI component via recursive spatial search.
 
 ---
 
-## 🏗️ Core Responsibilities
+## 🧠 Internal Anatomy
 
-1.  **Hit-Testing:** Recursively traverses the element tree (using coordinates from Taffy Layer 3) to find the deepest component under the pointer.
-2.  **Event Propagation:** Bubbles events from the target up to the root, allowing for event consumption (stoppage).
-3.  **Semantic Translation:** Processes `InputEvent` types and triggers the appropriate component lifecycle hooks like `on_click`, `on_scroll`, and `on_drag`.
+### 1. The Hit-Test Pipeline
+The dispatcher does not calculate geometry itself. Instead, it queries the **Geometric Scene Layer (L3)**:
+1. Receive `InputEvent`.
+2. Ask `SceneCore::find_target(coordinate)`.
+3. Receive a `HitDiscovery` (either `Missed` or `Found`).
+
+### 2. Event Propagation (Bubbling)
+When a target is `Found`, the dispatcher:
+1. Creates a `UIEvent` context.
+2. Traverses the component path from the leaf up to the root.
+3. Calls the respective semantic hook (e.g., `on_click`).
+4. Checks for `event.consumed` at each step to stop propagation.
 
 ---
 
-## 🗝️ Key API Elements
-
-### `struct InputDispatcher`
-- `hit_test(...)`: Performs the geometric search for components.
-- `dispatch(...)`: The main entry point that processes an `InputEvent` and triggers the appropriate component lifecycle hooks.
+## 🗝️ API Anatomy
 
 ### `struct UIEvent`
-The context object passed to components:
-- `local_pos`: The coordinate relative to the component's top-left corner.
-- `consume()`: Stops the event from bubbling further up the tree.
+The rich context passed to components:
+- `local_pos`: Pointer coordinate relative to the component's top-left corner.
+- `modifiers`: The state of Shift/Ctrl/Alt during the event.
+- `consume()`: Method to stop event bubbling.
 
 ---
 
-## 🔄 Interaction
-- **L1 (Events) -> L1 (Dispatcher):** Receives the standardized `InputEvent`.
-- **L1 (Dispatcher) -> L3 (Layout):** Queries Taffy for component positions and sizes.
-- **L1 (Dispatcher) -> L5 (Architecture):** Calls methods on the `Component` trait.
+## 🔄 Interaction Flow
+- **L1 (Runner) -> L1 (Dispatcher):** Feeds normalized events.
+- **L1 (Dispatcher) -> L3 (Scene):** Requests spatial lookup.
+- **L1 (Dispatcher) -> L5 (Component):** Triggers logic hooks.

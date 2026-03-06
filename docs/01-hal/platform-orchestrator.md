@@ -1,40 +1,36 @@
 # Module: Platform Orchestrator (`mod.rs`) 🏛️
 
-This is the entry point of Layer 1. It acts as the grand conductor that decides which hardware abstraction (GUI or TUI) to boot based on the environment and compilation flags.
+The Platform Orchestrator is the high-level manager of the Rupaui execution lifecycle. It abstracts the "How" of starting an application, allowing the developer to focus on the "What."
 
 ---
 
-## 🏗️ Core Responsibilities
+## 🧠 Internal Anatomy
 
-1.  **App Struct:** The primary builder used by end-users to bootstrap their application.
-2.  **PlatformCore Struct:** The shared internal heart of all platforms, managing root components, layout calculations, and cursor state.
-3.  **Bootstrap Logic:** Orchestrates the injection of plugins and the initial theme setup before the platform runner takes over.
-4.  **Cross-Platform Redraw:** Provides the global `request_redraw()` function which communicates with the active backend proxy.
-5.  **Platform Abstraction:** Defines the `PlatformRunner` trait that all backends must implement to ensure a uniform lifecycle.
+### 1. App Struct (The Conductor)
+- **Role:** High-level builder.
+- **Responsibility:** Orchestrates the bootstrap process, including plugin registration and theme initialization. It holds the root component until the platform runner is ready.
+
+### 2. PlatformCore (The Heart)
+- **Role:** Shared State Container.
+- **Responsibility:** Composes the **SceneCore (L3)** and tracks global cursor positions. By being composed into both `GuiRunner` and `TuiRunner`, it ensures that UI logic remains identical across backends.
+
+### 3. Redraw Proxy
+- **Role:** Communication Bridge.
+- **Mechanism:** Provides a `request_redraw()` hook that uses an internal `OnceLock` proxy to signal the active event loop (Winit or Crossterm) without exposing their specific types.
 
 ---
 
-## 🗝️ Key API Elements
+## 🗝️ Public API
 
 ### `struct App`
-The user-facing API for defining the application name and root component.
-- `.new(name)`: Creates a new instance.
-- `.root(component)`: Attaches the top-level UI element.
-- `.run()`: Starts the GUI backend (Default).
-- `.run_tui()`: Starts the Terminal backend.
-
-### `struct PlatformCore`
-The internal core used via **Composition** in every platform runner.
-- `compute_layout(w, h)`: Common logic to update the Taffy tree.
-
-### `trait PlatformRunner`
-The internal contract for backends:
-- `initialize()`: Hardware handshake.
-- `run()`: Starts the event loop.
-- `request_redraw()`: Signals the need for a new frame.
+- `App::new(name)`: Entry point.
+- `.root(component)`: Definining the UI entry.
+- `.run()`: Executes the GUI shell.
+- `.run_tui()`: Executes the Terminal shell.
 
 ---
 
-## 🔄 Interaction
-- **L1 -> L8:** Orchestrates the high-level application flow.
-- **L1 -> L9:** Injects Design System defaults during bootstrap.
+## 🔄 Interaction Flow
+1. **Bootstrap:** `App` initializes L9 (Themes) and L5 (Plugins).
+2. **Handover:** `App` transfers the `PlatformCore` to a specific `Runner`.
+3. **Loop:** The `Runner` enters an infinite loop, delegating redraws to the hardware.

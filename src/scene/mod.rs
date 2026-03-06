@@ -2,7 +2,7 @@ pub mod layout;
 pub mod node;
 
 use crate::core::component::Component;
-use crate::utils::vector::Vec2;
+use crate::support::vector::Vec2;
 use crate::renderer::TextMeasurer;
 use self::layout::LayoutEngine;
 pub use self::node::SceneNode;
