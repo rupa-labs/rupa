@@ -80,3 +80,28 @@ Utilities for component tracking and stable referencing.
 Generates a unique, stable string ID for components. Essential for internal state tracking and debugging.
 - **Format:** `rupa-{counter}`
 - **Usage:** Typically handled automatically by component constructors.
+
+---
+
+## 🛡️ Debugging & Error Handling
+Robust systems for framework diagnostics and graceful failure recovery.
+
+### `enum RupauiError`
+Centralized error classification for all framework subsystems.
+- **`Layout`**: Failures in the geometry engine (Taffy).
+- **`Renderer`**: GPU, Shader, or Surface-related issues.
+- **`Platform`**: OS-level windowing or event loop failures.
+- **`Component`**: Logic errors specific to a UI element.
+
+### `struct DiagnosticCenter`
+The central hub for error reporting. Users can hook into this via the `App` API.
+
+### Usage Example
+```rust
+App::new("Artisan App")
+    .debug(true) // Activates wireframes and event logging
+    .on_error(|err| {
+        eprintln!("Caught Framework Error: {}", err);
+    })
+```
+
