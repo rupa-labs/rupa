@@ -1,4 +1,5 @@
-use rupa_core::style_data::Style;
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
+use rupa_styling::Style;
 use super::base::{StyleModifier, Stylable};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Copy, Default)]

@@ -65,6 +65,7 @@ Detailed technical specifications for every internal framework module.
 | Module | Description |
 | :--- | :--- |
 | **[Component Trait](./architectures/component-trait.md)** | The core contract for all UI elements. |
+| **[VNode Architecture](./architectures/vnode.md)** | The universal rendering bridge between logic and pixels. |
 | **[View Core](./architectures/view-core.md)** | Anatomical standard for component infrastructure. |
 | **[Logic & View Pattern](./architectures/logic-and-view.md)** | Strict Separation of Concerns (SOC) standard. |
 | **[Module Standard](./architectures/module-standard.md)** | Directory and naming conventions for elements. |

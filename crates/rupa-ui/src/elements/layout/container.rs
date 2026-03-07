@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Theme, Vec2};
 use rupa_core::component::Component;
 use rupa_core::view::ViewCore;
@@ -33,12 +34,13 @@ pub struct Container<'a> { pub id: String, pub logic: ContainerLogic<'a>, pub vi
 impl<'a> Container<'a> {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: ContainerLogic { children: Children::new() }, view: ContainerView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: ContainerLogic { children: Children::new() }, view: ContainerView { core: ViewCore::new() } }
     }
     pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self { self.logic.children.add(child); self.view.core.mark_dirty(); self }
 }
 impl<'a> Stylable for Container<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl<'a> Component for Container<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.get_all() }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }

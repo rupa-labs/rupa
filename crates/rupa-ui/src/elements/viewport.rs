@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Theme, Vec2};
 use rupa_core::component::Component;
 use rupa_core::view::ViewCore;
@@ -21,7 +22,7 @@ impl ViewportView {
     pub fn new() -> Self {
         let mut style = Style::default();
         Theme::current().apply_defaults(&mut style);
-        Self { core: ViewCore::new(style) }
+        Self { core: ViewCore::new() }
     }
 }
 
@@ -53,6 +54,7 @@ impl<'a> Stylable for Viewport<'a> {
 }
 
 impl<'a> Component for Viewport<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { 
         self.logic.child.as_ref().map(|c| c.as_ref() as &dyn Component).into_iter().collect() 

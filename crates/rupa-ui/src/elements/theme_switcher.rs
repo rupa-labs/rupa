@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Theme, ColorMode, Accessibility, Role, Vec2, Color};
 use rupa_core::typography::TextAlign;
 use rupa_core::component::Component;
@@ -25,7 +26,7 @@ impl ThemeSwitcherView {
     pub fn new() -> Self {
         let mut style = Style::default();
         Theme::current().apply_defaults(&mut style);
-        Self { core: ViewCore::new(style) }
+        Self { core: ViewCore::new() }
     }
 
     pub fn compute_layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
@@ -115,6 +116,7 @@ impl Stylable for ThemeSwitcher {
 }
 
 impl Component for ThemeSwitcher {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }

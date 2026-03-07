@@ -1,40 +1,39 @@
 use std::sync::{RwLock, RwLockWriteGuard};
 use std::sync::atomic::{AtomicBool, Ordering};
-use crate::style_data::Style;
+use rupa_styling::Style;
 use crate::scene::SceneNode;
 
 /// The standardized infrastructure for any Component View.
-/// Handles styling, geometric nodes, and invalidation.
-/// Follows "Composition over Inheritance" and is thread-safe.
+/// Handles styling, geometric identity, and dirty-tracking.
 pub struct ViewCore {
     pub style: RwLock<Style>,
     pub node: RwLock<Option<SceneNode>>,
-    pub dirty: AtomicBool,
+    pub is_dirty: AtomicBool,
 }
 
 impl ViewCore {
-    pub fn new(style: Style) -> Self {
+    pub fn new() -> Self {
         Self {
-            style: RwLock::new(style),
+            style: RwLock::new(Style::default()),
             node: RwLock::new(None),
-            dirty: AtomicBool::new(true),
+            is_dirty: AtomicBool::new(true),
         }
     }
 
-    pub fn default() -> Self {
-        Self::new(Style::default())
-    }
-
-    pub fn is_dirty(&self) -> bool {
-        self.dirty.load(Ordering::Relaxed)
-    }
-
     pub fn mark_dirty(&self) {
-        self.dirty.store(true, Ordering::Relaxed);
+        self.is_dirty.store(true, Ordering::SeqCst);
     }
 
     pub fn clear_dirty(&self) {
-        self.dirty.store(false, Ordering::Relaxed);
+        self.is_dirty.store(false, Ordering::SeqCst);
+    }
+
+    pub fn is_dirty(&self) -> bool {
+        self.is_dirty.load(Ordering::SeqCst)
+    }
+
+    pub fn style(&self) -> RwLockWriteGuard<'_, Style> {
+        self.style.write().unwrap()
     }
 
     pub fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> {

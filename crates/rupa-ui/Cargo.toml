@@ -7,6 +7,9 @@ license.workspace = true
 
 [dependencies]
 rupa-core.workspace = true
+rupa-signals.workspace = true
+rupa-styling.workspace = true
 log.workspace = true
-taffy.workspace = true # Layout data structs (not engine)
+taffy.workspace = true
 serde.workspace = true
+once_cell = "1.18"

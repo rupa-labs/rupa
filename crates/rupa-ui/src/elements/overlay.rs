@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Theme, Vec2};
 use rupa_core::component::Component;
 use rupa_core::view::ViewCore;
@@ -15,11 +16,12 @@ pub struct Modal<'a> { pub id: String, pub logic: ModalLogic<'a>, pub view: Moda
 impl<'a> Modal<'a> {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: ModalLogic { children: Children::new() }, view: ModalView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: ModalLogic { children: Children::new() }, view: ModalView { core: ViewCore::new() } }
     }
 }
 impl<'a> Stylable for Modal<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl<'a> Component for Modal<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.get_all() }
     fn as_any(&self) -> &dyn std::any::Any { self }
@@ -53,11 +55,12 @@ pub struct Tooltip { pub id: String, pub logic: TooltipLogic, pub view: TooltipV
 impl Tooltip {
     pub fn new(text: impl Into<String>) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: TooltipLogic { text: text.into() }, view: TooltipView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: TooltipLogic { text: text.into() }, view: TooltipView { core: ViewCore::new() } }
     }
 }
 impl Stylable for Tooltip { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl Component for Tooltip {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn as_any(&self) -> &dyn std::any::Any { self }

@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Theme, Vec2};
 use rupa_core::component::Component;
 use rupa_core::view::ViewCore;
@@ -15,11 +16,12 @@ pub struct Navbar<'a> { pub id: String, pub logic: NavbarLogic<'a>, pub view: Na
 impl<'a> Navbar<'a> {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: NavbarLogic { children: Children::new() }, view: NavbarView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: NavbarLogic { children: Children::new() }, view: NavbarView { core: ViewCore::new() } }
     }
 }
 impl<'a> Stylable for Navbar<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl<'a> Component for Navbar<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.get_all() }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -51,11 +53,12 @@ pub struct Tabs<'a> { pub id: String, pub logic: TabsLogic<'a>, pub view: TabsVi
 impl<'a> Tabs<'a> {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: TabsLogic { children: Children::new() }, view: TabsView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: TabsLogic { children: Children::new() }, view: TabsView { core: ViewCore::new() } }
     }
 }
 impl<'a> Stylable for Tabs<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl<'a> Component for Tabs<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.get_all() }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -87,11 +90,12 @@ pub struct Breadcrumb<'a> { pub id: String, pub logic: BreadcrumbLogic<'a>, pub 
 impl<'a> Breadcrumb<'a> {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: BreadcrumbLogic { children: Children::new() }, view: BreadcrumbView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: BreadcrumbLogic { children: Children::new() }, view: BreadcrumbView { core: ViewCore::new() } }
     }
 }
 impl<'a> Stylable for Breadcrumb<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl<'a> Component for Breadcrumb<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.get_all() }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }

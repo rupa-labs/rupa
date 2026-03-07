@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Theme, Vec2};
 use rupa_core::component::Component;
 use rupa_core::view::ViewCore;
@@ -16,13 +17,14 @@ pub struct Brand { pub id: String, pub logic: BrandLogic, pub view: BrandView }
 impl Brand {
     pub fn new(name: impl Into<String>) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: BrandLogic { name: name.into() }, view: BrandView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: BrandLogic { name: name.into() }, view: BrandView { core: ViewCore::new() } }
     }
 }
 
 impl Stylable for Brand { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 
 impl Component for Brand {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }

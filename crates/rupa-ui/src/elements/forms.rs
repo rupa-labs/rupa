@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Theme, Vec2, Color};
 use rupa_core::typography::TextAlign;
 use rupa_core::component::Component;
@@ -15,11 +16,12 @@ pub struct Label { pub id: String, pub logic: LabelLogic, pub view: LabelView }
 impl Label {
     pub fn new(text: impl Into<String>) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: LabelLogic { text: text.into() }, view: LabelView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: LabelLogic { text: text.into() }, view: LabelView { core: ViewCore::new() } }
     }
 }
 impl Stylable for Label { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl Component for Label {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -51,11 +53,12 @@ pub struct Input { pub id: String, pub logic: InputLogic, pub view: InputView }
 impl Input {
     pub fn new(placeholder: impl Into<String>) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: InputLogic { value: String::new(), placeholder: placeholder.into() }, view: InputView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: InputLogic { value: String::new(), placeholder: placeholder.into() }, view: InputView { core: ViewCore::new() } }
     }
 }
 impl Stylable for Input { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl Component for Input {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -86,11 +89,12 @@ pub struct Checkbox { pub id: String, pub logic: CheckboxLogic, pub view: Checkb
 impl Checkbox {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: CheckboxLogic { checked: false }, view: CheckboxView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: CheckboxLogic { checked: false }, view: CheckboxView { core: ViewCore::new() } }
     }
 }
 impl Stylable for Checkbox { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl Component for Checkbox {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -121,11 +125,12 @@ pub struct Switch { pub id: String, pub logic: SwitchLogic, pub view: SwitchView
 impl Switch {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: SwitchLogic { active: false }, view: SwitchView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: SwitchLogic { active: false }, view: SwitchView { core: ViewCore::new() } }
     }
 }
 impl Stylable for Switch { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl Component for Switch {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -156,11 +161,12 @@ pub struct Radio { pub id: String, pub logic: RadioLogic, pub view: RadioView }
 impl Radio {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: RadioLogic { selected: false }, view: RadioView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: RadioLogic { selected: false }, view: RadioView { core: ViewCore::new() } }
     }
 }
 impl Stylable for Radio { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl Component for Radio {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -191,11 +197,12 @@ pub struct Select { pub id: String, pub logic: SelectLogic, pub view: SelectView
 impl Select {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: SelectLogic { options: vec![], selected_index: None }, view: SelectView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: SelectLogic { options: vec![], selected_index: None }, view: SelectView { core: ViewCore::new() } }
     }
 }
 impl Stylable for Select { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl Component for Select {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }

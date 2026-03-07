@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Theme, Vec2};
 use rupa_core::component::Component;
 use rupa_core::view::ViewCore;
@@ -18,7 +19,7 @@ pub struct Section<'a> { pub id: String, pub logic: SectionLogic<'a>, pub view: 
 impl<'a> Section<'a> {
     pub fn new(name: impl Into<String>) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: SectionLogic { name: name.into(), children: Children::new() }, view: SectionView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: SectionLogic { name: name.into(), children: Children::new() }, view: SectionView { core: ViewCore::new() } }
     }
     pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
     pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self { self.logic.children.add(child); self.view.core.mark_dirty(); self }
@@ -27,6 +28,7 @@ impl<'a> Section<'a> {
 impl<'a> Stylable for Section<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 
 impl<'a> Component for Section<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.get_all() }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }

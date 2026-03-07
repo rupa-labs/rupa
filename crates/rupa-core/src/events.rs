@@ -1,5 +1,6 @@
 use crate::vector::Vec2;
 use std::sync::Arc;
+use serde::{Serialize, Deserialize};
 
 /// The UIEvent passed to components during dispatch.
 /// Contains rich context about the user interaction.
@@ -42,7 +43,7 @@ impl UIEvent {
 }
 
 /// Standardized input events that are platform-agnostic.
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum InputEvent {
     // Pointer Events (Mouse, Touch, Pen)
     PointerMove { position: Vec2 },
@@ -60,34 +61,22 @@ pub enum InputEvent {
     Quit,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum CursorIcon {
-    #[default]
-    Default,
-    Pointer,
-    Text,
-    Grab,
-    Grabbing,
-    NotAllowed,
-    Wait,
-    Crosshair,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum PointerButton {
+    #[default]
     Primary,   // Left click
     Secondary, // Right click
     Auxiliary, // Middle click
     Extra(u16),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ButtonState {
     Pressed,
     Released,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct Modifiers {
     pub shift: bool,
     pub ctrl: bool,
@@ -95,7 +84,7 @@ pub struct Modifiers {
     pub logo: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum KeyCode {
     Char(char),
     Enter,

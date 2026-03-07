@@ -1,3 +1,5 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
+pub mod children;
 pub mod brand;
 pub mod button;
 pub mod content;
@@ -13,6 +15,7 @@ pub mod theme_switcher;
 pub mod viewport;
 pub mod routing;
 
+pub use children::Children;
 pub use brand::Brand;
 pub use button::{Button, CloseButton, ButtonGroup};
 pub use content::{Card, Table, Accordion};

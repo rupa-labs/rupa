@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{FlexDirection, Vec2, Style};
 use rupa_core::component::Component;
 use crate::primitives::flex::Flex;
@@ -35,6 +36,7 @@ impl<'a> Stylable for HStack<'a> {
 }
 
 impl<'a> Component for HStack<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { self.inner.id() }
     fn children(&self) -> Vec<&dyn Component> { self.inner.children() }
     fn get_node(&self) -> Option<SceneNode> { self.inner.get_node() }

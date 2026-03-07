@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Theme, Vec2};
 use rupa_core::component::Component;
 use rupa_core::view::ViewCore;
@@ -15,12 +16,13 @@ pub struct Card<'a> { pub id: String, pub logic: CardLogic<'a>, pub view: CardVi
 impl<'a> Card<'a> {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: CardLogic { children: Children::new() }, view: CardView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: CardLogic { children: Children::new() }, view: CardView { core: ViewCore::new() } }
     }
     pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self { self.logic.children.add(child); self.view.core.mark_dirty(); self }
 }
 impl<'a> Stylable for Card<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl<'a> Component for Card<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.get_all() }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -53,11 +55,12 @@ pub struct Table<'a> { pub id: String, pub logic: TableLogic<'a>, pub view: Tabl
 impl<'a> Table<'a> {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: TableLogic { children: Children::new() }, view: TableView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: TableLogic { children: Children::new() }, view: TableView { core: ViewCore::new() } }
     }
 }
 impl<'a> Stylable for Table<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl<'a> Component for Table<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.get_all() }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -89,11 +92,12 @@ pub struct Accordion<'a> { pub id: String, pub logic: AccordionLogic<'a>, pub vi
 impl<'a> Accordion<'a> {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: AccordionLogic { children: Children::new() }, view: AccordionView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: AccordionLogic { children: Children::new() }, view: AccordionView { core: ViewCore::new() } }
     }
 }
 impl<'a> Stylable for Accordion<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl<'a> Component for Accordion<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.get_all() }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }

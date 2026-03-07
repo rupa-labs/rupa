@@ -1,4 +1,5 @@
-use rupa_core::style_data::Style;
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
+use rupa_styling::Style;
 use rupa_core::color::Color;
 use rupa_core::border::Rounding;
 use super::base::{StyleModifier, Stylable};

@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Vec2, Position};
 use rupa_core::component::Component;
 use rupa_core::view::ViewCore;
@@ -22,7 +23,7 @@ impl OverlayView {
     pub fn new() -> Self {
         let mut style = Style::default();
         style.layout.position = Position::Absolute;
-        Self { core: ViewCore::new(style) }
+        Self { core: ViewCore::new() }
     }
 }
 
@@ -49,6 +50,7 @@ impl<'a> Stylable for Overlay<'a> {
 }
 
 impl<'a> Component for Overlay<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.get_all() }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }

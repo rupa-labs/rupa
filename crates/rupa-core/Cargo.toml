@@ -7,6 +7,8 @@ license.workspace = true
 
 [dependencies]
 rupa-signals.workspace = true
+rupa-styling.workspace = true
+rupa-vnode.workspace = true
 log.workspace = true
 thiserror.workspace = true
 serde.workspace = true

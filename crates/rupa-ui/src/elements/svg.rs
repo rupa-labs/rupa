@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Theme, Vec2};
 use rupa_core::component::Component;
 use rupa_core::view::ViewCore;
@@ -16,13 +17,14 @@ pub struct Icon { pub id: String, pub logic: IconLogic, pub view: IconView }
 impl Icon {
     pub fn new(name: impl Into<String>) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: IconLogic { name: name.into() }, view: IconView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: IconLogic { name: name.into() }, view: IconView { core: ViewCore::new() } }
     }
 }
 
 impl Stylable for Icon { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 
 impl Component for Icon {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -53,13 +55,14 @@ pub type SvgCanvas = Svg;
 impl Svg {
     pub fn new(source: impl Into<String>) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: SvgLogic { source: source.into() }, view: SvgView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: SvgLogic { source: source.into() }, view: SvgView { core: ViewCore::new() } }
     }
 }
 
 impl Stylable for Svg { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 
 impl Component for Svg {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }

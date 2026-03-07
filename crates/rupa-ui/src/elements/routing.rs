@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::component::Component;
 use rupa_core::view::ViewCore;
 use rupa_core::{Style, generate_id, Vec2, state::Signal};
@@ -56,7 +57,7 @@ impl Router {
                 routes: HashMap::new(),
                 fallback: None,
             },
-            view: RouterView { core: ViewCore::new(Style::default()) },
+            view: RouterView { core: ViewCore::new() },
         }
     }
 
@@ -88,6 +89,7 @@ impl Stylable for Router {
 }
 
 impl Component for Router {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     
     fn children(&self) -> Vec<&dyn Component> {

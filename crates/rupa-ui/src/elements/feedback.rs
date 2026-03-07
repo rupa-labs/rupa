@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Theme, Vec2};
 use rupa_core::component::Component;
 use rupa_core::view::ViewCore;
@@ -14,11 +15,12 @@ pub struct Progress { pub id: String, pub logic: ProgressLogic, pub view: Progre
 impl Progress {
     pub fn new(value: f32) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: ProgressLogic { value }, view: ProgressView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: ProgressLogic { value }, view: ProgressView { core: ViewCore::new() } }
     }
 }
 impl Stylable for Progress { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl Component for Progress {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -49,11 +51,12 @@ pub struct Skeleton { pub id: String, pub logic: SkeletonLogic, pub view: Skelet
 impl Skeleton {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: SkeletonLogic {}, view: SkeletonView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: SkeletonLogic {}, view: SkeletonView { core: ViewCore::new() } }
     }
 }
 impl Stylable for Skeleton { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl Component for Skeleton {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -84,11 +87,12 @@ pub struct Badge { pub id: String, pub logic: BadgeLogic, pub view: BadgeView }
 impl Badge {
     pub fn new(label: impl Into<String>) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: BadgeLogic { label: label.into() }, view: BadgeView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: BadgeLogic { label: label.into() }, view: BadgeView { core: ViewCore::new() } }
     }
 }
 impl Stylable for Badge { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl Component for Badge {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -119,11 +123,12 @@ pub struct Spinner { pub id: String, pub logic: SpinnerLogic, pub view: SpinnerV
 impl Spinner {
     pub fn new() -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: SpinnerLogic {}, view: SpinnerView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: SpinnerLogic {}, view: SpinnerView { core: ViewCore::new() } }
     }
 }
 impl Stylable for Spinner { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl Component for Spinner {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -154,11 +159,12 @@ pub struct Alert { pub id: String, pub logic: AlertLogic, pub view: AlertView }
 impl Alert {
     pub fn new(title: impl Into<String>, content: impl Into<String>) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: AlertLogic { title: title.into(), content: content.into() }, view: AlertView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: AlertLogic { title: title.into(), content: content.into() }, view: AlertView { core: ViewCore::new() } }
     }
 }
 impl Stylable for Alert { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl Component for Alert {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }

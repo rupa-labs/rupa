@@ -1,3 +1,4 @@
+use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_core::{Style, generate_id, Theme, Vec2};
 use rupa_core::component::Component;
 use rupa_core::view::ViewCore;
@@ -14,11 +15,12 @@ pub struct ShowView { pub core: ViewCore }
 impl<'a> Show<'a> {
     pub fn new(when: bool, child: Box<dyn Component + 'a>) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: ShowLogic { when, child }, view: ShowView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: ShowLogic { when, child }, view: ShowView { core: ViewCore::new() } }
     }
 }
 impl<'a> Stylable for Show<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl<'a> Component for Show<'a> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { if self.logic.when { vec![self.logic.child.as_ref()] } else { vec![] } }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
@@ -49,11 +51,12 @@ pub struct ForEachView { pub core: ViewCore }
 impl<'a, T> ForEach<'a, T> {
     pub fn new(items: Vec<T>, builder: impl Fn(&T) -> Box<dyn Component + 'a> + Send + Sync + 'static) -> Self {
         let mut style = Style::default(); Theme::current().apply_defaults(&mut style);
-        Self { id: generate_id(), logic: ForEachLogic { items, builder: Box::new(builder) }, view: ForEachView { core: ViewCore::new(style) } }
+        Self { id: generate_id(), logic: ForEachLogic { items, builder: Box::new(builder) }, view: ForEachView { core: ViewCore::new() } }
     }
 }
 impl<'a, T: Send + Sync> Stylable for ForEach<'a, T> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 impl<'a, T: Send + Sync> Component for ForEach<'a, T> {
+    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] } // ForEach is a special component, needs better handling
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
