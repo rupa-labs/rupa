@@ -1,6 +1,6 @@
 # Layer 6 Architecture: Primitive Design Guide 🧱
 
-Primitives are the "Atoms" of the Rupaui ecosystem. They provide the fundamental structural containers that every other high-level component (L7) and application view (L8) uses for layout.
+Primitives are the "Atoms" of the Rupa Framework ecosystem. They provide the fundamental structural containers that every other high-level component (L7) and application view (L8) uses for layout.
 
 ---
 

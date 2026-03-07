@@ -1,6 +1,6 @@
 # Conceptual Guide: Logic & View Pattern 🧠🎭
 
-The **Logic & View** pattern is the mandatory architectural standard for all components in Rupaui. It enforces a strict **Separation of Concerns (SOC)** by splitting an element into its "Brain" and its "Body."
+The **Logic & View** pattern is the mandatory architectural standard for all components in Rupa Framework. It enforces a strict **Separation of Concerns (SOC)** by splitting an element into its "Brain" and its "Body."
 
 ---
 

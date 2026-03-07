@@ -1,0 +1,12 @@
+[package]
+name = "rupa-ui"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rupa-core.workspace = true
+log.workspace = true
+taffy.workspace = true # Layout data structs (not engine)
+serde.workspace = true

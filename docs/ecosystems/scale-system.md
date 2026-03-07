@@ -1,6 +1,6 @@
 # Spacial Integrity: The Unified Scale 📐
 
-Rupaui enforces aesthetic consistency through a **10-Step Scaling System**. This ensures that margins, paddings, and typography sizes always feel proportionate to one another.
+Rupa Framework enforces aesthetic consistency through a **10-Step Scaling System**. This ensures that margins, paddings, and typography sizes always feel proportionate to one another.
 
 ---
 
@@ -22,4 +22,4 @@ The scale system uses a mathematical progression (from `Xs` to `Xl6`). Each step
 ---
 
 ## 🛡️ Correctness
-By using named scales instead of raw magic numbers, Rupaui applications maintain their visual balance even if the base density of the theme is modified.
+By using named scales instead of raw magic numbers, Rupa Framework applications maintain their visual balance even if the base density of the theme is modified.

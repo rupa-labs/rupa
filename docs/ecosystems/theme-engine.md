@@ -1,6 +1,6 @@
 # The Theme Engine: DNA Visual 🧬
 
-The Theme Engine manages the global aesthetic identity of a Rupaui application. It ensures consistency across all components by centralizing design tokens.
+The Theme Engine manages the global aesthetic identity of a Rupa Framework application. It ensures consistency across all components by centralizing design tokens.
 
 ---
 

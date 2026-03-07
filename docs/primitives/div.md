@@ -1,6 +1,6 @@
 # Primitive: Div 📦
 
-The `Div` (Division) is the most fundamental structural atom in Rupaui. It serves as a generic container for grouping components and applying baseline styles without any pre-defined layout constraints.
+The `Div` (Division) is the most fundamental structural atom in Rupa Framework. It serves as a generic container for grouping components and applying baseline styles without any pre-defined layout constraints.
 
 ---
 

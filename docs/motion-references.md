@@ -1,11 +1,11 @@
 # Animation & Motion Reference ✨
 
-Motion is part of the Rupaui DNA. This document details how to create fluid, reactive animations that respond to state changes and user interactions.
+Motion is part of the Rupa Framework DNA. This document details how to create fluid, reactive animations that respond to state changes and user interactions.
 
 ---
 
 ## 🏗️ The `Motion` System
-Animations in Rupaui are applied via styling modifiers. A `Motion` object defines how a property should transition between states.
+Animations in Rupa Framework are applied via styling modifiers. A `Motion` object defines how a property should transition between states.
 
 ### Transition Types
 | Type | Description |
@@ -50,6 +50,6 @@ The following properties can currently be animated:
 ---
 
 ## 🚀 Performance
-Rupaui's motion system is designed for high efficiency:
+Rupa Framework's motion system is designed for high efficiency:
 - **GPU Accelerated**: Heavy interpolation is handled by shaders where possible.
 - **Frame-Independent**: Animations use a high-precision delta time to ensure smoothness on both 60Hz and 144Hz monitors.

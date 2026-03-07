@@ -1,6 +1,6 @@
 # Module: Scene Core (`mod.rs`) 🌳
 
-The Scene Core is the spatial brain of Rupaui. it acts as the Single Source of Truth (SSOT) for the entire UI hierarchy and its geometric resolution.
+The Scene Core is the spatial brain of Rupa Framework. it acts as the Single Source of Truth (SSOT) for the entire UI hierarchy and its geometric resolution.
 
 ---
 

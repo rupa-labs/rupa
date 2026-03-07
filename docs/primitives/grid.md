@@ -1,6 +1,6 @@
 # Primitive: Grid 🏁
 
-The `Grid` primitive is the most advanced layout atom in Rupaui. It provides a two-dimensional coordinate system, allowing for the precise placement of elements within rows and columns.
+The `Grid` primitive is the most advanced layout atom in Rupa Framework. It provides a two-dimensional coordinate system, allowing for the precise placement of elements within rows and columns.
 
 ---
 
@@ -12,7 +12,7 @@ The `Grid` primitive is the most advanced layout atom in Rupaui. It provides a t
 
 ### 2. GridView
 - **Infrastructure:** Composes `ViewCore`.
-- **Taffy Mapping:** Sets the Taffy `Display` property to `Grid`. It serves as the bridge between Rupaui's styling API and the CSS Grid algorithm.
+- **Taffy Mapping:** Sets the Taffy `Display` property to `Grid`. It serves as the bridge between Rupa Framework's styling API and the CSS Grid algorithm.
 
 ---
 

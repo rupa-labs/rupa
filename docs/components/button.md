@@ -1,6 +1,6 @@
 # Component: Button 🔘
 
-The `Button` is the primary interactive element in Rupaui. It demonstrates the full power of the **Logic & View** pattern, separating high-level interaction state from low-level GPU/Terminal rendering.
+The `Button` is the primary interactive element in Rupa Framework. It demonstrates the full power of the **Logic & View** pattern, separating high-level interaction state from low-level GPU/Terminal rendering.
 
 ---
 

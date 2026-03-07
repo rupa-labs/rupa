@@ -1,6 +1,6 @@
 # Plugin & Extension Reference 🔌
 
-Rupaui is designed to be extensible. Through the Plugin System, you can inject new logic, manage global state, or intercept system events before they reach the UI tree.
+Rupa Framework is designed to be extensible. Through the Plugin System, you can inject new logic, manage global state, or intercept system events before they reach the UI tree.
 
 ---
 

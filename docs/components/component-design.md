@@ -1,6 +1,6 @@
 # Layer 7 Architecture: Semantic Component Design 🎨
 
-Layer 7 is the "Artisan Library" of Rupaui. It provides high-level, meaningful UI elements that users interact with. Unlike Primitives (L6), Semantic Components carry intent, accessibility roles, and complex internal logic.
+Layer 7 is the "Artisan Library" of Rupa Framework. It provides high-level, meaningful UI elements that users interact with. Unlike Primitives (L6), Semantic Components carry intent, accessibility roles, and complex internal logic.
 
 ---
 

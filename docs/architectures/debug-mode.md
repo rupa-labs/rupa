@@ -1,6 +1,6 @@
 # Architecture: Debug Mode & Error Handling 🛠️
 
-Debug Mode is an essential pillar of Rupaui's developer experience (DX). It provides visibility into the framework's internals, facilitates rapid troubleshooting, and ensures that errors are handled gracefully without compromising the user experience.
+Debug Mode is an essential pillar of Rupa Framework's developer experience (DX). It provides visibility into the framework's internals, facilitates rapid troubleshooting, and ensures that errors are handled gracefully without compromising the user experience.
 
 ---
 
@@ -22,9 +22,9 @@ Debug Mode can be toggled during application construction. When enabled, it acti
 
 ## 🛡️ Exception & Error Handling
 
-Rupaui follows a **Fail-Safe** philosophy. Errors are categorized and handled based on their severity.
+Rupa Framework follows a **Fail-Safe** philosophy. Errors are categorized and handled based on their severity.
 
-### 1. `RupauiError` System
+### 1. `Rupa FrameworkError` System
 The framework uses a centralized error enum to handle common failures:
 - **`LayoutError`:** Failures in Taffy tree synchronization.
 - **`RendererError`:** GPU or Surface related issues.
@@ -45,7 +45,7 @@ App::new("My App")
     .debug(true) // Activates Debug Mode
     .on_error(|err| {
         // Custom global error handler
-        eprintln!("Rupaui Error: {:?}", err);
+        eprintln!("Rupa Framework Error: {:?}", err);
     })
 ```
 

@@ -1,11 +1,11 @@
 # Platform & Entry-Point Reference 🚀
 
-This document details the standardized entry-points for every Rupaui target platform. Rupaui follows a **Target-Driven Execution** model, allowing the same UI logic to be deployed across Desktop, Terminal, Web, and Mobile environments.
+This document details the standardized entry-points for every Rupa Framework target platform. Rupa Framework follows a **Target-Driven Execution** model, allowing the same UI logic to be deployed across Desktop, Terminal, Web, and Mobile environments.
 
 ---
 
 ## 🏛️ Application Entry-Points
-The high-level methods used to start the Rupaui event loop on various targets.
+The high-level methods used to start the Rupa Framework event loop on various targets.
 
 ### `struct App`
 The primary orchestrator for bootstrapping and running your application.
@@ -66,7 +66,7 @@ The common contract implemented by all target execution shells.
 
 ## 🔄 Interaction Flow (Agnostic Bridge)
 
-Regardless of the entry-point, every Rupaui application follows a unified execution flow:
+Regardless of the entry-point, every Rupa Framework application follows a unified execution flow:
 
 1.  **Bootstrap**: `App` initializes global themes, signals, and plugin registries.
 2.  **Environment Sync**: The Runner synchronizes `AppMetadata` with the host OS (Window title, Browser title, etc).

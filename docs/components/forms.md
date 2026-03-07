@@ -1,6 +1,6 @@
 # Components: Form Controls 📝
 
-Form controls in Rupaui are designed to be **Reactive by Default**. They act as a two-way bridge between user input signals and your application's state.
+Form controls in Rupa Framework are designed to be **Reactive by Default**. They act as a two-way bridge between user input signals and your application's state.
 
 ---
 

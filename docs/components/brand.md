@@ -21,6 +21,6 @@ A compound component that combines a name and an optional logo.
 ## 💻 Usage Example
 
 ```rust
-Brand::new("Rupaui")
+Brand::new("Rupa Framework")
     .logo("assets/logo.png")
 ```

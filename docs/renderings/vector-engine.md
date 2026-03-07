@@ -8,7 +8,7 @@ The Vector Engine ensures that logos, icons, and custom drawings remain infinite
 
 1.  **SDF Path Rendering:** Renders complex vector paths using **Signed Distance Fields**. This allows for resolution-independent sharpness and efficient zooming.
 2.  **Bezier Resolution:** Decomposes quadratic and cubic Bezier curves into GPU-friendly data structures.
-3.  **SVG Support:** Parses a subset of SVG commands (MoveTo, LineTo, CurveTo) into Rupaui's internal path format.
+3.  **SVG Support:** Parses a subset of SVG commands (MoveTo, LineTo, CurveTo) into Rupa Framework's internal path format.
 
 ---
 

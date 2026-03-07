@@ -1,12 +1,12 @@
 # Reactivity: Fine-Grained Updates ⚡
 
-Rupaui avoids the common pitfall of "Re-rendering Everything." By using fine-grained reactivity, we ensure that the GPU and CPU only work on what has actually changed.
+Rupa Framework avoids the common pitfall of "Re-rendering Everything." By using fine-grained reactivity, we ensure that the GPU and CPU only work on what has actually changed.
 
 ---
 
 ## 🧐 The "Dirty" Flag Pattern
 
-Every component in Rupaui (Layer 5) maintains a `dirty` flag (an `AtomicBool`).
+Every component in Rupa Framework (Layer 5) maintains a `dirty` flag (an `AtomicBool`).
 
 1.  **Subscription:** When a component is created, it can subscribe to a Signal.
 2.  **Invalidation:** When that Signal changes, the component calls `self.mark_dirty()`.

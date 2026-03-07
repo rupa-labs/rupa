@@ -1,13 +1,13 @@
 # Dynamic Component Attributes
 
-Rupaui allows you to attach arbitrary metadata to any semantic component using the `Attributes` system. This is useful for storing custom data, integrating with external scripts, or defining platform-specific properties.
+Rupa Framework allows you to attach arbitrary metadata to any semantic component using the `Attributes` system. This is useful for storing custom data, integrating with external scripts, or defining platform-specific properties.
 
 ## 📐 The `attr()` Method
 
-Every standard Rupaui component provides an `.attr(key, value)` method.
+Every standard Rupa Framework component provides an `.attr(key, value)` method.
 
 ```rust
-use rupaui::elements::Button;
+use rupa::elements::Button;
 
 let btn = Button::new("Click Me")
     .attr("data-tracking-id", "hero-banner-01")
@@ -18,7 +18,7 @@ let btn = Button::new("Click Me")
 
 ## 🏗 Why Separate Attributes from Style?
 
-Rupaui follows a strict **Separation of Concerns (SOC)**:
+Rupa Framework follows a strict **Separation of Concerns (SOC)**:
 - **`Style`**: Defines *how* a component looks (visuals, layout, motion).
 - **`Attributes`**: Defines *what* a component is or holds (metadata, data-attributes, unique identifiers).
 

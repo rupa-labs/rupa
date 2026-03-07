@@ -1,6 +1,6 @@
 # Layer 3: Spatial Awareness & Hit-Testing 🎯
 
-Spatial Awareness is the ability of Rupaui to bridge the gap between a 2D screen coordinate (where the user clicked) and the complex hierarchy of the Scene Graph.
+Spatial Awareness is the ability of Rupa Framework to bridge the gap between a 2D screen coordinate (where the user clicked) and the complex hierarchy of the Scene Graph.
 
 ---
 

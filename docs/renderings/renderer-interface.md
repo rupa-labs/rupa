@@ -12,7 +12,7 @@ This module defines the **Agnostic Bridge** for all visual output. It provides t
 
 ### 2. The Universal Contract (`trait Renderer`)
 - **Role:** Architectural Boundary.
-- **Responsibility:** Defines the primitive drawing methods (`draw_rect`, `draw_text`) and clipping management. By requiring every backend to implement this trait, Rupaui ensures that components remain platform-independent.
+- **Responsibility:** Defines the primitive drawing methods (`draw_rect`, `draw_text`) and clipping management. By requiring every backend to implement this trait, Rupa Framework ensures that components remain platform-independent.
 
 ---
 

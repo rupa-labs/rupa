@@ -1,16 +1,16 @@
-# Rupaui Documentation Index 📚
+# Rupa Framework Documentation Index 📚
 
-Welcome to the **Rupaui Open Blueprint**. This document serves as the central directory for all technical documentation, organized by system modules.
+Welcome to the **Rupa Framework Open Blueprint**. This document serves as the central directory for all technical documentation, organized by system modules.
 
 ---
 
 ## 🏁 Getting Started & Vision
-Foundational documents for understanding Rupaui's purpose and standards.
+Foundational documents for understanding Rupa Framework's purpose and standards.
 
 | Document | Description |
 | :--- | :--- |
 | **[Project Overview](./overview.md)** | High-level vision, key features, and core tech stack. |
-| **[Philosophy](./philosophy.md)** | The "Artisan Pillars" and the reasoning behind Rupaui's design. |
+| **[Philosophy](./philosophy.md)** | The "Artisan Pillars" and the reasoning behind Rupa Framework's design. |
 | **[Engineering Standards](./engineering-standards.md)** | Mandatory coding conventions, naming rules, and SOC mandates. |
 | **[Architecture Overview](./architecture.md)** | A conceptual map of the framework infrastructure. |
 | **[Platform References](./platform-references.md)** | Standardized entry-points for Desktop, Web, Terminal, and Mobile. |

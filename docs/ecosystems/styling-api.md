@@ -1,6 +1,6 @@
 # The Styling API: Functional Utilities 🎨
 
-The Styling API is the primary interface for defining the aesthetics of a Rupaui application. It follows a **Functional, Utility-First** approach inspired by modern atomic CSS frameworks.
+The Styling API is the primary interface for defining the aesthetics of a Rupa Framework application. It follows a **Functional, Utility-First** approach inspired by modern atomic CSS frameworks.
 
 ---
 
@@ -11,7 +11,7 @@ The Styling API is the primary interface for defining the aesthetics of a Rupaui
 - **Pure Functions:** Modifiers are stateless; they simply receive a mutable reference to a `Style` object and apply a specific transformation.
 
 ### 2. Composition (Tuples)
-Rupaui implements `StyleModifier` for **Tuples**. This allows the framework to process multiple modifiers in a single pass, ensuring that layout invalidations (Layer 3) only happen once after all styles are applied.
+Rupa Framework implements `StyleModifier` for **Tuples**. This allows the framework to process multiple modifiers in a single pass, ensuring that layout invalidations (Layer 3) only happen once after all styles are applied.
 
 ---
 

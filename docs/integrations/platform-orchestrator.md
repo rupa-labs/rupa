@@ -1,6 +1,6 @@
 # Platform Integration: Platform Orchestrator 🏛️
 
-The Platform Orchestrator (Layer 1) is the foundation of every Rupaui application. It manages the hardware-specific execution environment and provides a unified "agnostic bridge" for the higher layers of the framework.
+The Platform Orchestrator (Layer 1) is the foundation of every Rupa Framework application. It manages the hardware-specific execution environment and provides a unified "agnostic bridge" for the higher layers of the framework.
 
 ---
 
@@ -25,11 +25,11 @@ Platform-specific "shells" that implement the execution loop (Event Loop).
 
 ## 🔄 Execution Pipeline
 
-The lifecycle of a Rupaui application is standardized across all targets:
+The lifecycle of a Rupa Framework application is standardized across all targets:
 
 1.  **Bootstrap**: The `App` struct initializes global state (Theme, Plugins) and selects the appropriate `PlatformRunner`.
 2.  **Environment Setup**: The Runner initializes the hardware abstraction (WGPU, Crossterm, or Canvas) and creates the visual surface (Window or Character Grid).
-3.  **The Agnostic Bridge**: The Runner enters its event loop and begins mapping native events into Rupaui's `InputEvent`.
+3.  **The Agnostic Bridge**: The Runner enters its event loop and begins mapping native events into Rupa Framework's `InputEvent`.
 4.  **Render Loop**: Higher layers (`SceneCore` and `Renderer`) are invoked to resolve layout and paint the UI tree onto the surface.
 5.  **Shutdown**: The Orchestrator ensures all hardware resources are safely released (restoring terminal state or destroying GPU surfaces).
 

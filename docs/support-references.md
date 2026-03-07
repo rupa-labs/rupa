@@ -1,6 +1,6 @@
 # Support & Infrastructure Reference 🛠️
 
-This document details the built-in support systems that power Rupaui's core logic, from mathematical utilities to reactive state management and accessibility.
+This document details the built-in support systems that power Rupa Framework's core logic, from mathematical utilities to reactive state management and accessibility.
 
 ---
 

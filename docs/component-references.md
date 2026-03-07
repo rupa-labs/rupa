@@ -1,11 +1,11 @@
 # Component Reference Index 📚
 
-This document provides a comprehensive list of all UI components available in Rupaui, organized by their functional categories. Use this guide to find the right building blocks for your application.
+This document provides a comprehensive list of all UI components available in Rupa Framework, organized by their functional categories. Use this guide to find the right building blocks for your application.
 
 ---
 
 ## 🏛️ App Infrastructure
-The invisible backbone of every Rupaui application.
+The invisible backbone of every Rupa Framework application.
 
 | Component | Description | Documentation |
 | :--- | :--- | :--- |

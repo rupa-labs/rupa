@@ -7,7 +7,7 @@ The Input Dispatcher is the central intelligence for routing input from the Oper
 ## 🛠️ Key Concepts
 
 ### 1. Event Bubbling (Bottom-Up)
-Events in Rupaui propagate from the **leaf** node (child) up to the **root** (parent). 
+Events in Rupa Framework propagate from the **leaf** node (child) up to the **root** (parent). 
 - **Mechanism:** The dispatcher finds the target path and iterates from the last element to the first (`.iter().rev()`).
 - **Consumption:** Any component can call `event.consume()` to stop the bubbling and prevent parent elements from receiving the event.
 
@@ -54,7 +54,7 @@ The dispatcher is being extended to support complex touch interactions, includin
 - **Swipe** detection for mobile and tablet navigation.
 
 ### Integrated Navigation
-Rupaui provides automated focus management for accessibility and productivity:
+Rupa Framework provides automated focus management for accessibility and productivity:
 - **Tab Cycle:** Automatic navigation between interactive components using `Tab` and `Shift+Tab`.
 - **Keyboard Fallbacks:** Smart routing of events to hovered elements when no explicit focus is set.
 

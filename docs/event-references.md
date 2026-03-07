@@ -1,6 +1,6 @@
 # Event System Reference 🎯
 
-Rupaui provides a sophisticated event routing system that bridges raw Operating System signals with your UI components. This document details the types of events you can handle and how they propagate.
+Rupa Framework provides a sophisticated event routing system that bridges raw Operating System signals with your UI components. This document details the types of events you can handle and how they propagate.
 
 ---
 

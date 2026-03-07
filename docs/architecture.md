@@ -1,68 +1,51 @@
-# Rupaui Architecture 🏛️
+# Rupa Framework Architecture 🏛️
 
-This document outlines the multi-layered architecture of the Rupaui framework, following international software engineering standards for UI systems, high-performance graphics, and reactive state management.
+This document outlines the **Atoms & Composites** architecture of the Rupa Framework. It is designed with a high-performance modular philosophy, allowing developers to either use pre-assembled solutions or build their own custom framework from individual atomic pieces.
 
 ---
 
-## 🏗️ Layered Stack Overview
+## 🏗️ The Layered Blueprint: Atoms to Facade
 
-Rupaui is built on a 9-layer stack, descending from the user-facing composition down to the hardware execution. The architecture is designed to be **Backend-Agnostic**, allowing the same UI logic to run on GPUs (GUI) or Terminals (TUI).
+Rupa Framework is organized into three distinct tiers within a monorepo workspace.
 
-### Layer 9: Design System, UI Utilities & Ecosystem (DNA Visual)
-*   **Purpose:** Standardizes aesthetics and provides the functional "Utility-First" API.
-*   **Components:** Global Themes, Procedural Colors (OKLCH), Unified Scale, and functional modifiers.
-*   **Internationalization (i18n):** Localization providers and Right-to-Left (RTL) layout support.
+### 1. The Atoms (Low-Level Units - The Materials)
+These are independent, low-level crates that handle a single responsibility. They are the fundamental building blocks of the framework.
+*   **`rupa-signals`**: The fine-grained reactivity engine (Signal, Memo, Effect).
+*   **`rupa-styling`**: The visual DNA, OKLCH color math, and unified design tokens.
+*   **`rupa-vnode`**: The agnostic Virtual Tree structure used as a universal interface.
+*   **`rupa-id`**: Secure unique identifier generation.
+*   **`rupa-layout-taffy`**: High-performance geometric resolution (Taffy integration).
 
-### Layer 8: Application Composition Layer
-*   **Purpose:** High-level orchestration where developers assemble the UI.
-*   **Components:** Application views, routing logic, and business logic integration.
+### 2. The Composites (High-Level Assemblies - The Furniture)
+These crates assemble multiple atoms into functional, high-level modules. They are pre-built solutions for standard use cases.
+*   **`rupa-ui`**: The Artisan Component Library (`Button`, `Text`, `VStack`, etc.).
+*   **`rupa-engine`**: The Native Runtime. Handles GPU (WGPU) and Terminal (TUI) rendering.
+*   **`rupa-server`**: The Backend & SSR Engine. Handles HTML generation and Axum integration.
+*   **`rupa-client`**: The Web Frontend Engine. Handles DOM manipulation and WASM Hydration.
+*   **`rupa-macros`**: Procedural stencils for reducing boilerplate across all layers.
 
-### Layer 7: Semantic Component Layer (The Artisans)
-*   **Purpose:** Meaningful UI elements with pre-defined semantic behavior.
-*   **Components:** `Button`, `Input`, `Navbar`, `Modal`, `Alert`, `Table`.
-*   **Accessibility (A11y):** Components implement semantic roles (e.g., `Role::Button`) for screen readers.
+### 3. The Facade (The Showroom)
+*   **`rupa`**: The primary entry point for users. It orchestrates all composites via **Feature Flags**, allowing for a tailored development experience.
 
-### Layer 6: Primitive UI Layer (Atomic)
-*   **Purpose:** Atomic building blocks like `Div`, `Flex`, and `Grid`.
-*   **Characteristics:** Structural containment without inherent semantic meaning.
+---
 
-### Layer 5: Component Architecture Layer (Logic & View)
-*   **Purpose:** Enforces Separation of Concerns (SOC) via the Brain/Body split.
-*   **Logic (Brain):** Reactive state, data validation, and Semantic Event Handlers.
-*   **View (Body):** Styling metadata, layout nodes, and paint instructions.
-*   **Interactivity Engine:** Focus Management, Event Dispatcher, and Hit-Testing.
+## 🛠️ The Modular Choice
 
-### Layer 4: Reactivity & State Layer
-*   **Purpose:** Manages fine-grained data flow and change propagation.
-*   **Core:** `Signal<T>` and `Memo<T>`.
-*   **Animation Engine:** Time-based signal interpolation (Tweens, Springs).
+Because of our **Zero-Cost Abstraction** and modular design, you can mix and match atoms to create a custom runtime.
 
-### Layer 3: Geometric Scene Layer
-*   **Purpose:** Manages the visual tree (Scene Graph) and resolves spatial properties.
-*   **Scene Graph:** Orchestrates the parent-child hierarchy and lifecycle of UI elements.
-*   **Geometric Resolution:** Utilizes **Taffy** to transform abstract layout rules into precise coordinates.
-*   **Spatial Awareness:** Maps global coordinates to local component spaces, essential for hit-testing and clipping.
-
-### Layer 2: Rendering Engine Layer (Multi-Backend)
-*   **Purpose:** A modular visual pipeline that translates geometric data into specific backend instructions.
-*   **Composition Core (`RenderCore`):** Shared internal state for all renderers (Viewport, Camera, Logical Size).
-*   **Universal Interface (`trait Renderer`):** Agnostic contract for drawing primitives, text, and managing clipping.
-*   **Sub-systems:** GUI Renderer (WGPU), TUI Renderer (Terminal), and Headless testing buffer.
-
-### Layer 1: Hardware Abstraction Layer (Platform Integration)
-*   **Purpose:** Native interface with the environment (OS or Terminal).
-*   **Composition Core (`PlatformCore`):** Shared state for all platforms (App root, Scene reference, Cursor).
-*   **Standardized Lifecycle (`trait PlatformRunner`):** Unified initialization and execution loop.
-*   **GUI Platform Integration:** WGPU Device & Winit Windowing.
-*   **TUI Platform Integration:** Terminal Raw Mode & Input Capture.
+| Target Application | Required Components (Atoms & Composites) |
+| :--- | :--- |
+| **Native Desktop** | `rupa-ui` + `rupa-engine` (WGPU) |
+| **Native Terminal** | `rupa-ui` + `rupa-engine` (TUI) |
+| **Full-Stack Web** | `rupa-ui` + `rupa-server` + `rupa-client` |
+| **Embedded/Headless**| `rupa-signals` + `rupa-vnode` |
+| **JS/TS Hybrid** | `rupa-core` + `rupa-client` (WASM) |
 
 ---
 
 ## 🔄 Architectural Principles
 
-1.  **Composition over Inheritance:** High-level platform shells (GUI/TUI) compose low-level cores (`PlatformCore`, `RenderCore`) to eliminate redundancy.
-2.  **Agnostic Bridge:** Layers 3-9 are platform-independent; only Layers 1-2 contain hardware-specific code.
-3.  **Universal Language:** Standardized enums like `InputEvent` and traits like `Renderer` ensure the framework speaks a single language regardless of the output target.
-4.  **Strict SOC:** Logic (Brain) never touches Rendering (Body).
-5.  **Spatial Integrity:** Layer 3 acts as the single source of truth for all geometry and structural relationships.
-6.  **Reactive Integrity:** UI updates are side-effects of Signal changes, managed by the fine-grained reactivity layer.
+1.  **Atomic Independence:** Atoms must never depend on Composites.
+2.  **Headless-First:** Every Atom and UI component must be testable without a display or OS environment.
+3.  **Industry-Standard Naming:** We use clear, industry-standard names for crates while maintaining an artisan spirit in the code quality.
+4.  **Serialization DNA:** All data moving between atoms and composites is serializable via **Serde**.

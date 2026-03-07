@@ -1,6 +1,6 @@
 # Reactivity: Change Propagation 🔄
 
-Rupaui follows a **Reactive Pipeline** that ensures data changes flow smoothly from the logic layer down to the hardware. This document tracks the journey of a single state change.
+Rupa Framework follows a **Reactive Pipeline** that ensures data changes flow smoothly from the logic layer down to the hardware. This document tracks the journey of a single state change.
 
 ---
 
@@ -10,10 +10,10 @@ Rupaui follows a **Reactive Pipeline** that ensures data changes flow smoothly f
 A component's logic mutates a signal, for example: `counter.update(|v| *v += 1)`.
 
 ### 2. Notification (Layer 4)
-The `Signal` notifies its internal observers. In Rupaui, the default observer is the **Platform Redraw Hook**.
+The `Signal` notifies its internal observers. In Rupa Framework, the default observer is the **Platform Redraw Hook**.
 
 ### 3. Redraw Request (Layer 1)
-`rupaui::platform::request_redraw()` is called. 
+`rupa::platform::request_redraw()` is called. 
 - **In GUI:** This sends a `UserEvent` to Winit's event loop.
 - **In TUI:** This breaks the polling sleep to trigger a new frame.
 

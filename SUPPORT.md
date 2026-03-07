@@ -1,6 +1,6 @@
 # Support Guide 🤝
 
-Thank you for using Rupaui! If you need help, have questions, or want to discuss the framework, please use the following channels.
+Thank you for using Rupa Framework! If you need help, have questions, or want to discuss the framework, please use the following channels.
 
 ---
 
@@ -27,4 +27,4 @@ For security-related issues or private inquiries, please contact the maintainers
 
 ---
 
-*Note: As Rupaui is currently in its early stages (v0), response times may vary. We appreciate your patience!*
+*Note: As Rupa Framework is currently in its early stages (v0), response times may vary. We appreciate your patience!*

@@ -6,11 +6,11 @@ The **Desktop Runner** is the primary execution shell for macOS, Windows, and Li
 
 ## 🏗️ Architecture
 
-The Desktop Runner adheres to the 9-layer arhcitecture by bridging OS events into the Rupaui ecosystem.
+The Desktop Runner adheres to the 9-layer arhcitecture by bridging OS events into the Rupa Framework ecosystem.
 
 ### Key Responsibilities
 - **Window Lifecycle**: Manages the creation and destruction of the OS window.
-- **Event Dispatching**: Maps native `WindowEvent` (Resize, Close, Cursor) into Rupaui's `InputEvent`.
+- **Event Dispatching**: Maps native `WindowEvent` (Resize, Close, Cursor) into Rupa Framework's `InputEvent`.
 - **HiDPI Scaling**: Automatically handles pixel density changes and logical coordinate mapping.
 - **Paint Coordination**: Triggers the rendering pipeline based on OS redraw requests.
 

@@ -1,6 +1,6 @@
 # Backend Selection (GUI vs TUI) 🔄
 
-Rupaui is designed to be highly modular. By changing a single configuration, you can switch your entire application from a high-performance GUI to a lightweight Terminal interface.
+Rupa Framework is designed to be highly modular. By changing a single configuration, you can switch your entire application from a high-performance GUI to a lightweight Terminal interface.
 
 ---
 
@@ -12,17 +12,17 @@ The most efficient way to select a backend is via Cargo features. This ensures t
 # In your Cargo.toml
 
 # For a Native GUI App
-rupaui = { version = "0.1", features = ["gui"] }
+rupa = { version = "0.1", features = ["gui"] }
 
 # For a Terminal TUI App
-rupaui = { version = "0.1", features = ["tui"] }
+rupa = { version = "0.1", features = ["tui"] }
 ```
 
 ---
 
 ## ⚙️ Runtime Handshake
 
-If both features are enabled, Rupaui defaults to GUI but allows for a runtime handshake during the bootstrap phase:
+If both features are enabled, Rupa Framework defaults to GUI but allows for a runtime handshake during the bootstrap phase:
 
 ```rust
 fn main() {

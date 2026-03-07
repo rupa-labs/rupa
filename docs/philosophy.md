@@ -1,6 +1,6 @@
-# Rupaui Philosophy 🎨
+# Rupa Framework Philosophy 🎨
 
-Rupaui is engineered for artisans who demand the perfect balance between **Reactive Performance**, **Semantic Clarity**, and **Hardware-Accelerated Visuals**. Our philosophy is built on five core pillars.
+Rupa Framework is engineered for artisans who demand the perfect balance between **Reactive Performance**, **Semantic Clarity**, and **Hardware-Accelerated Visuals**. Our philosophy is built on five core pillars.
 
 ---
 
@@ -10,16 +10,16 @@ We believe functional utilities are unmatched for development speed, while seman
 - **Semantic:** Components convey meaning and enforce hierarchy (e.g., `Navbar`, `Modal`, `Section`).
 
 ## 2. Logic & View Separation (SOC)
-To ensure testability and modularity, Rupaui enforces a strict architectural boundary within every component:
+To ensure testability and modularity, Rupa Framework enforces a strict architectural boundary within every component:
 - **Logic (The Brain):** Pure state management, reactive signals, and event handling. It is decoupled from rendering infrastructure.
 - **View (The Body):** Visual metadata, layout nodes, and GPU paint instructions.
 This separation allows for easier unit testing of logic and swapping visual implementations without breaking the "brain" of the component.
 
 ## 3. Signal-Based Fine-Grained Reactivity
-Rupaui utilizes a **Signal** and **Memo** system. Instead of re-rendering the entire tree, only the specific components tied to a changed Signal are marked as `dirty`. This ensures zero-overhead updates and maintains a consistent 60+ FPS even in complex UIs.
+Rupa Framework utilizes a **Signal** and **Memo** system. Instead of re-rendering the entire tree, only the specific components tied to a changed Signal are marked as `dirty`. This ensures zero-overhead updates and maintains a consistent 60+ FPS even in complex UIs.
 
 ## 4. Hardware-Accelerated Rendering (WGPU)
-Rupaui is built directly on **WGPU**, bypassing traditional CPU-bound rendering. Every primitive—rectangles, text, and vector paths—is processed via custom shaders on the GPU. This enables high-performance visual effects like real-time SDF shadows, rounded corners, and perceptual color blending without taxing the main thread.
+Rupa Framework is built directly on **WGPU**, bypassing traditional CPU-bound rendering. Every primitive—rectangles, text, and vector paths—is processed via custom shaders on the GPU. This enables high-performance visual effects like real-time SDF shadows, rounded corners, and perceptual color blending without taxing the main thread.
 
 ## 5. Visual DNA & Unified Scale
 Aesthetic consistency is enforced through a unified 10-step scaling system (`Xs` to `Xl6`) applied globally across:

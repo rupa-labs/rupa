@@ -1,78 +1,73 @@
-# Engineering Standards 🛠️
+# Rupa Framework Engineering Standards 🛠️
 
-This document defines the mandatory engineering principles, patterns, and conventions followed in the Rupaui framework. Adherence to these standards ensures a modular, maintainable, and platform-agnostic codebase.
-
----
-
-## 1. Core Architectural Pillars
-
-### Separation of Concerns (SOC)
-Every module must have a single, well-defined responsibility.
-- **Logic vs. View:** Components must separate their "brain" (state/events) from their "body" (rendering/layout).
-- **Platform Agnosticism:** High-level logic (Layers 3-9) must never depend on hardware-specific details (Layers 1-2).
-
-### DRY (Don't Repeat Yourself) via Composition
-Avoid logic duplication by centralizing shared functionality.
-- **Composition over Inheritance:** Use "Cores" (e.g., `PlatformCore`, `RenderCore`) and compose them into specific implementations instead of using deep inheritance hierarchies.
-- **Trait-Based Behavior:** Define common capabilities (e.g., `Stylable`, `Renderer`) through traits.
-
-### Dependency Inversion (Third-Party Wrapping)
-Never let an external library leak its API directly into Rupaui's core logic.
-- **Rule:** All 3rd-party crates (Winit, WGPU, Crossterm, Taffy) must be wrapped in internal abstractions.
-- **Benefit:** Allows swapping underlying libraries (e.g., replacing Winit with SDL2) by only modifying the wrapper.
+This document defines the mandatory engineering principles and foundational strategies for the Rupa Framework. Adherence to these standards is critical for maintaining a high-performance, scalable, and cross-platform ecosystem.
 
 ---
 
-## 2. Framework Patterns
+## 1. Core Architectural Pillars (The Doctrine)
 
-### The Logic & View Pattern
-Standard for all UI Elements in `src/elements/`.
-1.  **Logic Struct:** Pure data, signals, and event handlers.
-2.  **View Struct:** Styling metadata, layout nodes, and paint instructions.
-3.  **Bridge Struct:** The public component that implements `Component` and `Stylable`.
+### 1.1 Zero-Cost Abstractions
+Rupa Framework leverages Rust's type system to ensure that abstractions do not impose a runtime penalty.
+*   **Generics over Trait Objects:** Prefer `impl Trait` for internal calculations, styling, and data processing to allow compiler inlining.
+*   **Surgical Dynamic Dispatch:** Use `dyn Trait` only at system boundaries (e.g., `Component` or `Renderer` interfaces) where flexibility is required at the cost of slight overhead.
 
-### The Agnostic Bridge
-- Layers 3 through 9 communicate using a "Universal Language" (`InputEvent`, `trait Renderer`).
-- Implementation details are isolated in Layer 1 (Platform Integration) and Layer 2 (Rendering).
+### 1.2 Unified Virtual Tree (VNode Architecture)
+To support both GPU-based (WGPU) and DOM-based (Web) rendering, Rupa utilizes a shared intermediary structure: the **VNode**.
+*   **Agnostic Interface:** Components describe their intent via VNodes.
+*   **Multi-Pipeline Rendering:**
+    *   **Native Pipeline:** VNode -> Taffy (Layout) -> WGPU/TUI (Paint).
+    *   **Web Pipeline:** VNode -> HTML String (SSR) or DOM Elements (Client).
+*   **Separation of Concerns:** Components must never know how they are being rendered.
 
+### 1.3 Async-First & Reactive Integrity
+Modern UIs must be non-blocking and responsive.
+*   **Async Dispatching:** The event system and reactivity engine must be compatible with Rust's `async/await` ecosystem (Tokio/WASM).
+*   **Fine-Grained Reactivity:** UI updates are side-effects of `Signal<T>` changes, ensuring that only the necessary parts of the tree are recalculated.
 
 ---
 
-## 3. Coding Conventions
+## 2. Platform & Ecosystem Strategy
 
-### Naming Conventions
-- **Semantics First:** Names should describe *what* an object represents or *why* it exists, not *how* it is implemented.
-- **Conciseness:** Prefer short, impactful names (e.g., `GuiRunner` instead of `RupauiGraphicalApplicationRunner`).
-- **Standard Suffixes:**
-    *   `Core`: Internal shared state (Composition).
-    *   `Logic`: Component state engine.
-    *   `View`: Component rendering engine.
+### 2.1 Pluggable & Modular Design
+Rupa follows a "Plugin-First" philosophy. Core features should be decoupled into independent modules.
+*   **Feature Flags:** Use Cargo features to allow users to opt-out of heavy dependencies (e.g., `wgpu`, `ssr`).
+*   **Trait-Based Extensibility:** Systems like Routing, State Management, and Animations must be injectable via the `Plugin` trait.
+
+### 2.2 Polyglot & Cross-Platform Integrity
+The framework is designed to bridge the gap between Rust and the JavaScript ecosystem.
+*   **Serialization DNA:** All core data structures (Style, Events, Layout) must implement `serde::Serialize` and `serde::Deserialize`.
+*   **Universal ABI:** Maintain a clean FFI/WASM boundary for Node.js, Bun, and Browser interoperability.
+*   **Platform Agnosticism:** Layers 3-9 (Core, UI, Composition) must remain 100% free of OS-specific or hardware-specific code.
+
+### 2.3 Strict Diagnostics & Transparency ("No Magic" Rule)
+Developer Experience (DX) is as important as performance.
+*   **Diagnostic Center:** Failures in rendering, layout, or event propagation must report clear, actionable errors with source context.
+*   **Fail-Safe Philosophy:** Use typed errors (`thiserror`) and avoid silent failures or placeholders.
+
+---
+
+## 3. Development Lifecycle
+
+### 3.1 TDD & Empirical Verification
+*   **Test-First:** New features or bug fixes must be preceded by an automated test.
+*   **Headless Validation:** UI components should be validated in headless environments before being tested in graphical runners.
+
+### 3.2 Documentation Parity (Sync or Sink)
+*   **1:1 Mapping:** Every technical implementation in `crates/` must have a corresponding architectural explanation in `docs/`.
+*   **Transparency:** No hidden logic. The execution flow from Input -> Signal -> VNode -> Render must be explicit and documented.
+
+---
+
+## 4. Coding Conventions
+
+### 4.1 Naming & Semantics
+*   **Intent over Implementation:** Names describe *why* an object exists (e.g., `ArtisanButton`), not how it works (e.g., `WgpuClickableRect`).
+*   **Standard Suffixes:**
+    *   `Core`: Internal shared state.
+    *   `Logic`: Component state engine (The Brain).
+    *   `View`: Component visual description (The Body).
     *   `Runner`: Platform-specific execution shell.
 
-### Modularity
-- **One Module, One Responsibility:** Avoid "God Files". If a module exceeds its scope, break it down into sub-modules (e.g., `src/style/modifiers/` split by functional domain).
-- **Clean Indices (`mod.rs`):** All `mod.rs` files MUST be clean indices. They should only contain module declarations (`pub mod ...`) and re-exports (`pub use ...`). NO implementation logic, constants, or traits should be defined directly within a `mod.rs` file.
-- **Flattened Re-exports:** Use `pub use` in `mod.rs` to keep user imports shallow (1-level deep via `prelude`).
-
----
-
-## 4. Error Handling & Diagnostics
-
-- **No Silent Failures:** Errors must be handled or explicitly reported. Avoid `unwrap()` unless in test contexts or logically impossible states.
-- **Unsupported Error Convention:** For features that are partially implemented or not yet supported on a specific platform, ALWAYS return or report `Error::Unsupported(feature_name)`. DO NOT use silent `TODO` comments or `eprintln` placeholders. This ensures that technical debt is trackable via the framework's Diagnostic Center.
-- **Contextual Errors:** Use the `thiserror` crate to provide meaningful, typed error categories.
-
----
-
-## 5. State & Reactivity Standards
-
-- **Signal-First Mutation:** Any state that affects the visual output must be wrapped in a `Signal<T>`.
-- **Fine-Grained Updates:** Components should only be marked as `dirty` if a signal they depend on changes.
-- **Immutable Logic:** Logic structs should prefer immutability, using interior mutability (`Cell`, `RefCell`) or Signals only where necessary for performance or reactivity.
-
----
-
-## 5. Documentation Standard
-
-- **1:1 Mapping:** Every physical source file (`.rs`) should ideally have a corresponding documentation file (`.md`) explaining its technical role.
-- **Transparency:** No "magic". Document the execution flow and data propagation clearly to lower the barrier for new contributors.
+### 4.2 Module Hygiene
+*   **Clean Indices:** `mod.rs` files must only contain declarations (`pub mod`) and re-exports (`pub use`). Implementation logic is prohibited in index files.
+*   **Flat Prelude:** Keep user imports shallow through a centralized `prelude` module.

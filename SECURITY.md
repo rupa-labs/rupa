@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-We currently provide security updates for the following versions of Rupaui:
+We currently provide security updates for the following versions of Rupa Framework:
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -10,7 +10,7 @@ We currently provide security updates for the following versions of Rupaui:
 
 ## Reporting a Vulnerability
 
-We take the security of Rupaui seriously. If you believe you have found a security vulnerability, please do not open a public issue. Instead, please report it to us privately.
+We take the security of Rupa Framework seriously. If you believe you have found a security vulnerability, please do not open a public issue. Instead, please report it to us privately.
 
 **Contact:** reasnov.official@gmail.com
 
@@ -21,4 +21,4 @@ Please include the following in your report:
 
 We will acknowledge receipt of your report within 48 hours and provide a timeline for a fix and public disclosure.
 
-Thank you for helping keep Rupaui safe!
+Thank you for helping keep Rupa Framework safe!

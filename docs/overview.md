@@ -1,8 +1,8 @@
 # Project Overview 🎨
 
-**Rupaui** is a modern, high-performance cross-platform UI framework for Rust. It is engineered for artisans who demand the perfect balance between **Semantic Structure** and **Utility-First Flexibility**.
+**Rupa Framework** is a modern, high-performance cross-platform UI framework for Rust. It is engineered for artisans who demand the perfect balance between **Semantic Structure** and **Utility-First Flexibility**.
 
-Inspired by the ergonomics of TailwindCSS and the reliability of Bootstrap, Rupaui provides a type-safe, reactive engine built directly on top of hardware-accelerated primitives.
+Inspired by the ergonomics of TailwindCSS and the reliability of Bootstrap, Rupa Framework provides a type-safe, reactive engine built directly on top of hardware-accelerated primitives.
 
 ---
 
@@ -20,7 +20,7 @@ Inspired by the ergonomics of TailwindCSS and the reliability of Bootstrap, Rupa
 
 ## 🚀 Execution Pipeline
 
-The following diagram illustrates the lifecycle of a Rupaui application, from initialization to the reactive render loop.
+The following diagram illustrates the lifecycle of a Rupa Framework application, from initialization to the reactive render loop.
 
 ```mermaid
 flowchart TD
@@ -96,7 +96,7 @@ AN --> J
 
 ## 🛠 Tech Stack
 
-Rupaui stands on the shoulders of the Rust ecosystem's most powerful crates:
+Rupa Framework stands on the shoulders of the Rust ecosystem's most powerful crates:
 
 | Layer | Technology |
 | :--- | :--- |

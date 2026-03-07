@@ -1,6 +1,6 @@
 # Module: Plugin System (`plugin.rs`) 🔌
 
-The Plugin System is the extensibility gateway of Rupaui. it allows developers to inject custom logic, global state, or theme presets into the framework's bootstrap process.
+The Plugin System is the extensibility gateway of Rupa Framework. it allows developers to inject custom logic, global state, or theme presets into the framework's bootstrap process.
 
 ---
 

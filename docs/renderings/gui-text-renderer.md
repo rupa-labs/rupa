@@ -1,6 +1,6 @@
 # Module: GUI Text Renderer (`gui/text_renderer.rs`) 🔤
 
-The Text Renderer is the typography engine of Rupaui. It bridges the gap between UTF-8 strings and hardware-accelerated glyph rendering.
+The Text Renderer is the typography engine of Rupa Framework. It bridges the gap between UTF-8 strings and hardware-accelerated glyph rendering.
 
 ---
 
@@ -23,4 +23,4 @@ Automatically calculates the correct projection matrix so that text scales and m
 ---
 
 ## 🛡️ Correctness
-By using HarfBuzz (via cosmic-text), Rupaui correctly supports ligatures, kerning, and complex scripts (Arabic, Devanagari, etc.), which are often broken in simpler UI frameworks.
+By using HarfBuzz (via cosmic-text), Rupa Framework correctly supports ligatures, kerning, and complex scripts (Arabic, Devanagari, etc.), which are often broken in simpler UI frameworks.

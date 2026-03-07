@@ -1,6 +1,6 @@
-# Contributing to Rupaui 🎨
+# Contributing to Rupa Framework 🎨
 
-Thank you for your interest in contributing to **Rupaui**! We are building a modern, high-performance UI framework for Rust, and we welcome contributions from artisans of all skill levels.
+Thank you for your interest in contributing to **Rupa Framework**! We are building a modern, high-performance UI framework for Rust, and we welcome contributions from artisans of all skill levels.
 
 ---
 

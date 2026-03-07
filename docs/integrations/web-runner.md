@@ -6,12 +6,12 @@ The **Web Runner** is the execution shell for browser-based applications using W
 
 ## 🏗️ Architecture
 
-The Web Runner adheres to the 9-layer architecture by bridging the gap between browser APIs and Rupaui's agnosticism.
+The Web Runner adheres to the 9-layer architecture by bridging the gap between browser APIs and Rupa Framework's agnosticism.
 
 ### Key Responsibilities
-- **Canvas Management**: Attaches Rupaui's rendering surface to a specific `<canvas>` element.
+- **Canvas Management**: Attaches Rupa Framework's rendering surface to a specific `<canvas>` element.
 - **Async Lifecycle**: Handles the asynchronous nature of WASM and browser environments.
-- **Event Mapping**: Translates browser `MouseEvent`, `KeyboardEvent`, and `TouchEvent` into Rupaui's `InputEvent`.
+- **Event Mapping**: Translates browser `MouseEvent`, `KeyboardEvent`, and `TouchEvent` into Rupa Framework's `InputEvent`.
 - **Responsive Sizing**: Synchronizes the canvas dimensions with the browser window or its parent container.
 
 ---
@@ -19,11 +19,11 @@ The Web Runner adheres to the 9-layer architecture by bridging the gap between b
 ## 🗝️ API & Usage
 
 ### Starting a Web App
-To run a Rupaui application on the web, you must provide the ID of the target canvas:
+To run a Rupa Framework application on the web, you must provide the ID of the target canvas:
 
 ```rust
 App::new("My Web App")
-    .run_web("rupaui-canvas");
+    .run_web("rupa-canvas");
 ```
 
 ### Execution Flow

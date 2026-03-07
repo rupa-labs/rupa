@@ -1,35 +1,48 @@
-# Rupaui 🎨
+# Rupa Framework 🎨
 
-**Rupaui** is a modern, high-performance cross-platform UI framework for Rust. It is engineered for artisans who demand the perfect balance between **Semantic Structure**, **Fine-Grained Reactivity**, and **Hardware-Accelerated Performance**.
-
-Rupaui is built on a modular 9-layer architecture, allowing the same UI logic to power both 4K graphical applications (via WGPU) and lightweight terminal interfaces (via TUI).
+**Rupa Framework** is a high-performance, full-stack cross-platform UI toolkit for Rust artisans. It is built as a modular ecosystem of **Atoms & Composites**, allowing you to use it as a complete framework or as a collection of standalone tools.
 
 ---
 
-## 🌟 Key Features
+## 🌟 The Artisan Spirit
 
-- **Utility-First, Semantic-Support:** Atomic styling with a functional API, backed by a clean, meaningful component hierarchy.
-- **Logic & View Architecture:** Strict separation between UI state (Logic) and rendering infrastructure (View).
-- **Universal Multi-Backend:** Native support for **Desktop (WGPU)**, **Terminal (Crossterm)**, **Web (WASM)**, and **Mobile (Android/iOS)** with 100% logic reuse.
-- **Signal-Based Reactivity:** Zero-overhead UI updates using a precise Signal/Memo engine.
-- **DNA Visual System:** Perceptually uniform colors via **OKLCH** and a 10-step unified scale for spacial integrity.
-- **High-Performance Rendering:** 2D Batching, SDF geometry, and hardware-accelerated typography.
+Rupa Framework is designed for developers who demand the perfect balance between **Semantic Structure**, **Fine-Grained Reactivity**, and **Industry-Standard Modularity**.
+
+- **Atoms:** Independent low-level building blocks like `rupa-signals` (reactivity) and `rupa-styling` (design DNA).
+- **Composites:** Ready-to-use high-level engines for **Native Desktop (GPU)**, **Terminal (TUI)**, and **Full-Stack Web (SSR/DOM)**.
+- **Polyglot Hybrid:** Engineered for **JS/TS interoperability** via WebAssembly and High-Performance SSR native modules.
 
 ---
 
-## 🚀 Quick Start
+## 🏗️ Monorepo Ecosystem (Atoms & Composites)
 
-Add Rupaui to your `Cargo.toml`:
+Rupa is engineered as an **"IKEA-style"** ecosystem. You decide the scale of your framework:
+
+1.  **Native Power:** High-performance rendering via `rupa-engine` (WGPU/Crossterm).
+2.  **Full-Stack Web:** Modern DOM-based rendering with `rupa-server` (SSR) and `rupa-client` (Hydration).
+3.  **Atomic Integrity:** Every part of the framework is a decoupled component that can be used independently.
+
+For a full list of crates, see [**Crate References**](./docs/crate-references.md).
+
+---
+
+## 🚀 Quick Start (Composite Mode)
+
+Add Rupa to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rupaui = "0.1"
+# For Desktop (WGPU) applications
+rupa = { version = "0.1", features = ["desktop"] }
+
+# For Full-Stack Web (SSR + DOM) applications
+rupa = { version = "0.1", features = ["web", "ssr"] }
 ```
 
-Create a reactive counter in a few lines:
+Create a reactive counter that works across GPU, Terminal, and Web:
 
 ```rust
-use rupaui::prelude::*;
+use rupa::prelude::*;
 
 fn main() {
     let count = Signal::new(0);
@@ -37,44 +50,37 @@ fn main() {
     App::new("Artisan Counter")
         .root(
             VStack::new()
-                .style((flex(), justify_center(), items_center(), h_full()))
+                .style((p(20.0), items_center()))
                 .child(Box::new(Text::new(Memo::new({
                     let count = count.clone();
                     move || format!("Count: {}", count.get())
                 }))))
                 .child(Box::new(Button::new("Increment")
-                    .variant(Variant::Primary)
                     .on_click(move |_| count.update(|v| *v += 1))
                 ))
         )
-        .run(); // Defaults to Desktop Runner
+        .run();
 }
 ```
 
 ---
 
-## 🏗️ The 9-Layer Blueprint
+## 🛠️ Project Structure
 
-Rupaui is designed with total transparency. Explore our architecture from hardware to ecosystem:
+- `crates/rupa-*`: The core ecosystem (Atoms & Composites).
+- `docs/`: In-depth architectural guides and standards.
+- `examples/`: Multi-platform implementation demos.
 
-1.  [**Platform Integration Layer**](./docs/integrations/platform-orchestrator.md) - Target-specific Runners (Desktop, Terminal, Web, Mobile).
-2.  [**Rendering Engine**](./docs/renderings/renderer-interface.md) - WGPU and TUI painters.
-3.  [**Geometric Scene**](./docs/layouts/scene-core.md) - Tree resolution and Taffy integration.
-4.  [**Reactivity**](./docs/reactivity/signals.md) - Signals and Change Propagation.
-5.  [**Architecture**](./docs/architectures/logic-and-view.md) - Component design standards.
-6.  [**Primitives**](./docs/primitives/primitive-design.md) - Atomic building blocks.
-7.  [**Components**](./docs/components/component-design.md) - The Artisan Library.
-8.  [**Composition**](./docs/compositions/app-bootstrap.md) - Application assembly.
-9.  [**Ecosystem**](./docs/ecosystems/styling-api.md) - DNA Visual & Design System.
+Learn more about how we build crates in [**Crate Construction**](./docs/crate-construction.md).
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions from everyone! Please see our [CONTRIBUTING.md](./CONTRIBUTING.md) and [Engineering Standards](./docs/engineering-standards.md) to get started.
+We welcome contributions from everyone! Please see our [**CONTRIBUTING.md**](./CONTRIBUTING.md) and [**Engineering Standards**](./docs/engineering-standards.md) to get started.
 
 ## ⚖️ License
 
-Rupaui is dual-licensed under the [MIT License](./LICENSE). 
+Rupa Framework is dual-licensed under the MIT License.
 
 Built with ❤️ by [Reas Vyn](https://github.com/reasnov).

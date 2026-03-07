@@ -1,6 +1,6 @@
 # Components: Navigation 🧭
 
-Navigation components provide the high-level spatial landmarks of a Rupaui application. They are designed to manage large-scale UI transitions and branding zones.
+Navigation components provide the high-level spatial landmarks of a Rupa Framework application. They are designed to manage large-scale UI transitions and branding zones.
 
 ---
 

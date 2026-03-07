@@ -1,6 +1,6 @@
 # Module: Signals & Memos (`state.rs`) 🧬
 
-This module is the "Reactive Nucleus" of Rupaui. it provides the primitives required for fine-grained state management and automatic UI synchronization.
+This module is the "Reactive Nucleus" of Rupa Framework. it provides the primitives required for fine-grained state management and automatic UI synchronization.
 
 ---
 

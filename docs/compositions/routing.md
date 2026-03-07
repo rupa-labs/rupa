@@ -1,6 +1,6 @@
 # Composition: Universal Routing 🚦
 
-The Rupaui Router is a declarative navigation system designed to work seamlessly across Desktop, Terminal, Web, and Mobile. It utilizes the **Signal Engine** to provide fine-grained, reactive view switching.
+The Rupa Framework Router is a declarative navigation system designed to work seamlessly across Desktop, Terminal, Web, and Mobile. It utilizes the **Signal Engine** to provide fine-grained, reactive view switching.
 
 ---
 

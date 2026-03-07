@@ -1,0 +1,31 @@
+[package]
+name = "rupa-client"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+rupa-core.workspace = true
+rupa-ui.workspace = true
+wasm-bindgen.workspace = true
+js-sys.workspace = true
+log.workspace = true
+
+[dependencies.web-sys]
+workspace = true
+features = [
+    "HtmlElement",
+    "Window",
+    "Document",
+    "Node",
+    "Element",
+    "Event",
+    "MouseEvent",
+    "KeyboardEvent",
+    "CanvasRenderingContext2d",
+    "CssStyleDeclaration"
+]

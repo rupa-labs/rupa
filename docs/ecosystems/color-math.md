@@ -1,6 +1,6 @@
 # Color Math: The OKLCH Standard 🌈
 
-Rupaui uses the **OKLCH** color space for all procedural color generation. This ensures perceptual uniformity, meaning that colors feel consistently bright or dark to the human eye even when their hues change.
+Rupa Framework uses the **OKLCH** color space for all procedural color generation. This ensures perceptual uniformity, meaning that colors feel consistently bright or dark to the human eye even when their hues change.
 
 ---
 
@@ -13,7 +13,7 @@ Traditional RGB is mathematically linear but perceptually flawed. OKLCH fixes th
 - **H (Hue):** The angle on the color wheel.
 
 ### 2. Procedural Palettes
-The engine automatically generates shades (e.g., `Zinc-50` to `Zinc-950`) by calculating Lightness steps while keeping Chroma consistent. This is why Rupaui themes feel "Artisan" by default.
+The engine automatically generates shades (e.g., `Zinc-50` to `Zinc-950`) by calculating Lightness steps while keeping Chroma consistent. This is why Rupa Framework themes feel "Artisan" by default.
 
 ---
 

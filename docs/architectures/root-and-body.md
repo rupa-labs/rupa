@@ -1,6 +1,6 @@
 # Infrastructure: Root & Body 🏛️
 
-The Root and Body elements are the foundational layers of every Rupaui application. They provide the transition from the host Operating System into the Rupaui agnostik ecosystem.
+The Root and Body elements are the foundational layers of every Rupa Framework application. They provide the transition from the host Operating System into the Rupa Framework agnostik ecosystem.
 
 ---
 
@@ -9,7 +9,7 @@ The Root and Body elements are the foundational layers of every Rupaui applicati
 The **Root** is managed by the `App` struct. It is not a visual element but an architectural manifest that synchronizes the application's identity with the host environment.
 
 ### 1. Metadata Manifest
-Rupaui supports modern metadata standards (similar to Web PWAs), allowing you to define the app's personality beyond just a title.
+Rupa Framework supports modern metadata standards (similar to Web PWAs), allowing you to define the app's personality beyond just a title.
 
 | Property | Description | Platform Sync |
 | :--- | :--- | :--- |
@@ -39,7 +39,7 @@ When an overlay is designated as a **Modal**, the Body enforces strict interacti
 The Body maintains a reactive **Viewport Signal**. This allows any component in the tree to listen to window size changes and adapt its layout (e.g., switching from a Sidebar to a Bottom Nav on mobile).
 
 ### 4. Pointer Cursor Management
-Rupaui supports context-aware mouse cursors. 
+Rupa Framework supports context-aware mouse cursors. 
 - **Resolution**: During the hit-test phase, the `InputDispatcher` identifies the topmost hovered component and reads its `cursor` style.
 - **Feedback Loop**: The dispatcher sends a request back to the **Platform Integration Runner** to update the native OS cursor.
 

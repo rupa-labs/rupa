@@ -1,0 +1,12 @@
+[package]
+name = "rupa-docs"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rupa = { path = "../rupa" }
+rupa-core = { path = "../rupa-core" }
+rupa-ui = { path = "../rupa-ui" }
+log.workspace = true

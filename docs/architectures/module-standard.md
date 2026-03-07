@@ -1,6 +1,6 @@
 # Module & Directory Standards 📂
 
-To maintain a scalable and sustainable codebase, Rupaui strictly maps its **9-Layer Architecture** to specific directories in `src/`. All new modules must follow this placement guide.
+To maintain a scalable and sustainable codebase, Rupa Framework strictly maps its **9-Layer Architecture** to specific directories in `src/`. All new modules must follow this placement guide.
 
 ---
 
@@ -57,7 +57,7 @@ Contains "Active Functions". These are the functional UI Utilities that users in
 
 ## 🛠️ General Rules
 
-1.  **Deep Imports are Prohibited:** Users should only import from `rupaui::prelude::*`. Internally, use `pub use` in `mod.rs` to flatten access.
+1.  **Deep Imports are Prohibited:** Users should only import from `rupa::prelude::*`. Internally, use `pub use` in `mod.rs` to flatten access.
 2.  **Logic-View Boundary:** Logic structs must **never** import `wgpu` or `taffy`.
 3.  **No Direct State Mutation:** Component state should always be wrapped in `Signal<T>` if it affects the UI output.
 4.  **Utility First:** Prefer creating a generic modifier in L9 instead of hardcoding styles inside a component's View in L7.

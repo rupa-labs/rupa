@@ -6,13 +6,13 @@ The **Terminal Runner** provides the execution shell for command-line applicatio
 
 ## 🏗️ Architecture
 
-The Terminal Runner translates the terminal's character grid environment into Rupaui's agnostik UI ecosystem.
+The Terminal Runner translates the terminal's character grid environment into Rupa Framework's agnostik UI ecosystem.
 
 ### Key Responsibilities
 - **Terminal Lifecycle**: Sets up and restores the terminal state (Raw Mode, Alt Screen).
 - **Polling Loop**: Manages a synchronous loop for capturing input and triggering frames.
 - **Character Grid Resolution**: Translates pixel-based coordinate requests into character grid units.
-- **Input Mapping**: Maps Crossterm `Event` to Rupaui's `InputEvent`.
+- **Input Mapping**: Maps Crossterm `Event` to Rupa Framework's `InputEvent`.
 
 ---
 

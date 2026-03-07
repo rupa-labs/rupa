@@ -1,6 +1,6 @@
 # Style Utility Reference 🎨
 
-This document provides a comprehensive list of all style utilities and modifiers available in Rupaui. These utilities allow you to customize the appearance and layout of your components using a fluent, chainable API.
+This document provides a comprehensive list of all style utilities and modifiers available in Rupa Framework. These utilities allow you to customize the appearance and layout of your components using a fluent, chainable API.
 
 ---
 
@@ -69,7 +69,7 @@ Conditional modifiers that apply styles only when a specific interaction occurs.
 ---
 
 ## 📱 Responsive Design (10-Step Breakpoints)
-Apply conditional styles based on the window width. Rupaui follows a mobile-first approach with 10 granular steps.
+Apply conditional styles based on the window width. Rupa Framework follows a mobile-first approach with 10 granular steps.
 
 | Breakpoint | Min-Width | Description | Example |
 | :--- | :--- | :--- | :--- |

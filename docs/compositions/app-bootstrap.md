@@ -1,6 +1,6 @@
 # Application Bootstrap: App Orchestration 🚀
 
-The Composition Layer is where the developer takes command of the Rupaui framework. It provides the high-level orchestration required to turn a tree of components into a living, interactive application.
+The Composition Layer is where the developer takes command of the Rupa Framework framework. It provides the high-level orchestration required to turn a tree of components into a living, interactive application.
 
 ---
 

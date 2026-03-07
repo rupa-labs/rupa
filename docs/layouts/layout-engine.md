@@ -8,7 +8,7 @@ The Layout Engine is the mathematical unit of Layer 3. It serves as the formal w
 
 ### 1. Taffy Integration
 - **Role:** Dependency Wrapping.
-- **Mechanism:** Maintains an internal `TaffyTree`. It isolates Taffy's complex API from the rest of Rupaui, ensuring that we can swap layout providers in the future without breaking the framework.
+- **Mechanism:** Maintains an internal `TaffyTree`. It isolates Taffy's complex API from the rest of Rupa Framework, ensuring that we can swap layout providers in the future without breaking the framework.
 
 ### 2. Recursive Building
 During the `compute()` phase, the engine:

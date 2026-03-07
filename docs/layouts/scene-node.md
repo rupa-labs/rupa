@@ -6,7 +6,7 @@ The Scene Node is a platform-agnostic handle that represents a single element wi
 
 ## 🏗️ Core Responsibilities
 
-1.  **Identifier Abstraction:** Wraps Taffy's `NodeId` into a Rupaui-owned `SceneNode` struct.
+1.  **Identifier Abstraction:** Wraps Taffy's `NodeId` into a Rupa Framework-owned `SceneNode` struct.
 2.  **Opaque Context:** Prevents high-level components from needing to import or understand the internal workings of the layout library.
 3.  **Handle Safety:** Provides a centralized way to pass geometric references between the Scene (L3) and the Renderer (L2).
 

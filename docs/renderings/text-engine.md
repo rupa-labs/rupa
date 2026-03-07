@@ -1,6 +1,6 @@
 # Typography Utilities
 
-Rupaui provides a rich, type-safe system for managing typography, from basic font properties to advanced text decorations and flow control.
+Rupa Framework provides a rich, type-safe system for managing typography, from basic font properties to advanced text decorations and flow control.
 
 ## 🔡 Font Properties
 

@@ -1,6 +1,6 @@
 # Module: Plugin System (`plugin.rs`) 🔌
 
-The Plugin system is the primary architectural vehicle for extending Rupaui without modifying the core framework.
+The Plugin system is the primary architectural vehicle for extending Rupa Framework without modifying the core framework.
 
 ---
 

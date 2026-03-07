@@ -6,13 +6,13 @@ The **Mobile Runner** provides the execution shell for native mobile application
 
 ## 🏗️ Architecture
 
-The Mobile Runner bridges native OS events (via `winit` and `MobileInfra`) into the Rupaui ecosystem.
+The Mobile Runner bridges native OS events (via `winit` and `MobileInfra`) into the Rupa Framework ecosystem.
 
 ### Key Responsibilities
 - **Lifecycle Management**: Responds to `suspended` and `resumed` events to destroy/recreate GPU surfaces.
 - **Surface Invalidation**: Automatically handles surface loss when the app moves to the background.
 - **Safe Area Insets**: Provides information for the renderer to avoid drawing under notches or home indicators.
-- **Touch & Gesture**: Maps native multi-touch events into Rupaui's pointer system.
+- **Touch & Gesture**: Maps native multi-touch events into Rupa Framework's pointer system.
 
 ---
 
