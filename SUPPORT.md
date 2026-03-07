@@ -6,7 +6,7 @@ Thank you for using Rupa Framework! If you need help, have questions, or want to
 
 ## 🙋 Getting Help
 
-1.  **Documentation:** Most answers can be found in our comprehensive [9-Layer Blueprint](./docs/README.md).
+1.  **Documentation:** Most answers can be found in our comprehensive [Documentations](./docs/doc-references.md).
 2.  **GitHub Issues:** Use issues for bug reports and feature requests. Please search existing issues before opening a new one.
 3.  **Discussions:** (Planned) We will soon open GitHub Discussions for general Q&A and architectural brainstorming.
 
