@@ -40,11 +40,22 @@ Every event hook in a component receives a mutable reference to a `UIEvent`.
 
 ## 🔄 Propagation Logic
 
-### 1. Bubbling (Bottom-Up)
-Most input events start at the **deepest** component under the cursor and move up to the root. If a child calls `.consume()`, the parent will not receive the event.
+### 1. Capture & Bubble
+Input events follow a standard two-phase lifecycle:
+- **Capture Phase**: The event travels from the Root down to the target component.
+- **Bubble Phase**: The event travels from the target back up to the Root. Most component handlers (`on_click`, `on_hover`) operate during this phase.
 
-### 2. Broadcasting (Top-Down)
-System events like **Resize** are sent to every component in the tree simultaneously to ensure responsive updates.
+### 2. Event Consumption
+If any handler calls `.consume()` during propagation, the event is immediately halted and will not reach further components in the pipeline.
 
 ### 3. Focused Routing
-Keyboard events are sent directly to the component that has requested focus, bypassing hit-testing until the focus is lost or cleared.
+Keyboard and text input events are sent directly to the component that has requested focus (e.g., an `Input` field), bypassing hit-testing.
+
+---
+
+## 📱 Platform Mapping (The Agnostic Bridge)
+
+Rupa Framework Runners (Desktop, Web, Mobile) perform automated translation:
+- **Winit (Desktop)**: Mouse movements and clicks are mapped to `PointerMove` and `PointerButton`.
+- **Mobile (Touch)**: Single and multi-touch events are normalized into `Pointer` events by the `rupa-mobile` composite.
+- **Web (JS)**: DOM events (PointerEvent, KeyboardEvent) are serialized and bridged into the WASM runner.

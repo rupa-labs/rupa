@@ -36,4 +36,4 @@ App::new("Artisan App")
 
 ## 🛡️ Dependency Inversion (DesktopInfra)
 
-All direct calls to `winit`'s window creation are encapsulated in `DesktopInfra` (`src/platform/desktop/infra.rs`). This ensures that the runner logic remains focused on orchestration, not OS-specific windowing calls.
+All direct calls to `winit`'s window creation are encapsulated in `DesktopInfra` (`crates/rupa-engine/src/platform/desktop/infra.rs`). This ensures that the runner logic remains focused on orchestration, not OS-specific windowing calls.

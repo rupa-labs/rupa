@@ -1,25 +1,34 @@
-# Module: Text (`text.rs`) 🔡
+# Component: Text 🔡
 
-The `Text` component is the atomic semantic unit for displaying strings within the UI. It bridges the gap between raw data and the Typography Engine (L2).
-
----
-
-## 🏗️ Components
-
-### `struct Text`
-Handles the rendering of shaped text.
-- **Logic:** Manages the UTF-8 content string and basic alignment metadata.
-- **View:** Interacts with the `TextMeasurer` during layout and the `TextRenderer` during the paint phase.
+The `Text` component is the atomic semantic unit for displaying strings. It bridges the gap between raw reactive data and the Typography Engine.
 
 ---
 
-## 🗝️ Semantic API
+## 🏗️ Architecture
 
-- `.style(text_color(Color))`: Standard way to change text aesthetics via modifiers.
+- **Logic:** Manages a `Signal<String>` for the UTF-8 content.
+- **VNode Mapping:** Renders as a `VNode::Text` node.
+- **Styling:** Although a leaf node, it can be wrapped in an element to apply typographic styles (size, weight, color) which are then inherited or explicitly passed to the rendering engine.
 
-## 💻 Usage Example
+---
+
+## 🗝️ API & Usage
 
 ```rust
-Text::new("Hello World")
-    .style(text_color(Color::Zinc(100)))
+use rupa::prelude::*;
+
+Text::new("Hello Rupa")
+    .style(text_color(Color::Semantic("primary".into(), None)))
+```
+
+### Methods
+- `.new(content)`: Creates a new Text component with a unique ID.
+
+---
+
+## 🌳 VNode Representation
+
+When `render()` is called, a `Text` component produces:
+```rust
+VNode::Text("Hello Rupa".into())
 ```

@@ -1,27 +1,30 @@
-# Module: TUI Renderer (`tui/mod.rs`) ⌨️
+# Module: TUI Renderer (`crates/rupa-engine/src/renderer/tui/renderer.rs`) ⌨️
 
-The TUI Renderer is the terminal-based implementation of the visual pipeline. It translates geometric coordinates into a grid of characters and ANSI colors.
+The TUI Renderer is the terminal-based implementation of the visual pipeline in the Rupa Framework. It translates the agnostic `VNode` tree into a grid of characters and ANSI colors.
 
 ---
 
 ## 🧠 Internal Anatomy
 
-### 1. Cell Buffer (The Framebuffer)
-The renderer maintains a 1D vector of `TuiCell` structs, mapped to a 2D coordinate system. Each cell contains a character symbol and RGB colors for both foreground and background.
+### 1. Cell Buffer (The Virtual Framebuffer)
+The renderer maintains a 1D vector of cells mapped to a 2D coordinate system. Each cell contains:
+- **Character**: The Unicode symbol to display.
+- **Style**: Perceptually uniform OKLCH colors for foreground and background.
 
-### 2. Double Buffering & Diffing
-- **Mechanism:** It stores the `prev_buffer`. 
-- **Optimization:** During `present()`, it only prints ANSI escape codes for cells that have changed compared to the previous frame. This eliminates terminal flickering and reduces bandwidth.
+### 2. Reconciliation & Patching
+- **VNode Mapping**: During the **Patch Phase**, the TUI Renderer consumes instructions to update the character grid.
+- **Double Buffering**: It compares the `new_buffer` with the `prev_buffer` to minimize stdout output.
 
 ---
 
 ## 🗝️ API Anatomy
 
-- `new(w, h)`: Allocates the virtual character grid.
-- `draw_rect()`: Uses Unicode box-drawing characters (`┌`, `─`, `┐`) to "paint" outlines into the buffer.
-- `present()`: Flushes the diff-calculated buffer to the terminal `stdout`.
+- **`render_patch(patch)`**: The primary entry point. Translates VNode elements into Unicode box-drawing characters (`┌`, `─`, `┐`) or raw text strings.
+- **`present()`**: Flushes the diff-calculated buffer to the terminal `stdout` using optimized ANSI escape sequences.
+- **`resize(w, h)`**: Reallocates the internal buffer to match the new terminal terminal dimensions.
 
 ---
 
-## 🔄 Interaction Flow
-- **L2 (TUI Renderer) -> L1 (Terminal):** Sends raw ANSI sequences to the active terminal stdout.
+## 🔄 Integration
+
+The TUI Renderer is active when the `tui` feature is enabled. It provides the visual surface for the **Terminal Runner**, allowing the same UI components to run seamlessly via SSH or in a minimal CLI environment.

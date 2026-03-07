@@ -8,7 +8,7 @@ Control Flow components allow developers to describe dynamic UI structures (cond
 
 ### 1. Reactive Branching (`Show`)
 - **Logic:** Tracks a `Signal<bool>`.
-- **View:** Performs **Conditional Layout**. If the signal is false, it returns an empty node to Taffy (L3), effectively removing the component from the visual and hit-test tree without destroying its state.
+- **View:** Performs **Conditional Layout**. If the signal is false, it returns an empty node to Taffy, effectively removing the component from the visual and hit-test tree without destroying its state.
 
 ### 2. Reactive Lists (`ForEach`)
 - **Logic:** Tracks a `Signal<Vec<T>>`.
@@ -27,4 +27,4 @@ Control Flow components allow developers to describe dynamic UI structures (cond
 ---
 
 ## 🚀 Performance
-By integrating directly with the **Geometric Scene Layer (L3)**, Control Flow components ensure that hidden branches consume zero GPU resources and zero layout calculation time.
+By integrating directly with the **Layout Engine**, Control Flow components ensure that hidden branches consume zero GPU resources and zero layout calculation time.

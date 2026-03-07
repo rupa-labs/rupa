@@ -9,17 +9,21 @@ We believe functional utilities are unmatched for development speed, while seman
 - **Utility:** Atomic styling through a functional API (e.g., `p(16.0)`, `bg(Color)`).
 - **Semantic:** Components convey meaning and enforce hierarchy (e.g., `Navbar`, `Modal`, `Section`).
 
-## 2. Logic & View Separation (SOC)
-To ensure testability and modularity, Rupa Framework enforces a strict architectural boundary within every component:
-- **Logic (The Brain):** Pure state management, reactive signals, and event handling. It is decoupled from rendering infrastructure.
-- **View (The Body):** Visual metadata, layout nodes, and GPU paint instructions.
-This separation allows for easier unit testing of logic and swapping visual implementations without breaking the "brain" of the component.
+## 2. VNode Rendering Architecture (Agnostic Separation)
+To ensure testability and multi-platform support, Rupa Framework enforces a strict architectural boundary via the **VNode (Virtual Node)** system:
+- **Component (Logic):** Manages reactive state and event handling. It describes its UI intent by producing a VNode tree.
+- **Renderer (Platform):** Consumes the VNode tree to perform platform-specific tasks (WGPU draw calls, ANSI character output, or DOM manipulation).
+This separation allows components to remain 100% agnostic of the hardware they run on.
 
 ## 3. Signal-Based Fine-Grained Reactivity
-Rupa Framework utilizes a **Signal** and **Memo** system. Instead of re-rendering the entire tree, only the specific components tied to a changed Signal are marked as `dirty`. This ensures zero-overhead updates and maintains a consistent 60+ FPS even in complex UIs.
+Rupa Framework utilizes a **Signal** and **Memo** system. Instead of re-rendering the entire tree, only the specific components whose Signals have changed are triggered to re-run their `render()` method, producing a new VNode sub-tree for surgical patching.
 
-## 4. Hardware-Accelerated Rendering (WGPU)
-Rupa Framework is built directly on **WGPU**, bypassing traditional CPU-bound rendering. Every primitive—rectangles, text, and vector paths—is processed via custom shaders on the GPU. This enables high-performance visual effects like real-time SDF shadows, rounded corners, and perceptual color blending without taxing the main thread.
+## 4. Multi-Platform Hardware Acceleration
+Rupa Framework is built for performance across every target:
+- **Native GPU:** High-performance visuals via **WGPU** and custom shaders for SDF-based effects.
+- **Terminal (TUI):** Optimized character-grid rendering with double-buffering and ANSI diffing.
+- **Web (WASM):** Efficient DOM patching and WebGPU/WebGL hardware acceleration.
+This ensures a premium, high-frame-rate experience whether you are building a 4K desktop app or an SSH-based CLI tool.
 
 ## 5. Visual DNA & Unified Scale
 Aesthetic consistency is enforced through a unified 10-step scaling system (`Xs` to `Xl6`) applied globally across:

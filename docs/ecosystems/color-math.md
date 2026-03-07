@@ -21,7 +21,7 @@ The engine automatically generates shades (e.g., `Zinc-50` to `Zinc-950`) by cal
 
 - `Color::Oklch(l, c, h, a)`: Direct access to perceptual coordinates.
 - `.a(alpha)`: Chaining method to modify transparency.
-- `.to_rgba()`: Final conversion step for the **Rendering Engine (L2)**.
+- `.to_rgba()`: Final conversion step for the **Rendering Engine**.
 
 ---
 

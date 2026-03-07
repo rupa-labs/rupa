@@ -25,4 +25,4 @@ The Platform Integration runners (GUI/TUI) are responsible for the conversion:
 ---
 
 ## 🛡️ Reactive Design
-Input events are non-blocking. They are captured by Layer 1 and pushed into the **InputDispatcher**, which then routes them into the reactive component tree.
+Input events are non-blocking. They are captured by the Platform Runner and pushed into the **InputDispatcher**, which then routes them into the reactive VNode tree.

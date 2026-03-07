@@ -8,16 +8,16 @@ Thank you for your interest in contributing to **Rupa Framework**! We are buildi
 
 Before you start, please read our [Engineering Standards](./docs/engineering-standards.md). Adherence to these principles is mandatory for all contributions:
 
-1.  **Separation of Concerns (SOC):** Always follow the **Logic & View** pattern for components.
-2.  **Agnostic Bridge:** Ensure that core logic does not depend on platform-specific libraries (WGPU/Winit/Crossterm).
-3.  **Documentation 1:1:** Every new module in `src/` must have a corresponding `.md` file in `docs/` explaining its anatomy and API.
+1.  **VNode Rendering Architecture:** Always follow the `render() -> VNode` pattern for components.
+2.  **Agnostic Separation:** Ensure that core component logic does not depend on platform-specific libraries (WGPU/Winit/Crossterm).
+3.  **Documentation 1:1:** Every new module in `crates/` must have a corresponding `.md` file in `docs/` explaining its anatomy and API.
 4.  **Semantic Naming:** Use clear, descriptive names that focus on intent.
 
 ---
 
 ## 🚀 Development Workflow
 
-1.  **Fork the Repository:** Create your own branch from `main` or the latest version branch (e.g., `v0`).
+1.  **Fork the Repository:** Create your own branch from `main`.
 2.  **Set up Environment:** Ensure you have the latest Rust toolchain installed.
 3.  **Implement & Test:** Write clean code and include automated tests.
 4.  **Sync Docs:** Update the relevant documentation files in `docs/`.
@@ -27,10 +27,10 @@ Before you start, please read our [Engineering Standards](./docs/engineering-sta
 
 ## 🧩 Modifying Components
 
-If you are adding or changing a component in `src/elements/`:
-- Ensure it composes **`ViewCore`** for its visual state.
+If you are adding or changing a component in `crates/rupa-ui/src/elements/`:
 - Implement the **`Component`** and **`Stylable`** traits.
-- Ensure the `paint` method is backend-agnostic.
+- Use the **`render()`** method to describe the UI structure via VNodes.
+- Ensure the component is testable in a headless environment.
 
 ---
 

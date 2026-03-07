@@ -10,14 +10,14 @@ Rupa Framework is organized into three distinct tiers within a monorepo workspac
 
 ### 1. The Atoms (Low-Level Units - The Materials)
 These are independent, low-level crates that handle a single responsibility. They are the "screws and wood" of the framework.
+*   **`rupa-support`**: The absolute foundation. Contains math (Vec2), ID generation, and common Errors.
 *   **`rupa-signals`**: The fine-grained reactivity engine (Signal, Memo, Effect).
 *   **`rupa-styling`**: The visual DNA, OKLCH color math, and unified design tokens.
 *   **`rupa-vnode`**: The agnostic Virtual Tree structure used as a universal interface.
-*   **`rupa-id`**: Secure unique identifier generation.
-*   **`rupa-layout-taffy`**: High-performance geometric resolution (Taffy integration).
 
 ### 2. The Composites (High-Level Assemblies - The Furniture)
 These crates assemble multiple atoms into functional, high-level modules. They are pre-built solutions for standard use cases.
+*   **`rupa-core`**: The primary foundation. Integrates VNodes and handles diffing/patching reconciliation.
 *   **`rupa-ui`**: The Artisan Component Library (`Button`, `Text`, `VStack`, etc.).
 *   **`rupa-engine`**: The Native Runtime. Handles hardware-accelerated rendering for **Desktop and Mobile (GPU)** and Terminal (TUI).
 *   **`rupa-server`**: The Backend & SSR Engine. Handles HTML generation and Axum integration.

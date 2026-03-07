@@ -51,5 +51,6 @@ The following properties can currently be animated:
 
 ## 🚀 Performance
 Rupa Framework's motion system is designed for high efficiency:
-- **GPU Accelerated**: Heavy interpolation is handled by shaders where possible.
-- **Frame-Independent**: Animations use a high-precision delta time to ensure smoothness on both 60Hz and 144Hz monitors.
+- **VNode Integrated**: Motion states are tracked across VNode diffing, ensuring smooth transitions even when the component tree structure changes.
+- **GPU Accelerated**: Heavy property interpolation (Colors, Transforms) is handled by custom shaders in the `rupa-engine`.
+- **Frame-Independent**: Animations use a high-precision delta time to ensure smoothness on any refresh rate (60Hz, 120Hz, etc.).

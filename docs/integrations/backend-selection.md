@@ -40,9 +40,9 @@ fn main() {
 
 ## 🤝 Feature Parity
 
-Regardless of the backend selected at Layer 1:
+Regardless of the backend selected:
 - **State management** (Signals) remains identical.
 - **Layouts** (Flexbox/Grid) are calculated by Taffy in both modes.
 - **Component Logic** is shared 100%.
 
-Only the **Rendering (L2)** and **Hardware Abstraction (L1)** change their implementation to suit the target environment.
+Only the **Rendering Engine** and **Platform Runner** change their implementation to suit the target environment.

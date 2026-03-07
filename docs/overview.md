@@ -9,11 +9,12 @@ Inspired by the ergonomics of TailwindCSS and the reliability of Bootstrap, Rupa
 ## 🌟 Key Features
 
 - **Utility-First, Semantic-Support**: Compose complex visual identities using a functional API while maintaining a clean, meaningful component hierarchy.
-- **Logic & View Pattern**: A strictly enforced separation between UI state (Logic) and rendering infrastructure (View), ensuring testability and modularity.
+- **VNode Rendering Architecture**: A universal virtual tree structure that decouples components from the platform, enabling multi-target rendering (WGPU, TUI, WASM, SSR).
+- **Atoms & Composites Workspace**: A highly modular codebase organized into specialized crates, ensuring zero-cost abstractions and independent scalability.
 - **Signal-Based Reactivity**: Fine-grained state management using `Signal` and `Memo` for zero-overhead UI updates, automatically triggering hardware-accelerated redraws.
 - **Hardware-Accelerated Rendering**: Built on **WGPU** with a specialized **2D Batch Renderer** for high-performance primitives (rects, shapes).
 - **Industrial Layout Engine**: Powered by **Taffy**, providing full support for Flexbox and CSS Grid layouts.
-- **Interactive Event System**: Full support for **Hit-Testing** and event dispatching (Click, Hover, Drag, Scroll) linked directly to the layout engine.
+- **Interactive Event System**: Full support for **Hit-Testing** and event dispatching (Click, Hover, Drag, Scroll, Touch) linked directly to the layout engine.
 - **Artisan Color System**: Native support for **OKLCH** color space for perceptually uniform aesthetics and precise theme control.
 
 ---
@@ -31,65 +32,62 @@ B --> C[Register Plugins]
 C --> D[Build Root Component]
 
 D --> E[Initialize Event Loop]
-E --> F[Create Window winit]
+E --> F[Platform Shell (Winit/Mobile/WASM)]
 
-F --> G[Initialize GPU Renderer]
-G --> H[Initialize wgpu Device]
-H --> I[Create Render Pipeline]
+F --> G[Initialize Graphics Backend (WGPU/TUI)]
+G --> H[Initialize Hardware Device]
+H --> I[Create Pipeline State]
 
 I --> J[Enter Event Loop]
 
 J --> K{Event Type}
 
-K -->|User Input| L[Platform Event Layer]
-K -->|System Event| M[Window Resize / Close]
-K -->|Redraw Request| N[Frame Pipeline]
+K -->|User Input| L[Input Dispatcher]
+K -->|System Event| M[Resize / Suspend / Resume]
+K -->|Redraw Request| N[Reactive Render Loop]
 
-L --> O[Event Dispatch System]
-O --> P[Element Tree Event Propagation]
+L --> O[Hit-Test Scene]
+O --> P[Capture & Bubble Events]
 P --> Q[Component Event Handlers]
 
-Q --> R[State Mutation]
-R --> S[Mark Tree Dirty]
+Q --> R[Signal State Mutation]
+R --> S[Mark Component Dirty]
 S --> T[Request Redraw]
 
 T --> J
 
-M --> U[Resize Renderer]
+M --> U[Platform Orchestrator Actions]
 U --> J
 
-N --> V[Clear Previous Layout]
+N --> V[Build Phase]
 
-V --> W[Build Element Tree]
-W --> X[Create Element Nodes]
+V --> W[Component render() calls]
+W --> X[Generate New VNode Tree]
 
-X --> Y[Layout Phase]
+X --> Y[Diff Phase]
 
-Y --> Z[Traverse Element Tree]
-Z --> AA[Generate Taffy Nodes]
-AA --> AB[Compute Layout Taffy]
+Y --> Z[Compare Old vs New VNodes]
+Z --> AA[Identify Minimal Patches]
 
-AB --> AC[Render Phase]
+AA --> AB[Patch Phase]
 
-AC --> AD[Traverse Element Tree]
-AD --> AE[Generate Draw Commands]
+AB --> AC[Layout Update (Taffy)]
+AC --> AD[Geometry & Text Batching]
 
-AE --> AF[Batch Renderer Commands]
+AD --> AE[GPU Submission]
 
-AF --> AG[Begin GPU Render Pass]
+AE --> AF[Begin Graphics Pass]
 
-AG --> AH[Execute Batches]
-AH --> AI[Draw Geometry]
-AI --> AJ[Render Text]
-AJ --> AK[Render SVG]
+AF --> AG[Execute Command Buffers]
+AG --> AH[Draw Geometry]
+AH --> AI[Render Text]
+AI --> AJ[Render SVG]
 
-AK --> AL[Submit Command Buffer]
+AJ --> AK[Submit & Present]
 
-AL --> AM[Present Frame]
+AK --> AL[Request Next Frame]
 
-AM --> AN[Request Next Frame]
-
-AN --> J
+AL --> J
 ```
 
 ---

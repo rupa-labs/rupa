@@ -32,5 +32,5 @@ The `Theme` struct organizes tokens into:
 ---
 
 ## 🔄 Interaction Flow
-- **L9 (Theme) -> L1 (Bootstrap):** Injected during app startup.
-- **L9 (Theme) -> L7 (Component):** Provides default colors for semantic variants.
+- **Theme -> App Bootstrap:** Injected during application startup.
+- **Theme -> Component:** Provides default colors and scales for semantic variants during the `render()` phase.

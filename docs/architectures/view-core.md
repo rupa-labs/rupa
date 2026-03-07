@@ -1,29 +1,34 @@
-# Module: View Core (`view.rs`) 🦴
+# Module: View Core (`crates/rupa-core/src/view.rs`) 🦴
 
-The View Core is the "Anatomical Standard" for the visual part of any component. It consolidates all infrastructure logic into a single, reusable core to eliminate boilerplate.
-
----
-
-## 🧠 Internal Anatomy
-
-### 1. State Consolidation
-Every `ViewCore` stores three essential pieces of metadata:
-- **`style`**: The visual blueprint (`RefCell<Style>`).
-- **`node`**: The handle to the physical Scene Node (`Cell<Option<SceneNode>>`).
-- **`dirty`**: The invalidation flag (`AtomicBool`).
-
-### 2. Composition Logic
-Instead of every component implementing its own `dirty` tracking, they **compose** `ViewCore`. This ensures that `mark_dirty()` and `set_node()` behave identically across the entire framework (DRY).
+> **⚠️ Architectural Note:** In the modern **VNode Architecture**, `ViewCore` has evolved from a component-level mixin into an internal mechanism for managing the lifecycle of rendered outputs and their physical scene nodes.
 
 ---
 
-## 🗝️ API Anatomy
+## 🧠 Core Responsibilities
 
-- `new(style)`: Initializes the visual state.
-- `get_style_mut()`: Provides safe, interior-mutability access to the style object.
-- `mark_dirty()` / `clear_dirty()`: Manages the re-render signal.
+The View Core provides the infrastructure for translating agnostic `VNodes` into physical `SceneNodes` within the rendering engine.
+
+### 1. Snapshot Management
+- **VNode Tracking**: Stores the "Previous VNode" to enable efficient diffing when a component re-renders.
+- **Scene Handles**: Maintains the mapping to the physical `SceneNode` and Taffy layout node.
+
+### 2. Reconciliation Logic
+- **Diff & Patch**: Orchestrates the process of comparing two VNode trees and issuing surgical updates to the renderer.
+- **Hydration Support**: Provides the hooks needed to "re-attach" reactive signals to an existing UI tree (essential for SSR to Client-side transition).
 
 ---
 
-## 🛡️ Thread Safety
-By using `AtomicBool` for the dirty flag and `RefCell`/`Cell` for internal state, `ViewCore` ensures that components can be manipulated safely within the framework's reactive execution context.
+## 🗝️ API & Lifecycle
+
+- **`reconcile(old, new)`**: The primary engine for identifying changes between two virtual snapshots.
+- **`mount(vnode)`**: The initial entry point that creates the physical representation for the first time.
+- **`unmount()`**: Ensures that all GPU resources and layout nodes are safely released.
+
+---
+
+## 🛡️ Structural Integrity
+
+By centralizing reconciliation in `ViewCore`, the Rupa Framework ensures:
+1.  **Consistency**: Every component follows the same diffing rules.
+2.  **Performance**: Minimal mutations are sent to the hardware-accelerated layers.
+3.  **Safety**: All tree modifications are performed in a single, well-defined reactive phase, preventing race conditions or inconsistent UI states.

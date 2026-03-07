@@ -35,4 +35,4 @@ App::new("My Web App")
 
 ## 🛡️ Dependency Inversion (WebInfra)
 
-All direct calls to `web-sys` are encapsulated in `WebInfra` (`src/platform/web/infra.rs`). This ensures that the runner logic remains focused on orchestration, not DOM manipulation details.
+All direct calls to `web-sys` are encapsulated in `WebInfra` (`crates/rupa-engine/src/platform/web/infra.rs`). This ensures that the runner logic remains focused on orchestration, not DOM manipulation details.

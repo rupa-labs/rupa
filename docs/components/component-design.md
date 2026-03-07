@@ -1,25 +1,25 @@
-# Layer 7 Architecture: Semantic Component Design 🎨
+# Architectural Guide: Semantic Component Design 🎨
 
-Layer 7 is the "Artisan Library" of Rupa Framework. It provides high-level, meaningful UI elements that users interact with. Unlike Primitives (L6), Semantic Components carry intent, accessibility roles, and complex internal logic.
+Semantic Components are the "Artisan Library" of the Rupa Framework. They provide high-level, meaningful UI elements that users interact with. Unlike Primitives, Semantic Components carry intent, accessibility roles, and internal logic.
 
 ---
 
 ## 🏗️ The Artisan Philosophy
 
-1.  **Meaningful Structure:** Every component represents a specific UI pattern (e.g., a `Navbar` isn't just a box; it's a navigational landmark).
-2.  **Logic-Heavy:** Components at this layer handle complex states, data validation, and event orchestration.
-3.  **Standardized Bridge:** They strictly follow the **Logic & View** pattern, delegating visual infrastructure to `ViewCore`.
-4.  **Accessible by Design:** Every component must implement appropriate ARIA-like roles and accessibility metadata using the AccessKit bridge (L1).
+1.  **Meaningful Structure:** Every component represents a specific UI pattern (e.g., a `Navbar` is a navigational landmark).
+2.  **Logic-Heavy:** Components at this level handle reactive states, data validation, and event orchestration.
+3.  **VNode Architecture:** They describe their visual structure by producing a `VNode` tree in their `render()` method.
+4.  **Agnostic Interaction:** Components remain decoupled from the rendering backend, enabling them to run on Desktop, Mobile, and Web.
 
 ---
 
 ## 🛠️ Implementation Standard
 
-To build a new Artisan component in Layer 7:
+To build a new Artisan component in the Rupa Framework:
 
-1.  **Define Logic:** Create a `Logic` struct containing all reactive `Signals` and event handlers. It must remain rendering-agnostic.
-2.  **Define View:** Create a `View` struct that composes `ViewCore`. It handles how the component translates its logic state into paint commands.
-3.  **Create the Bridge:** Implement the `Component` and `Stylable` traits on the main struct.
+1.  **Reactive State:** Use `Signals` and `Memos` for all internal data that affects the UI.
+2.  **VNode Rendering:** Implement the `Component` trait. The `render()` method should return a tree of VNodes (often built by composing Primitives like `Div` and `Flex`).
+3.  **Stylable Trait:** Implement `Stylable` to allow users to customize the component using functional modifiers.
 4.  **Semantic API:** Provide ergonomic methods (chaining) that speak the language of the component (e.g., `.variant()`, `.loading()`, `.on_click()`).
 
 ---
@@ -37,7 +37,8 @@ To build a new Artisan component in Layer 7:
 
 ---
 
-## 🔄 Interaction
-- **L7 -> L6:** Artisan components are built by composing Primitives like `Div` and `Flex`.
-- **L7 -> L4:** They are the primary consumers of the Reactivity Layer.
-- **L7 -> L9:** They utilize DNA Visual tokens to ensure aesthetic consistency.
+## 🔄 Interaction Flow
+
+- **Components -> Primitives:** Artisan components are built by composing Primitives like `Div` and `Flex`.
+- **Components -> Reactivity:** They are the primary consumers of the `rupa-signals` reactivity engine.
+- **Components -> Styling:** They utilize design tokens from `rupa-styling` to ensure aesthetic consistency.

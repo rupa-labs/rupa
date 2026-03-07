@@ -6,6 +6,7 @@ This document details the built-in support systems that power Rupa Framework's c
 
 ## 📐 Math & Geometry
 Foundational types for spatial calculations and vector manipulation.
+- **Internal Reference:** `crates/rupa-support/src/vector.rs`
 
 ### `struct Vec2`
 A high-precision 2D vector used for layouts, SVG paths, and pointer coordinates.
@@ -18,8 +19,20 @@ A high-precision 2D vector used for layouts, SVG paths, and pointer coordinates.
 
 ---
 
+## 🆔 ID Generation
+Universal unique identification system for VNodes and reactive components.
+- **Internal Reference:** `crates/rupa-support/src/id.rs`
+
+### `struct Id`
+A lightweight, serializable 64-bit identifier used to track elements across frame updates and hydration boundaries.
+- **Generation**: Created via the `Id::new()` global generator.
+- **Consistency**: Guaranteed to be unique within a single runtime instance.
+
+---
+
 ## ⚡ Reactivity (Signals)
 Fine-grained reactivity system for efficient UI updates.
+- **Internal Reference:** `crates/rupa-signals/src/lib.rs`
 
 ### `struct Signal<T>`
 A thread-safe reactive primitive that notifies the framework to redraw when its value changes.
@@ -34,6 +47,7 @@ A thread-safe reactive primitive that notifies the framework to redraw when its 
 
 ## 🛡️ Debugging & Error Handling
 Robust systems for framework diagnostics and graceful failure recovery.
+- **Internal Reference:** `crates/rupa-support/src/error.rs`
 
 ### `enum Error`
 Centralized technical error classification for all framework subsystems.

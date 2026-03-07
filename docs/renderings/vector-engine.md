@@ -20,5 +20,5 @@ The Vector Engine ensures that logos, icons, and custom drawings remain infinite
 ---
 
 ## 🛠️ Internal Module Reference
-- `src/renderer/vector.rs`: (Planned) The Bezier-to-SDF compiler.
-- `src/style/utilities/svg.rs`: Standard path and point data structures.
+- `crates/rupa-engine/src/renderer/vector.rs`: (Planned) The Bezier-to-SDF compiler.
+- `crates/rupa-core/src/svg.rs`: Standard path and point data structures.

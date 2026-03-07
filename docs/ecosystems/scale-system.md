@@ -7,7 +7,7 @@ Rupa Framework enforces aesthetic consistency through a **10-Step Scaling System
 ## 🧠 Internal Anatomy
 
 ### 1. Geometric Ratios
-The scale system uses a mathematical progression (from `Xs` to `Xl6`). Each step represents a logical unit that the **Layout Engine (L3)** can easily resolve into physical pixels or terminal cells.
+The scale system uses a mathematical progression (from `Xs` to `Xl6`). Each step represents a logical unit that the **Layout Engine** can easily resolve into physical pixels or terminal cells.
 
 ### 2. Standardized Steps
 - `Xs`, `Sm`, `Md` (Default), `Lg`, `Xl`, `Xl2`, `Xl3`, `Xl4`, `Xl5`, `Xl6`.

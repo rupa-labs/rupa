@@ -1,6 +1,6 @@
 # Platform Support (Native vs Web) 💻🌐
 
-Rupa Framework is built to be truly cross-platform. While the higher layers (3-9) are platform-agnostic, Layer 1 provides specific implementations for Native Desktop and WebAssembly (Wasm).
+Rupa Framework is built to be truly cross-platform. While the core logic is platform-agnostic, the Engine and Mobile composites provide specific implementations for Native Desktop, WebAssembly (Wasm), and Mobile.
 
 ---
 
@@ -31,12 +31,15 @@ Rupa Framework supports running directly in terminal emulators.
 
 ---
 
-## 🏗️ Future Platforms (Mobile)
+## 📱 Mobile Target (Android / iOS)
 
-Support for Android and iOS is part of our long-term roadmap. Since both Winit and WGPU support mobile backends (GLES and Vulkan/Metal), Layer 1 is already structurally prepared for mobile expansion.
+Rupa Framework supports native mobile applications through the `rupa-mobile` composite crate.
+- **Backend:** WGPU uses Vulkan (Android) or Metal (iOS).
+- **Windowing:** Native OS lifecycle management bridging touch events into the core via Winit.
+- **Integration:** The mobile runner manages safe area insets, touch gestures, and the volatile lifecycle of mobile rendering surfaces.
 
 ---
 
 ## 🛠️ Internal Module Reference
 - `Cargo.toml`: Features for `web-sys` and `wasm-bindgen`.
-- `src/platform/dispatcher.rs`: Specific event mapping for web vs native.
+- `crates/rupa-engine/src/platform/dispatcher.rs`: Specific event mapping for web vs native.

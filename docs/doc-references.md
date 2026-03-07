@@ -66,20 +66,20 @@ Detailed technical specifications for every internal framework module.
 | :--- | :--- |
 | **[Component Trait](./architectures/component-trait.md)** | The core contract for all UI elements. |
 | **[VNode Architecture](./architectures/vnode.md)** | The universal rendering bridge between logic and pixels. |
-| **[View Core](./architectures/view-core.md)** | Anatomical standard for component infrastructure. |
-| **[Logic & View Pattern](./architectures/logic-and-view.md)** | Strict Separation of Concerns (SOC) standard. |
-| **[Module Standard](./architectures/module-standard.md)** | Directory and naming conventions for elements. |
+| **[View Core](./architectures/view-core.md)** | Internal mechanism for VNode reconciliation. |
+| **[VNode Separation](./architectures/logic-and-view.md)** | Modern conceptual guide for agnostic separation. |
+| **[Module Standard](./architectures/module-standard.md)** | Crate-based workspace and naming conventions. |
 
 ### UI Primitives (Atomic)
 | Module | Description |
 | :--- | :--- |
-| **[Primitive Design](./primitives/primitive-design.md)** | The design standard for Layer 6 atomic blocks. |
+| **[Primitive Design](./primitives/primitive-design.md)** | The design standard for atomic blocks (Primitives). |
 | **[Overlay](./primitives/overlay.md)** | Absolute positioning and z-index management. |
 
 ### Semantic Components (Artisan)
 | Module | Description |
 | :--- | :--- |
-| **[Component Design](./components/component-design.md)** | The design standard for Layer 7 semantic elements. |
+| **[Component Design](./components/component-design.md)** | The design standard for semantic elements (Artisan). |
 | **[Theme Control](./components/theme-switcher.md)** | Standardized Light/Dark mode switching logic. |
 
 ### App Compositions
@@ -93,5 +93,6 @@ Detailed technical specifications for every internal framework module.
 | Module | Description |
 | :--- | :--- |
 | **[Styling API](./ecosystems/styling-api.md)** | Functional "Utility-First" API reference. |
+| **[Typography & Flow](./ecosystems/styling-typography.md)** | Styling reference for text and layout flow. |
 | **[Theme Engine](./ecosystems/theme-engine.md)** | DNA Visual standard for consistent aesthetics. |
 | **[Color Math](./ecosystems/color-math.md)** | OKLCH standards for perceptual uniformity. |

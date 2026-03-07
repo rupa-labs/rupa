@@ -24,7 +24,7 @@ Debug Mode can be toggled during application construction. When enabled, it acti
 
 Rupa Framework follows a **Fail-Safe** philosophy. Errors are categorized and handled based on their severity.
 
-### 1. `Rupa FrameworkError` System
+### 1. `Error` System
 The framework uses a centralized error enum to handle common failures:
 - **`LayoutError`:** Failures in Taffy tree synchronization.
 - **`RendererError`:** GPU or Surface related issues.
@@ -52,6 +52,6 @@ App::new("My App")
 ---
 
 ## 🔄 Internal Implementation
-- `src/platform/app.rs`: Manages the debug flag and global error handler.
-- `src/renderer/core.rs`: Logic for drawing debug overlays (bounding boxes).
-- `src/support/error.rs`: Centralized Error definitions.
+- `crates/rupa-engine/src/platform/app.rs`: Manages the debug flag and global error handler.
+- `crates/rupa-engine/src/renderer/core.rs`: Logic for drawing debug overlays (bounding boxes).
+- `crates/rupa-support/src/error.rs`: Centralized Error definitions.

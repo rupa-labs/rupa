@@ -22,5 +22,5 @@ The Typography Engine handles the most readable part of the UI. It transforms ra
 ---
 
 ## 🛠️ Internal Module Reference
-- `src/renderer/text_renderer.rs`: The WGPU-based text painter.
-- `src/style/utilities/typography.rs`: Data types for fonts, sizes, and weights.
+- `crates/rupa-engine/src/renderer/gui/text_renderer.rs`: The WGPU-based text painter.
+- `crates/rupa-styling/src/typography.rs`: Data types for fonts, sizes, and weights.

@@ -1,6 +1,6 @@
 # Infrastructure: Root & Body 🏛️
 
-The Root and Body elements are the foundational layers of every Rupa Framework application. They provide the transition from the host Operating System into the Rupa Framework agnostik ecosystem.
+The Root and Body elements are the foundational layers of every Rupa Framework application. They provide the transition from the host Operating System into the Rupa Framework agnostic ecosystem.
 
 ---
 
@@ -22,7 +22,7 @@ Rupa Framework supports modern metadata standards (similar to Web PWAs), allowin
 
 ## 🕺 The Body (Universal Container & Z-Stack)
 
-The **Body** is the internal root-level visual component (`src/core/body.rs`). It acts as the ultimate viewport and manages the **Global Z-Stack**, **Viewport Context**, and **Interaction Isolation**.
+The **Body** is the internal root-level visual component (`crates/rupa-ui/src/body.rs`). It acts as the ultimate viewport and manages the **Global Z-Stack**, **Viewport Context**, and **Interaction Isolation**.
 
 ### 1. The Multi-Layer Architecture
 To handle complex UI scenarios like Modals and Tooltips, the Body maintains a dual-layer system:
@@ -41,7 +41,7 @@ The Body maintains a reactive **Viewport Signal**. This allows any component in 
 ### 4. Pointer Cursor Management
 Rupa Framework supports context-aware mouse cursors. 
 - **Resolution**: During the hit-test phase, the `InputDispatcher` identifies the topmost hovered component and reads its `cursor` style.
-- **Feedback Loop**: The dispatcher sends a request back to the **Platform Integration Runner** to update the native OS cursor.
+- **Feedback Loop**: The dispatcher sends a request back to the **Platform Runner** to update the native OS cursor.
 
 ---
 
@@ -49,5 +49,5 @@ Rupa Framework supports context-aware mouse cursors.
 
 1.  **Isolation Check**: Before dispatching any event, the `InputDispatcher` checks if a "Focus Trap" is active.
 2.  **Hit-Testing Priority**: If a trap is active, only the active overlay is searched for targets. Otherwise, the Overlay Layer has priority over the Content Layer.
-3.  **Cursor Resolution**: Determins the requested cursor shape from the hit component's style.
-4.  **Paint Order**: Content -> Optional Backdrop -> Overlays.
+3.  **Cursor Resolution**: Determines the requested cursor shape from the hit component's style.
+4.  **Patch Order**: Structural updates are applied in order: Content -> Optional Backdrop -> Overlays.

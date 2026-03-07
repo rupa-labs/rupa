@@ -8,13 +8,13 @@ This module provides components for rendering mathematical paths and iconography
 
 ### `struct Svg`
 A container for complex vector paths.
-- **Logic:** Manages a collection of `Path` objects.
-- **View:** Iterates through paths and commands the Vector Engine (L2).
+- **State:** Manages a collection of `Path` objects.
+- **Rendering:** Iterates through paths and commands the Vector Engine during the patch phase.
 
 ### `struct Icon`
 A simplified component for rendering standardized symbols.
-- **Logic:** Tracks name and size.
-- **View:** Paints high-resolution symbols via SDF shaders.
+- **State:** Tracks name and size.
+- **Rendering:** Paints high-resolution symbols via SDF shaders.
 
 ---
 

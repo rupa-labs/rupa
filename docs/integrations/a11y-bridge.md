@@ -1,4 +1,4 @@
-# Module: Accessibility Bridge (A11y) (`src/platform/a11y.rs`) ♿
+# Module: Accessibility Bridge (A11y) (`crates/rupa-styling/src/accessibility.rs`) ♿
 
 Accessibility is a foundational component of Rupa Framework, managed as a semantic bridge between the framework and the Operating System's accessibility services.
 

@@ -36,4 +36,4 @@ App::new("CLI Tool")
 
 ## 🛡️ Dependency Inversion (TerminalInterface)
 
-Direct interactions with `crossterm` are encapsulated in `TerminalInterface` (`src/platform/terminal/terminal.rs`). This isolation ensures that the runner logic focuses on orchestration, not terminal-specific command handling.
+Direct interactions with `crossterm` are encapsulated in `TerminalRunner` (`crates/rupa-engine/src/platform/terminal/runner.rs`). This isolation ensures that the runner logic focuses on orchestration, not terminal-specific command handling.

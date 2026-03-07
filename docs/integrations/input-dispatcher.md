@@ -1,4 +1,4 @@
-# Module: Input Dispatcher (`src/platform/dispatcher.rs`) 🎯
+# Module: Input Dispatcher (`crates/rupa-engine/src/platform/dispatcher.rs`) 🎯
 
 The Input Dispatcher is the central intelligence for routing input from the Operating System to the correct UI component. It manages hit-testing, event bubbling, and advanced interaction states.
 

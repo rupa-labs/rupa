@@ -4,23 +4,23 @@ Rupa Framework avoids the common pitfall of "Re-rendering Everything." By using 
 
 ---
 
-## 🧐 The "Dirty" Flag Pattern
+## 🧐 The Reactive Graph
 
-Every component in Rupa Framework (Layer 5) maintains a `dirty` flag (an `AtomicBool`).
+Reactivity in the Rupa Framework is powered by `rupa-signals`.
 
-1.  **Subscription:** When a component is created, it can subscribe to a Signal.
-2.  **Invalidation:** When that Signal changes, the component calls `self.mark_dirty()`.
-3.  **Layout Bypass:** During the Layout phase (Layer 3), if a component is NOT dirty, Taffy skips recalculating its subtree and reuses the previous coordinates.
-4.  **Paint Efficiency:** If a component is not dirty and its global position hasn't changed, the renderer can potentially reuse previous draw commands (planned optimization).
+1.  **Subscription:** When a component calls its `render()` method, any `Signal` accessed during that call registers the component as a dependency.
+2.  **Invalidation:** When a `Signal`'s value is mutated, it notifies the framework that specific components are out-of-date.
+3.  **Surgical Re-render:** Only the affected components re-execute their `render()` methods to produce new VNode sub-trees.
+4.  **Patch Efficiency:** The diffing engine compares only the modified sub-trees against the previous state, generating minimal layout and paint patches.
 
 ---
 
-## 🏛️ Integration with Logic & View
+## 🏛️ Integration with VNode Architecture
 
-The **Logic & View** pattern is the perfect vehicle for fine-grained updates:
-- **Logic:** Detects the data change.
-- **View:** Reacts by setting its `dirty` flag.
-- **Bridge:** Coordinates the redraw request to Layer 1.
+The **VNode Architecture** is the perfect vehicle for fine-grained updates:
+- **State (Logic):** Mutates data wrapped in Signals.
+- **Render (VNode):** Produces a declarative snapshot of the component's intent.
+- **Reconciliation:** Translates VNode differences into precise hardware redraw requests.
 
 ## 🚀 Performance Benefits
 

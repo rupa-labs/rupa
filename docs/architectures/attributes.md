@@ -28,14 +28,15 @@ This separation ensures that your styling logic remains clean and performant, wh
 
 ## 🗝 Accessing Attributes
 
-When creating custom components, you can access the attributes map directly.
+When creating custom components, you typically pass your attributes into the produced `VNode` tree.
 
 ```rust
 impl Component for MyWidget {
-    fn render(&self) {
-        if let Some(val) = self.attributes.get("data-tracking-id") {
-            log::debug!("Found tracking ID: {}", val);
-        }
+    fn render(&self) -> VNode {
+        VNode::element("div")
+            .style(self.style.clone())
+            .attributes(self.attributes.clone()) // Pass attributes to VNode
+            .child(VNode::text("Widget Content"))
     }
 }
 ```

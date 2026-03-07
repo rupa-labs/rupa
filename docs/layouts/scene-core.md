@@ -1,6 +1,6 @@
-# Module: Scene Core (`mod.rs`) 🌳
+# Module: Scene Core (`crates/rupa-engine/src/scene/mod.rs`) 🌳
 
-The Scene Core is the spatial brain of Rupa Framework. it acts as the Single Source of Truth (SSOT) for the entire UI hierarchy and its geometric resolution.
+The Scene Core is the spatial brain of the Rupa Framework. It acts as the Single Source of Truth (SSOT) for the entire UI hierarchy and its geometric resolution.
 
 ---
 
@@ -18,11 +18,11 @@ The Scene Core is the spatial brain of Rupa Framework. it acts as the Single Sou
 
 ## 🗝️ API Anatomy
 
-- `resolve(root, measurer, w, h)`: orchestrates the full tree traversal and Taffy calculation.
-- `find_target(cursor_pos)`: returns a semantic `HitDiscovery` enum.
+- **`resolve(root, measurer, w, h)`**: Orchestrates the full tree traversal and Taffy calculation during the Patch Phase.
+- **`find_target(cursor_pos)`**: Returns a semantic `HitDiscovery` enum identifying the target component.
 
 ---
 
 ## 🔄 Interaction Flow
-- **L3 (Scene Core) -> L3 (Layout Engine):** Delegates geometric calculations.
-- **L1 (Dispatcher) -> L3 (Scene Core):** Queries for interaction targets.
+- **Scene Core -> Layout Engine:** Delegates mathematical geometric calculations to Taffy.
+- **Input Dispatcher -> Scene Core:** Queries for interaction targets during the capture phase of the event loop.

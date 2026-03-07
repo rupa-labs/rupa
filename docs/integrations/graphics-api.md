@@ -1,6 +1,6 @@
 # Graphics API (WGPU Infrastructure) 🎮
 
-Layer 1 of Rupa Framework utilizes **WGPU**, a cross-platform, safe, and modern graphics API for Rust. It acts as the bridge between the framework and the physical GPU, abstracting away the differences between Vulkan, Metal, DX12, and WebGPU.
+The hardware acceleration composite of the Rupa Framework utilizes **WGPU**, a cross-platform, safe, and modern graphics API for Rust. It acts as the bridge between the framework and the physical GPU, abstracting away the differences between Vulkan, Metal, DX12, and WebGPU.
 
 ---
 
@@ -19,7 +19,7 @@ When a Rupa Framework application starts, it performs a sequence of hardware han
 
 ## 🎨 Pixel Formats & SRGB
 
-Rupa Framework enforces **SRGB** color spaces at the hardware level. This ensures that the procedural colors calculated in Layer 9 (OKLCH) are presented with maximum color accuracy and no "gamma-shifting" across different monitors.
+Rupa Framework enforces **SRGB** color spaces at the hardware level. This ensures that the procedural colors calculated by the styling system (OKLCH) are presented with maximum color accuracy and no "gamma-shifting" across different monitors.
 
 ## ⚡ Hardware Acceleration
 
@@ -32,5 +32,5 @@ Every visual element in Rupa Framework is hardware-accelerated. Instead of using
 
 ## 🛠️ Internal Module Reference
 The core logic for this layer resides in:
-- `src/renderer/renderer.rs`: Device initialization and frame management.
-- `src/renderer/texture.rs`: GPU memory management for images.
+- `crates/rupa-engine/src/renderer/gui/renderer.rs`: Device initialization and frame management.
+- `crates/rupa-engine/src/renderer/gui/texture.rs`: GPU memory management for images.

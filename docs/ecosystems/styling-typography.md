@@ -1,22 +1,21 @@
-# Typography Utilities
+# Styling: Typography & Flow 🔡
 
-Rupa Framework provides a rich, type-safe system for managing typography, from basic font properties to advanced text decorations and flow control.
+The Rupa Framework provides a rich, type-safe system for managing typography via the `rupa-styling` crate. This system allows you to define everything from basic font properties to advanced text decorations and flow control.
 
-## 🔡 Font Properties
+---
+
+## 🔡 Font Properties (Atoms)
+The foundational building blocks for text appearance.
 
 - `.font(String)`: Set the font family.
-- `.size(f32)`: Set the font size.
+- `.font_size(f32)`: Set the font size in pixels.
+- `.font_bold()`: Shorthand for Bold weight.
 - `.weight(FontWeight)`: Set font thickness (Thin, Regular, Bold, etc.).
-- `.italic()` / `.font_style(FontStyle)`: Set font style.
-- `.smoothing(FontSmoothing)`: Control font rendering (Antialiased, etc.).
-- `.stretch(FontStretch)`: Control font width (Condensed, Expanded).
+- `.italic()`: Set font style to italic.
 
 ```rust
-Style::new()
-    .font("Inter")
-    .size(18.0)
-    .weight(FontWeight::Bold)
-    .italic()
+Text::new("Artisan Typography")
+    .style((font_size(18.0), font_bold(), italic()))
 ```
 
 ---

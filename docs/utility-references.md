@@ -5,16 +5,18 @@ This document provides a comprehensive list of all style utilities and modifiers
 ---
 
 ## 📏 Spacing Utilities
-Control the inner and outer space of your components.
+Control the inner and outer space of your components. These utilities support both raw `f32` values and the Rupa Framework `Scale` system.
 
 | Utility | Description | Example |
 | :--- | :--- | :--- |
-| **p(val)** | Sets padding on all four sides. | `.p(16.0)` |
+| **p(val)** | Sets padding on all four sides. | `.p(16.0)` or `.p(Scale::Md)` |
 | **px(val)** | Sets horizontal padding (left and right). | `.px(24.0)` |
 | **py(val)** | Sets vertical padding (top and bottom). | `.py(8.0)` |
-| **m(val)** | Sets margin on all four sides. | `.m(12.0)` |
-| **mx(val)** | Sets horizontal margin (left and right). | `.mx(auto)` |
-| **my(val)** | Sets vertical margin (top and bottom). | `.my(10.0)` |
+| **pt(val)** | Sets padding top. | `.pt(4.0)` |
+| **pr(val)** | Sets padding right. | `.pr(4.0)` |
+| **pb(val)** | Sets padding bottom. | `.pb(4.0)` |
+| **pl(val)** | Sets padding left. | `.pl(4.0)` |
+| **gap(val)** | Sets the space between children in a flex or grid. | `.gap(12.0)` |
 
 ---
 
@@ -23,8 +25,12 @@ Enhance the look and feel with colors and shapes.
 
 | Utility | Description | Example |
 | :--- | :--- | :--- |
-| **bg(color)** | Sets the background color. | `.bg(Color::Semantic("surface".into(), None))` |
-| **text_color(color)** | Sets the text color. | `.text_color(Color::Rgba(1.0, 1.0, 1.0, 1.0))` |
+| **bg(color)** | Sets an explicit background color. | `.bg(Color::Rgba(1.0, 0.0, 0.0, 1.0))` |
+| **bg_primary()** | Sets the brand primary background. | `.bg_primary()` |
+| **bg_surface()** | Sets the default surface background. | `.bg_surface()` |
+| **text_color(color)** | Sets the text color. | `.text_color(Color::White)` |
+| **font_size(val)** | Sets the font size in pixels. | `.font_size(16.0)` |
+| **font_bold()** | Sets font weight to bold. | `.font_bold()` |
 | **rounded(val)** | Sets the border radius. | `.rounded(8.0)` |
 | **rounded_full()** | Makes the corners fully rounded (pill/circle). | `.rounded_full()` |
 
@@ -36,11 +42,15 @@ Define how components are positioned and displayed.
 | Utility | Description | Example |
 | :--- | :--- | :--- |
 | **flex()** | Sets the display mode to Flexbox. | `.flex()` |
-| **col()** | Sets the flex direction to Column. | `.col()` |
-| **row()** | Sets the flex direction to Row. | `.row()` |
-| **gap(val)** | Sets the space between children in a flex or grid. | `.gap(12.0)` |
-| **items_center()** | Aligns items along the cross axis to the center. | `.items_center()` |
-| **justify_center()** | Aligns content along the main axis to the center. | `.justify_center()` |
+| **grid()** | Sets the display mode to CSS Grid. | `.grid()` |
+| **flex_row()** | Sets flex direction to Row. | `.flex_row()` |
+| **flex_col()** | Sets flex direction to Column. | `.flex_col()` |
+| **items_center()** | Aligns items along the cross axis. | `.items_center()` |
+| **justify_center()** | Aligns content along the main axis. | `.justify_center()` |
+| **justify_between()**| Distributes items evenly (main axis). | `.justify_between()` |
+| **absolute()** | Sets position to Absolute. | `.absolute()` |
+| **relative()** | Sets position to Relative. | `.relative()` |
+| **z(val)** | Sets the stacking order (Z-index). | `.z(10)` |
 
 ---
 
@@ -87,9 +97,9 @@ Apply conditional styles based on the window width. Rupa Framework follows a mob
 ### Usage Example
 ```rust
 VStack::new()
-    .col() // Default (xs)
-    .md(row()) // Switch to horizontal on tablets
-    .xl3(gap(100.0)) // Wider gap on Full HD and above
+    .flex_col() // Default (xs)
+    .md(flex_row()) // Switch to horizontal on tablets
+    .xl3(gap(Scale::Xl)) // Wider gap on Full HD and above
 ```
 
 ---

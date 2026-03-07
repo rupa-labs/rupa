@@ -21,8 +21,8 @@ Structural elements used to organize and align other components.
 | :--- | :--- | :--- |
 | **VStack** | Vertical stacking container with gap support. | [View Detail](./components/vstack.md) |
 | **HStack** | Horizontal stacking container with gap support. | [View Detail](./components/hstack.md) |
-| **Row** | Alias for HStack. Horizontal alignment. | [View Detail](./components/hstack.md) |
-| **Col** | Alias for VStack. Vertical alignment. | [View Detail](./components/vstack.md) |
+| **Row** | Semantic alias for HStack. | [View Detail](./components/hstack.md) |
+| **Col** | Semantic alias for VStack. | [View Detail](./components/vstack.md) |
 | **Container** | Main layout wrapper with constrained max-width. | [View Detail](./components/layout.md) |
 | **Section** | Semantic grouping for major content blocks. | [View Detail](./components/layout.md) |
 | **Div** | The most basic box container for general use. | [View Detail](./primitives/div.md) |
@@ -115,11 +115,11 @@ Components that appear on top of the main application content.
 
 ---
 
-## ⚙️ Logic & Viewports
-Functional components for app structure and conditional flows.
+## ⚙️ Reactive Logic
+Functional components for dynamic tree construction.
 
 | Component | Description | Documentation |
 | :--- | :--- | :--- |
-| **Show** | Logic gate for conditional rendering. | [View Detail](./compositions/control-flow.md) |
-| **ForEach** | Efficient rendering for lists and collections. | [View Detail](./compositions/control-flow.md) |
-| **Viewport** | Isolated sub-view with its own layout context. | [View Detail](./compositions/viewports.md) |
+| **Show** | Conditional VNode rendering based on a Signal. | [View Detail](./compositions/control-flow.md) |
+| **ForEach** | Key-based list reconciliation for reactive collections. | [View Detail](./compositions/control-flow.md) |
+| **Fragment**| Transparent wrapper for returning multiple VNodes. | [View Detail](./architectures/vnode.md) |

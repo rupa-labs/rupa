@@ -24,5 +24,5 @@ The Element Tree module provides high-level recursive utilities for navigating a
 ---
 
 ## 🔄 Interaction
-- **L5 (Element Tree) -> L5 (Component):** Operates on the `Component` trait objects.
-- **L5 (Element Tree) -> L1 (A11y):** Can be used to generate the simplified accessibility tree required by Layer 1.
+- **Element Tree -> Component:** Operates on the `Component` trait objects.
+- **Element Tree -> Accessibility:** Can be used to generate the simplified accessibility tree required by Platform Runners.

@@ -6,22 +6,23 @@ Rupa Framework follows a **Reactive Pipeline** that ensures data changes flow sm
 
 ## 🔁 The Lifecycle of a Change
 
-### 1. Trigger (Layer 5/7)
-A component's logic mutates a signal, for example: `counter.update(|v| *v += 1)`.
+### 1. Signal Mutation (`rupa-signals`)
+A component's reactive state is updated (e.g., `counter.set(v + 1)`). This mutation triggers the framework's reactive engine.
 
-### 2. Notification (Layer 4)
-The `Signal` notifies its internal observers. In Rupa Framework, the default observer is the **Platform Redraw Hook**.
+### 2. VNode Re-render (Build Phase)
+The `rupa-signals` engine identifies the affected component and triggers its `render()` method. This produces a new **VNode** sub-tree representing the updated UI intent.
 
-### 3. Redraw Request (Layer 1)
-`rupa::platform::request_redraw()` is called. 
-- **In GUI:** This sends a `UserEvent` to Winit's event loop.
-- **In TUI:** This breaks the polling sleep to trigger a new frame.
+### 3. VNode Diffing (Diff Phase)
+The `rupa-core` reconciliation engine compares the new VNode sub-tree with the previous snapshot. It identifies minimal structural and stylistic changes (e.g., text content change, style attribute update).
 
-### 4. Scene Resolution (Layer 3)
-The Platform Runner calls `SceneCore::resolve()`. Because the state has changed, components marked as `dirty` recalculate their Taffy nodes.
+### 4. Patch Generation (Patch Phase)
+The identified differences are converted into a set of **Patches** (Create, Update, Delete) and sent to the active renderer.
 
-### 5. Visual Output (Layer 2)
-The Renderer traverses the newly resolved tree and flushes draw commands to the GPU or Terminal.
+### 5. Hardware Execution (Render Phase)
+The **Engine** (WGPU/TUI) or **Client** (DOM) consumes the patches:
+- **Engine (Native):** Updates Taffy layout nodes and buffers new vertex data for the GPU.
+- **Client (Web):** Performs surgical DOM manipulations via `web-sys`.
+- **Final Output:** The hardware presents the updated frame.
 
 ---
 

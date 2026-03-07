@@ -26,5 +26,5 @@ Wraps the lower-level polling logic to provide a non-blocking way to check for h
 ---
 
 ## 🔄 Interaction Flow
-- **L1 (Platform Integration Runner) -> L1 (Terminal):** Calls `setup()` on boot and `restore()` on exit.
-- **L1 (Terminal) -> OS:** Directly communicates via ANSI sequences and syscalls.
+- **Platform Runner -> Terminal:** Calls `setup()` on boot and `restore()` on exit.
+- **Terminal -> OS:** Directly communicates via ANSI sequences and syscalls.

@@ -52,15 +52,16 @@ App::new("Demo")
 
 ---
 
-## 🏗️ Platform Runners (Platform Integration)
-The low-level shells responsible for hardware abstraction and event mapping.
+## 🏗️ Platform Runners (Composites)
+
+Platform Runners are the high-level shells (provided by `rupa-engine` and `rupa-mobile`) responsible for hardware abstraction and event mapping.
 
 ### `trait PlatformRunner`
 The common contract implemented by all target execution shells.
 
 | Method | Description |
 | :--- | :--- |
-| **`.run()`** | Starts the platform-specific event loop and handles lifecycle events. |
+| **`.run()`** | Starts the platform-specific execution loop and handles hardware lifecycle events. |
 
 ---
 
@@ -70,21 +71,24 @@ Regardless of the entry-point, every Rupa Framework application follows a unifie
 
 1.  **Bootstrap**: `App` initializes global themes, signals, and plugin registries.
 2.  **Environment Sync**: The Runner synchronizes `AppMetadata` with the host OS (Window title, Browser title, etc).
-3.  **Event Mapping**: The Runner translates native events (Winit, JS, Crossterm) into agnostik `InputEvent` types.
-4.  **Render Loop**: The Runner invokes the `SceneCore` and `Renderer` to resolve and paint the UI tree.
+3.  **Event Mapping**: The Runner translates native platform events into agnostic `InputEvent` types and dispatches them to the VNode tree.
+4.  **VNode Render Loop**:
+    *   **Build**: Affected components re-run their `render()` methods.
+    *   **Diff**: `rupa-core` identifies changes between virtual snapshots.
+    *   **Patch**: The Runner invokes the active **Renderer** to apply surgical updates to the hardware surface.
 
 ---
 
 ## 🛡️ Target-Specific Implementation Detail
 
 ### Desktop (Windows, macOS, Linux)
-Utilizes **Winit** for window management and **WGPU** for high-performance rendering. Requires the `desktop` feature (enabled by default).
+Utilizes **Winit** for window management and **WGPU** for hardware-accelerated rendering. Requires the `desktop` feature (enabled by default).
 
 ### Terminal (CLI)
 Utilizes **Crossterm** for character grid management. Requires the `terminal` feature. Focuses on minimal resource usage and fast CLI interactions.
 
 ### Web (WASM)
-Compiles to **WebAssembly** and targets the browser's Canvas API. Uses `wasm-bindgen` and `web-sys` for DOM interaction via the `WebInfra` wrapper.
+Compiles to **WebAssembly** and targets the browser's Canvas API via WebGPU or WebGL. Uses `wasm-bindgen` and `web-sys` for DOM interaction.
 
 ### Mobile (Android, iOS)
-Handles the complex **Suspend/Resume** lifecycle. Reclaims GPU resources automatically when the application is backgrounded via the `MobileRunner`.
+Managed by the `rupa-mobile` composite. Handles the complex **Suspend/Resume** lifecycle and touch gestures. Reclaims GPU resources automatically when the application is backgrounded.
