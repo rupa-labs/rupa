@@ -1,39 +1,26 @@
 use glyphon::{
-    Cache, FontSystem, SwashCache, TextAtlas,
-    TextRenderer as GlyphonRenderer, Viewport,
+    FontSystem, SwashCache, TextAtlas, TextRenderer as GlyphonTextRenderer,
+    TextArea, Resolution
 };
-use wgpu::{Device, MultisampleState, Queue, RenderPass, TextureFormat};
+use wgpu::{Device, Queue, TextureFormat, RenderPass, MultisampleState};
 
 pub struct TextRenderer {
     pub font_system: FontSystem,
-    swash_cache: SwashCache,
-    viewport: Viewport,
-    atlas: TextAtlas,
-    renderer: GlyphonRenderer,
+    pub swash_cache: SwashCache,
+    pub atlas: TextAtlas,
+    pub renderer: GlyphonTextRenderer,
 }
 
 impl TextRenderer {
-    pub fn new(
-        device: &Device,
-        queue: &Queue,
-        format: TextureFormat,
-    ) -> Self {
+    pub fn new(device: &Device, queue: &Queue, format: TextureFormat) -> Self {
         let font_system = FontSystem::new();
         let swash_cache = SwashCache::new();
-        let cache = Cache::new(device);
-        let viewport = Viewport::new(device, &cache);
-        let mut atlas = TextAtlas::new(device, queue, &cache, format);
-        let renderer = GlyphonRenderer::new(
-            &mut atlas,
-            device,
-            MultisampleState::default(),
-            None,
-        );
+        let mut atlas = TextAtlas::new(device, queue, format);
+        let renderer = GlyphonTextRenderer::new(&mut atlas, device, MultisampleState::default(), None);
 
         Self {
             font_system,
             swash_cache,
-            viewport,
             atlas,
             renderer,
         }
@@ -43,28 +30,24 @@ impl TextRenderer {
         &mut self,
         device: &Device,
         queue: &Queue,
-        sections: Vec<glyphon::TextArea>,
+        text_areas: Vec<TextArea>,
         width: u32,
         height: u32,
     ) {
-        self.viewport.update(queue, glyphon::Resolution { width, height });
-        
         self.renderer
             .prepare(
                 device,
                 queue,
                 &mut self.font_system,
                 &mut self.atlas,
-                &self.viewport,
-                sections,
+                Resolution { width, height },
+                text_areas,
                 &mut self.swash_cache,
             )
             .unwrap();
     }
 
-    pub fn render<'a>(&'a self, render_pass: &mut RenderPass<'a>) {
-        self.renderer
-            .render(&self.atlas, &self.viewport, render_pass)
-            .unwrap();
+    pub fn render<'a>(&'a self, pass: &mut RenderPass<'a>) {
+        self.renderer.render(&self.atlas, pass).unwrap();
     }
 }

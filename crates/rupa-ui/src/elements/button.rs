@@ -1,10 +1,6 @@
-use rupa_core::vnode::VNode;
-use rupa_core::component::Component;
-use rupa_core::{generate_id, signals::Signal, signals::Readable, Vec2, view::ViewCore};
-use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign};
-use rupa_core::renderer::{Renderer, TextMeasurer};
-use rupa_core::events::{UIEvent, EventListeners};
-use rupa_core::scene::SceneNode;
+use crate::Children;
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
+use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
 use crate::style::modifiers::base::Stylable;
 use std::sync::Arc;
 use taffy::prelude::*;
@@ -150,7 +146,6 @@ impl Component for Button {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn render(&self) -> VNode { VNode::Empty }
-    fn as_any(&self) -> &dyn std::any::Any { self }
 
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
@@ -197,7 +192,6 @@ impl Component for CloseButton {
     fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
         self.view.render(renderer, taffy, node, &ButtonLogic::new("×"), global_pos);
     }
-    fn as_any(&self) -> &dyn std::any::Any { self }
 }
 
 pub struct ButtonGroup<'a> { pub id: String, pub children: Children<'a>, pub view: ViewCore }
@@ -232,5 +226,4 @@ impl<'a> Component for ButtonGroup<'a> {
         let style_ref = self.view.style.read().unwrap();
         self.children.paint_all(renderer, taffy, node, is_group_hovered || style_ref.is_group, global_pos, 0);
     }
-    fn as_any(&self) -> &dyn std::any::Any { self }
 }

@@ -1,10 +1,11 @@
 [package]
-name = "rupa-signals"
+name = "rupa-support"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
 [dependencies]
-rupa-support.workspace = true
 serde = { version = "1.0", features = ["derive"] }
+thiserror.workspace = true
+log.workspace = true

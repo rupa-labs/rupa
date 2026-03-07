@@ -1,5 +1,5 @@
 use rupa_core::component::Component;
-use rupa_core::vector::Vec2;
+use rupa_core::Vec2;
 use crate::renderer::TextMeasurer;
 use crate::scene::layout::LayoutEngine;
 use crate::scene::node::SceneNode;

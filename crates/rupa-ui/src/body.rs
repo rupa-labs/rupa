@@ -1,6 +1,5 @@
-use rupa_core::vnode::VNode; use rupa_core::component::Component;
-use rupa_core::{Style, generate_id, Vec2, signals::Signal, signals::Readable, component::Component, view::ViewCore};
-use rupa_core::renderer::{Renderer, TextMeasurer};
+use rupa_core::{Component, VNode, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent};
+use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
 use taffy::prelude::*;
@@ -54,13 +53,10 @@ impl<'a> Component for Body<'a> {
         VNode::Empty
     }
 
-    fn as_any(&self) -> &dyn std::any::Any { 
-        // Bridge for lifetimes, but usually components should be 'static for simple as_any
-        self 
-    }
+    fn as_any(&self) -> Option<&dyn std::any::Any> { None }
 
-    fn get_node(&self) -> Option<rupa_core::scene::SceneNode> { self.view.core.get_node() }
-    fn set_node(&self, node: rupa_core::scene::SceneNode) { self.view.core.set_node(node); }
+    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
     fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
     fn mark_dirty(&self) { self.view.core.mark_dirty(); }
     fn clear_dirty(&self) { self.view.core.clear_dirty(); }

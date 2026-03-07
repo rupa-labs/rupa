@@ -1,45 +1,42 @@
-# Primitive: Div 📦
+# Primitive: Div 🧱
 
-The `Div` (Division) is the most fundamental structural atom in Rupa Framework. It serves as a generic container for grouping components and applying baseline styles without any pre-defined layout constraints.
-
----
-
-## 🧠 Internal Anatomy
-
-### 1. DivLogic
-- **Role:** Pure hierarchy management.
-- **Responsibility:** Maintains an ordered collection of children (`Children<'a>`). It is logic-light, delegating all spatial concerns to the View.
-
-### 2. DivView
-- **Role:** Structural manifestation.
-- **Infrastructure:** Composes `ViewCore` to manage its link to the Geometric Scene Layer.
-- **Taffy Mapping:** By default, it creates a "Block" node in the Taffy tree, acting as a flexible container for its descendants.
+The `Div` is the most fundamental container in the Rupa Framework. It is a logic-light component used for grouping elements and applying styles.
 
 ---
 
-## 🗝️ Public API (Usage)
+## 🏗️ Architecture
 
-### Constructor
-- `Div::new()`: Initializes an empty generic container.
-
-### Methods
-- `.child(Box<dyn Component>)`: Appends an element to the internal collection.
+- **Logic:** Manages a collection of children components.
+- **View:** Translates `Stylable` properties into a `VNode::Element`.
+- **Default Behavior:** In the Native engine, it defaults to a Flex container with `FlexDirection::Column`. In the Web engine, it renders as a standard `<div>`.
 
 ---
 
-## 🎨 Styling Standard
-As a primitive, `Div` is the primary target for atomic visual modifiers:
+## 🗝️ API & Usage
+
 ```rust
+use rupa::prelude::*;
+
 Div::new()
-    .style((
-        bg(Color::Zinc(900)),
-        p(16.0),
-        rounded(8.0)
-    ))
+    .style((w(200.0), h(100.0), bg_primary()))
+    .child(Box::new(Text::new("Hello Rupa")))
 ```
 
+### Methods
+- `.new()`: Creates a new Div instance with a unique ID.
+- `.child(component)`: Adds a boxed component to the children list.
+
 ---
 
-## ⚡ Interaction
-- **Events:** Supports hit-testing but does not implement any default semantic interaction logic.
-- **Reactivity:** Marks its `ViewCore` as `dirty` whenever a child is added, ensuring the layout tree is recalculated.
+## 🌳 VNode Representation
+
+When `render()` is called, a `Div` produces:
+```rust
+VNode::Element(VElement {
+    tag: "div",
+    style: /* current style */,
+    attributes: /* current attributes */,
+    children: /* rendered children */,
+    key: Some(id),
+})
+```

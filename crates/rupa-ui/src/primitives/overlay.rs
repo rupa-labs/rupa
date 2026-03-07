@@ -1,11 +1,7 @@
-use rupa_core::vnode::VNode; use rupa_core::component::Component;
-use rupa_core::{Style, generate_id, Vec2, Position};
-use rupa_core::component::Component;
-use rupa_core::view::ViewCore;
-use rupa_core::renderer::{Renderer, TextMeasurer};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
+use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
 use crate::style::modifiers::base::Stylable;
-use rupa_core::scene::SceneNode;
-use crate::elements::layout::container::Children;
+use crate::elements::Children;
 use taffy::prelude::*;
 use std::sync::RwLockWriteGuard;
 
@@ -21,9 +17,9 @@ pub struct OverlayView {
 
 impl OverlayView {
     pub fn new() -> Self {
-        let mut style = Style::default();
-        style.layout.position = Position::Absolute;
-        Self { core: ViewCore::new() }
+        let view = ViewCore::new();
+        view.style().layout.position = rupa_styling::Position::Absolute;
+        Self { core: view }
     }
 }
 
@@ -42,17 +38,29 @@ impl<'a> Overlay<'a> {
             view: OverlayView::new(),
         }
     }
-    pub fn child(mut self, c: Box<dyn Component + 'a>) -> Self { self.logic.children.add(c); self.view.core.mark_dirty(); self }
+    pub fn child(mut self, c: Box<dyn Component + 'a>) -> Self { self.logic.children.push(c); self.view.core.mark_dirty(); self }
 }
 
 impl<'a> Stylable for Overlay<'a> {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.style() }
 }
 
 impl<'a> Component for Overlay<'a> {
-    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { self.logic.children.get_all() }
+    fn children(&self) -> Vec<&dyn Component> { self.logic.children.as_refs() }
+    
+    fn render(&self) -> VNode {
+        VNode::Element(VElement {
+            tag: "overlay".to_string(),
+            style: self.view.core.style.read().unwrap().clone(),
+            attributes: Attributes::default(),
+            children: self.logic.children.render_all(),
+            key: Some(self.id.clone()),
+        })
+    }
+
+    fn as_any(&self) -> Option<&dyn std::any::Any> { None }
+
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
     fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
@@ -60,13 +68,14 @@ impl<'a> Component for Overlay<'a> {
     fn clear_dirty(&self) { self.view.core.clear_dirty(); }
 
     fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
+        let style = self.view.core.style.read().unwrap().to_taffy();
         let node = if let Some(existing) = self.view.core.get_node() {
             if self.view.core.is_dirty() { 
-                taffy.set_style(existing.raw(), self.view.core.get_style_mut().to_taffy()).unwrap(); 
+                taffy.set_style(existing.raw(), style).unwrap(); 
             }
             existing.raw()
         } else {
-            let new_node = taffy.new_with_children(self.view.core.get_style_mut().to_taffy(), &[]).unwrap();
+            let new_node = taffy.new_with_children(style, &[]).unwrap();
             self.view.core.set_node(SceneNode::from(new_node));
             new_node
         };
@@ -77,8 +86,8 @@ impl<'a> Component for Overlay<'a> {
         node
     }
 
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, _node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
+    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
         let style_ref = self.view.core.style.read().unwrap();
-        self.logic.children.paint_all(renderer, taffy, _node, is_group_hovered || style_ref.is_group, global_pos, 0);
+        self.logic.children.paint_all(renderer, taffy, node, is_group_hovered || style_ref.is_group, global_pos, 0);
     }
 }

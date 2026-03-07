@@ -1,6 +1,5 @@
-use rupa_core::component::Component;
-use rupa_core::renderer::{Renderer, TextMeasurer};
-use rupa_core::Vec2;
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
+use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
 use taffy::prelude::*;
 
 pub struct Children<'a> {
@@ -26,6 +25,10 @@ impl<'a> Children<'a> {
 
     pub fn iter(&self) -> impl Iterator<Item = &Box<dyn Component + 'a>> {
         self.items.iter()
+    }
+
+    pub fn render_all(&self) -> Vec<VNode> {
+        self.items.iter().map(|c| c.render()).collect()
     }
 
     pub fn layout_all(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer) -> Vec<NodeId> {

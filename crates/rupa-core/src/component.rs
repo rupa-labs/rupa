@@ -1,10 +1,10 @@
 use taffy::prelude::*;
 use rupa_vnode::VNode;
-use crate::vector::Vec2;
+use rupa_support::{Vec2, Error};
 use crate::renderer::{Renderer, TextMeasurer};
 use crate::events::{UIEvent, KeyCode};
 use crate::scene::SceneNode;
-use crate::a11y::AccessibilityNode;
+use rupa_styling::AccessibilityNode;
 
 /// The core trait for all UI elements in Rupa.
 pub trait Component: Send + Sync {
@@ -15,8 +15,9 @@ pub trait Component: Send + Sync {
     /// This is the "Universal Language" used for SSR, DOM, and GPU rendering.
     fn render(&self) -> VNode;
 
-    /// Allows downcasting trait objects to concrete types.
-    fn as_any(&self) -> &dyn std::any::Any;
+    /// Optional: Allows downcasting trait objects to concrete types.
+    /// Only works for components that are 'static.
+    fn as_any(&self) -> Option<&dyn std::any::Any> { None }
 
     /// If true, this component acts as a focus trap and blocks input to layers below.
     fn is_modal(&self) -> bool { false }

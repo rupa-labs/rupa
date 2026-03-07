@@ -1,44 +1,39 @@
-# Primitive: Flex ↔️↕️
+# Primitive: Flex 🧱
 
-The `Flex` primitive provides a one-dimensional layout system. It is the architectural vehicle for arranging children in horizontal or vertical stacks with precise distribution rules.
-
----
-
-## 🧠 Internal Anatomy
-
-### 1. FlexLogic
-- **Role:** Directional container logic.
-- **Responsibility:** Manages the ordered list of children and provides the context for whether items should flow as a row or a column.
-
-### 2. FlexView
-- **Infrastructure:** Uses `ViewCore` for geometric state.
-- **Taffy Mapping:** Explicitly sets the Taffy `Display` property to `Flex`. It translates high-level modifiers like `justify_center()` or `gap(10.0)` into Flexbox algorithm parameters.
+The `Flex` primitive is a one-dimensional layout container. It is used to align and distribute space among items in a row or column.
 
 ---
 
-## 🗝️ Public API (Usage)
+## 🏗️ Architecture
 
-### Constructor
-- `Flex::new()`: Initializes a new Flex container (Default: Row).
-
-### Chaining Methods
-- `.row()`: Sets flex-direction to Row.
-- `.col()`: Sets flex-direction to Column.
-- `.child(Box<dyn Component>)`: Adds a child to the stack.
+- **Logic:** Manages a collection of children components.
+- **View:** Configures the `Style` with `Display::Flex` and produces a `VNode::Element`.
+- **Relationship:** Higher-level layouts like `VStack` and `HStack` are specialized wrappers around the `Flex` primitive.
 
 ---
 
-## 🎨 Visual Identity
-`Flex` is often used to build complex components like `Navbar` or `ButtonGroup`.
+## 🗝️ API & Usage
+
 ```rust
+use rupa::prelude::*;
+
 Flex::new()
-    .col()
-    .style(gap(8.0))
-    .child(Box::new(Text::new("A")))
-    .child(Box::new(Text::new("B")))
+    .style((flex_row(), justify_between(), items_center(), gap(10.0)))
+    .child(Box::new(Text::new("Left")))
+    .child(Box::new(Text::new("Right")))
 ```
 
 ---
 
-## ⚡ Interaction
-- **Coordinate Space:** `FlexView` ensures that child global positions are calculated correctly along the main and cross axes during the paint phase.
+## 🌳 VNode Representation
+
+When `render()` is called, a `Flex` produces:
+```rust
+VNode::Element(VElement {
+    tag: "flex", // Optimized for Rupa's native engine
+    style: /* current style with Display::Flex */,
+    attributes: /* current attributes */,
+    children: /* rendered children */,
+    key: Some(id),
+})
+```

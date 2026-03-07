@@ -10,6 +10,8 @@ pub enum VNode {
     Text(String),
     /// A placeholder for a component.
     Component(VComponent),
+    /// A collection of nodes without a wrapper element.
+    Fragment(Vec<VNode>),
     /// An empty node for conditional rendering.
     Empty,
 }
@@ -44,5 +46,9 @@ impl VNode {
 
     pub fn text(content: impl Into<String>) -> Self {
         VNode::Text(content.into())
+    }
+
+    pub fn fragment(children: Vec<VNode>) -> Self {
+        VNode::Fragment(children)
     }
 }

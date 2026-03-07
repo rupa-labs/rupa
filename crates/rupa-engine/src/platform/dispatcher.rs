@@ -1,6 +1,6 @@
 use rupa_core::component::Component;
-use rupa_core::{vector::Vec2, state::Signal};
-use rupa_core::events::{InputEvent, PointerButton, ButtonState, Modifiers, CursorIcon, UIEvent};
+use rupa_core::{Vec2, Signal, CursorIcon};
+use rupa_core::events::{InputEvent, PointerButton, ButtonState, Modifiers, UIEvent}; 
 use crate::scene::{SceneCore, HitDiscovery};
 use std::sync::Arc;
 
@@ -30,7 +30,6 @@ impl InputDispatcher {
         }
 
         // --- Focus Trap Detection (Agnostic version) ---
-        // TODO: Move this to a more generic mechanism in rupa-core
         let mut target_root = root;
         
         // Search for the topmost modal child recursively
@@ -70,10 +69,6 @@ impl InputDispatcher {
 
                 // Normal hit-testing
                 if let HitDiscovery::Found(hit) = scene.find_target(target_root, *cursor_pos) {
-                    // Resolve Cursor from topmost hovered component
-                    // Note: Here we still have a slight coupling to style for cursor.
-                    // Ideally Component trait should expose cursor.
-                    
                     let mut ui_ev = UIEvent::new(hit.local_pos);
                     for comp in hit.path.iter().rev() {
                         comp.on_drag(&mut ui_ev, delta); 
@@ -162,7 +157,7 @@ impl InputDispatcher {
                     let mut ui_ev = UIEvent::new(Vec2::zero());
                     comp.on_resize(&mut ui_ev, size);
                     for child in comp.children() {
-                        broadcast_resize(*child, size);
+                        broadcast_resize(child, size);
                     }
                 }
                 broadcast_resize(root, size);
@@ -172,7 +167,7 @@ impl InputDispatcher {
                     let mut ui_ev = UIEvent::new(Vec2::zero());
                     comp.on_safe_area(&mut ui_ev, t, r, b, l);
                     for child in comp.children() {
-                        broadcast_safe_area(*child, t, r, b, l);
+                        broadcast_safe_area(child, t, r, b, l);
                     }
                 }
                 broadcast_safe_area(root, top, right, bottom, left);

@@ -1,16 +1,69 @@
-# Rust / Cargo
-/target
+# --- Rust / Cargo ---
+/target/
+**/*.rs.bk
 Cargo.lock
 
-# Logs
-*.log
+# --- Web & WASM ---
+node_modules/
+dist/
+pkg/
+wasm-bindgen/
+*.wasm
+.wasm-pack-cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# OS generated files
+# --- Mobile (Android/iOS) ---
+*.apk
+*.aab
+*.keystore
+/android/app/build/
+/ios/Pods/
+/ios/build/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
+DerivedData/
+*.ipa
+*.hmap
+*.xccheckout
+*.xcscmblueprint
+
+# --- Security & Environment ---
+.env
+.env.*
+!.env.example
+.gemini_security/
+
+# --- Logs & Performance ---
+*.log
+perf.data
+perf.data.old
+
+# --- OS Generated Files ---
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# IDEs
+# --- IDEs & Editors ---
 .vscode/
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
 .idea/
 *.swp
 *.swo
+*~
+.history/
+.project
+.settings/
+.classpath
+.factorypath

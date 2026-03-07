@@ -1,4 +1,3 @@
-use rupa_core::vnode::VNode; use rupa_core::component::Component;
 pub mod children;
 pub mod brand;
 pub mod button;
@@ -22,7 +21,7 @@ pub use content::{Card, Table, Accordion};
 pub use control_flow::{Show, ForEach};
 pub use feedback::{Progress, Skeleton, Badge, Spinner, Alert};
 pub use forms::{Label, Checkbox, Radio, Select, Switch, Input};
-pub use layout::{Container, Section, VStack, HStack, Row, Col};
+pub use layout::{Container, Section, VStack, HStack};
 pub use navigation::{Navbar, Tabs, Breadcrumb};
 pub use overlay::{Modal, Tooltip};
 pub use svg::{Svg, Icon, SvgCanvas};

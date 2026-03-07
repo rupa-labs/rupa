@@ -1,6 +1,5 @@
-use rupa_core::{VNode, VElement};
-use rupa_core::{Style, generate_id, Vec2, component::Component, view::ViewCore, styling::Attributes};
-use rupa_core::renderer::{Renderer, TextMeasurer};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
+use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
 use taffy::prelude::*;
@@ -44,12 +43,11 @@ impl<'a> Component for Flex<'a> {
             tag: "flex".to_string(),
             style: self.view.core.style.read().unwrap().clone(),
             attributes: Attributes::default(),
-            children: self.logic.children.iter().map(|c| c.render()).collect(),
+            children: self.logic.children.render_all(),
             key: Some(self.id.clone()),
         })
     }
 
-    fn as_any(&self) -> &dyn std::any::Any { self }
 
     fn get_node(&self) -> Option<rupa_core::scene::SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: rupa_core::scene::SceneNode) { self.view.core.set_node(node); }
@@ -57,7 +55,7 @@ impl<'a> Component for Flex<'a> {
     fn mark_dirty(&self) { self.view.core.mark_dirty(); }
     fn clear_dirty(&self) { self.view.core.clear_dirty(); }
 
-    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
+    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
         let style = self.view.core.style.read().unwrap().to_taffy();
         let node = taffy.new_with_children(style, &[]).unwrap();
         self.set_node(node.into());

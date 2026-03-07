@@ -1,27 +1,16 @@
-use rupa_core::vnode::VNode; use rupa_core::component::Component;
-use rupa_core::component::Component;
-
-/// A trait for components that can hold children.
-/// Provides a unified API for adding children without manual redeclaration.
-pub trait Parent: Component + Sized {
-    /// Adds a child to the component.
-    /// This requires the component to have a 'logic.children' field or similar.
-    /// Because child storage is specific to each component's logic, 
-    /// we can't provide a fully default implementation here without more complex traits,
-    /// but we can unify the API signature.
-    fn child(self, child: Box<dyn Component>) -> Self;
-}
-
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
+use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
 pub mod container;
 pub mod hstack;
-pub mod vstack;
 pub mod section;
+pub mod vstack;
 
 pub use container::Container;
 pub use hstack::HStack;
-pub use vstack::VStack;
 pub use section::Section;
+pub use vstack::VStack;
 
-// Aliases for compatibility
-pub type Row<'a> = HStack<'a>;
-pub type Col<'a> = VStack<'a>;
+
+pub trait Parent: Component + Sized {
+    fn child(self, child: Box<dyn Component>) -> Self;
+}

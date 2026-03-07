@@ -1,9 +1,5 @@
-use rupa_core::vnode::VNode;
-use rupa_core::component::Component;
-use rupa_core::{generate_id, signals::Signal, signals::Readable, Vec2, view::ViewCore};
-use rupa_styling::{Style, Color, TextAlign};
-use rupa_core::renderer::{Renderer, TextMeasurer};
-use rupa_core::scene::SceneNode;
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
+use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
 use crate::style::modifiers::base::Stylable;
 use taffy::prelude::*;
 use std::sync::RwLockWriteGuard;
@@ -58,7 +54,6 @@ impl Component for Text {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn render(&self) -> VNode { VNode::text(self.logic.content.get()) }
-    fn as_any(&self) -> &dyn std::any::Any { self }
 
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }

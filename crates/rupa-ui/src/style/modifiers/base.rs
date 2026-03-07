@@ -1,6 +1,5 @@
-use rupa_core::vnode::VNode; use rupa_core::component::Component;
 use rupa_styling::Style;
-use rupa_core::component::Component;
+use rupa_core::Component;
 use std::sync::RwLockWriteGuard;
 
 /// A trait for modifying styles in a functional or chaining manner.

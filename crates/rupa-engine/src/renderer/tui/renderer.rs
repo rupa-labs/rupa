@@ -1,5 +1,5 @@
-use rupa_core::vector::Vec2;
-use rupa_core::typography::TextAlign;
+use rupa_core::Vec2;
+use rupa_styling::TextAlign;
 use crate::renderer::{Renderer, RenderCore};
 use std::io::{Write, stdout};
 
@@ -23,7 +23,9 @@ pub struct TuiRenderer {
 }
 
 impl TuiRenderer {
-    pub fn new(width: u16, height: u16) -> Self {
+    pub fn new() -> Self {
+        let width = 80;
+        let height = 24;
         let size = (width * height) as usize;
         Self {
             core: RenderCore::new(width as f32, height as f32, 1.0),
@@ -98,6 +100,10 @@ impl Renderer for TuiRenderer {
         for (i, c) in text.chars().enumerate() {
             self.put_char(ix + i as i32, iy, c, fg, bg);
         }
+    }
+
+    fn draw_outline(&mut self, x: f32, y: f32, width: f32, height: f32, color: [f32; 4]) {
+        self.draw_rect(x, y, width, height, color, 0.0);
     }
 
     fn push_clip(&mut self, _x: f32, _y: f32, _w: f32, _h: f32) {}

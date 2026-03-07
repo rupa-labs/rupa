@@ -1,5 +1,5 @@
 use crate::color::Color;
-use crate::vector::Vec2;
+use rupa_support::Vec2;
 
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum PathSegment {

@@ -1,0 +1,19 @@
+[package]
+name = "rupa-mobile"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rupa-core.workspace = true
+rupa-engine.workspace = true
+log.workspace = true
+winit.workspace = true
+serde.workspace = true
+
+# Android specific
+[target.'cfg(target_os = "android")'.dependencies]
+ndk.workspace = true
+ndk-context.workspace = true
+jni.workspace = true

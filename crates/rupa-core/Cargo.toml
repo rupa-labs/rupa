@@ -6,6 +6,7 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
+rupa-support.workspace = true
 rupa-signals.workspace = true
 rupa-styling.workspace = true
 rupa-vnode.workspace = true

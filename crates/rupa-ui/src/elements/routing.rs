@@ -1,11 +1,7 @@
-use rupa_core::vnode::VNode; use rupa_core::component::Component;
-use rupa_core::component::Component;
-use rupa_core::view::ViewCore;
-use rupa_core::{Style, generate_id, Vec2, state::Signal};
-use rupa_core::renderer::{Renderer, TextMeasurer};
-use rupa_core::scene::SceneNode;
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
+use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
 use crate::style::modifiers::base::Stylable;
-use std::sync::{RwLockWriteGuard, Arc, RwLock};
+use std::sync::RwLockWriteGuard;
 use std::collections::HashMap;
 use once_cell::sync::Lazy;
 
@@ -18,11 +14,6 @@ impl RouterState {
     pub fn push(path: impl Into<String>) {
         let p = path.into();
         CURRENT_PATH.set(p.clone());
-        
-        #[cfg(target_arch = "wasm32")]
-        {
-            let _ = crate::platform::web::infra::WebInfra::push_state(&p);
-        }
     }
 
     pub fn current() -> String {
@@ -78,27 +69,28 @@ impl Router {
         } else if let Some(ref fallback) = self.logic.fallback {
             fallback(&current)
         } else {
-            // Default empty component if no match and no fallback
             Box::new(crate::primitives::div::Div::new())
         }
     }
 }
 
 impl Stylable for Router {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.style() }
 }
 
 impl Component for Router {
-    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { &self.id }
-    
-    fn children(&self) -> Vec<&dyn Component> {
-        // Since active component is dynamic, we don't expose it here easily for hit-testing 
-        // without a more complex scene integration. But for layout, we build it.
-        vec![] 
+    fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn render(&self) -> VNode {
+        let active = self.resolve_active_component();
+        active.render()
     }
 
-    fn as_any(&self) -> &dyn std::any::Any { self }
+    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
+    fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
+    fn mark_dirty(&self) { self.view.core.mark_dirty(); }
+    fn clear_dirty(&self) { self.view.core.clear_dirty(); }
 
     fn layout(&self, taffy: &mut taffy::prelude::TaffyTree<()>, measurer: &dyn TextMeasurer, parent: Option<taffy::prelude::NodeId>) -> taffy::prelude::NodeId {
         let active = self.resolve_active_component();
@@ -109,9 +101,6 @@ impl Component for Router {
     }
 
     fn paint(&self, renderer: &mut dyn Renderer, taffy: &taffy::prelude::TaffyTree<()>, node: taffy::prelude::NodeId, is_group_hovered: bool, global_pos: Vec2) {
-        // Router itself is transparent logic, it just delegatess paint to matched route
-        // This is handled via the layout node being identical.
-        // But for clarity, we'll re-resolve or cache the active component.
         let active = self.resolve_active_component();
         active.paint(renderer, taffy, node, is_group_hovered, global_pos);
     }

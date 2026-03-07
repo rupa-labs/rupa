@@ -1,37 +1,43 @@
 # Component: HStack ↔️
 
-The `HStack` (Horizontal Stack) is a specialized layout component that arranges its children in a horizontal row. it is built on top of the `Flex` primitive with a pre-configured horizontal direction.
+The `HStack` (Horizontal Stack) is a layout component that arranges its children in a horizontal row. It is a semantic wrapper around the `Flex` primitive with a pre-configured row direction.
 
 ---
 
-## 🧠 Internal Anatomy
+## 🏗️ Architecture
 
-### 1. HStack Logic
-- **Role:** Horizontal collection management.
-- **Responsibility:** Manages the row-based order of components. It provides a clean API for horizontal gap management.
-
-### 2. HStack View
-- **Infrastructure:** Composes **`ViewCore`**.
-- **Mapping:** Automatically sets `FlexDirection::Row` in the Taffy tree. This ensures that children are aligned side-by-side during the geometric resolution phase.
+- **Composition:** Composes a `Flex` primitive internally.
+- **Pre-configuration:** Automatically sets `FlexDirection::Row` on its internal style.
+- **VNode Mapping:** Renders as a `VNode::Element` with the tag "hstack" (or "flex" with row direction depending on the target).
 
 ---
 
-## 🗝️ Public API (Usage)
-
-### Constructor
-- `HStack::new()`: Initializes an empty horizontal stack.
-
-### Methods
-- `.gap(f32)`: Sets the horizontal spacing between items.
-- `.child(Box<dyn Component>)`: Appends an element to the row.
-
----
-
-## 💻 Usage Example
+## 🗝️ API & Usage
 
 ```rust
+use rupa::prelude::*;
+
 HStack::new()
-    .gap(16.0)
+    .style(gap(16.0))
     .child(Box::new(Button::new("Cancel")))
     .child(Box::new(Button::new("Confirm")))
+```
+
+### Methods
+- `.new()`: Initializes an empty horizontal stack.
+- `.child(component)`: Adds a child to the stack.
+
+---
+
+## 🌳 VNode Representation
+
+When `render()` is called, a `HStack` produces:
+```rust
+VNode::Element(VElement {
+    tag: "hstack",
+    style: /* current style with FlexDirection::Row */,
+    attributes: /* current attributes */,
+    children: /* rendered children */,
+    key: Some(id),
+})
 ```

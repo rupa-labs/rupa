@@ -4,21 +4,20 @@ use winit::event_loop::{ActiveEventLoop, EventLoop};
 use winit::window::{WindowId, Window as WinitWindow};
 use std::sync::Arc;
 
-use rupa_core::component::Component;
-use crate::renderer::Renderer as _;
-use crate::renderer::gui::renderer::Renderer;
-use rupa_core::vector::Vec2;
+use rupa_core::{Component, Renderer};
+use crate::renderer::gui::renderer::Renderer as GuiRenderer;
+use rupa_core::{Vec2, Error, Signal, Readable, generate_id, CursorIcon};
+use rupa_core::events::{InputEvent, UIEvent, EventListeners, Modifiers, PointerButton, ButtonState, KeyCode};
 use crate::platform::dispatcher::InputDispatcher;
 use crate::platform::desktop::input::map_key;
-use crate::platform::{SharedPlatformCore, runner::*, events::*, register_redraw_proxy};
+use crate::platform::{SharedPlatformCore, runner::*, register_redraw_proxy, AppMetadata};
 
 pub struct DesktopRunner {
     pub core: SharedPlatformCore,
     pub window: Option<Arc<WinitWindow>>,
-    pub renderer: Option<Renderer>,
+    pub renderer: Option<GuiRenderer>,
     pub scale_factor: f64,
     pub modifiers: Modifiers,
-    pub a11y_adapter: Option<Box<dyn std::any::Any + Send + Sync>>,
 }
 
 impl DesktopRunner {
@@ -29,7 +28,6 @@ impl DesktopRunner {
             renderer: None,
             scale_factor: 1.0,
             modifiers: Modifiers::default(),
-            a11y_adapter: None,
         }
     }
 
@@ -51,18 +49,16 @@ impl DesktopRunner {
             None => return,
         };
 
-        // Compute layout in logical units
-        let scene_node = match core.compute_layout(
-            renderer,
-            win_width as f32 / self.scale_factor as f32, 
-            win_height as f32 / self.scale_factor as f32
-        ) {
-            Some(node) => node,
-            None => return,
-        };
+        if let Some(root) = core.root.take() {
+            // Compute layout
+            let scene_node = core.scene.layout_engine.compute(
+                root.as_ref(),
+                renderer,
+                win_width as f32 / self.scale_factor as f32, 
+                win_height as f32 / self.scale_factor as f32
+            );
 
-        if let Ok(()) = renderer.begin_frame() {
-            if let Some(ref root) = core.root {
+            if let Ok(()) = renderer.begin_frame() {
                 root.paint(
                     renderer,
                     &core.scene.layout_engine.taffy,
@@ -70,8 +66,9 @@ impl DesktopRunner {
                     false, 
                     Vec2::zero(),
                 );
+                renderer.present();
             }
-            renderer.present();
+            core.root = Some(root);
         }
     }
 
@@ -88,10 +85,9 @@ impl DesktopRunner {
         let event_listeners = core.event_listeners.clone();
         
         if let Some(ref root) = core.root {
-            let root_ref: &dyn Component = root.as_ref();
             InputDispatcher::dispatch(
                 event,
-                root_ref,
+                root.as_ref(),
                 &core.scene,
                 &core.viewport,
                 &mut cursor_pos,
@@ -116,17 +112,15 @@ impl DesktopRunner {
                     CursorIcon::Wait => winit::window::CursorIcon::Wait,
                     CursorIcon::Crosshair => winit::window::CursorIcon::Crosshair,
                 };
-                window.set_cursor_icon(winit_cursor);
+                window.set_cursor(winit_cursor);
             }
         }
 
-        // Put things back
         core.cursor_pos = cursor_pos;
         core.requested_cursor = requested_cursor;
         core.pointer_capture = pointer_capture;
         core.focused_id = focused_id;
         
-        // Request redraw after dispatching user input as it likely changed something visual
         if let Some(window) = &self.window {
             window.request_redraw();
         }
@@ -134,61 +128,45 @@ impl DesktopRunner {
 }
 
 impl PlatformRunner for DesktopRunner {
-    fn sync_metadata(&self, metadata: &AppMetadata) -> Result<(), crate::support::error::Error> {
+    fn sync_metadata(&self, metadata: &AppMetadata) -> Result<(), Error> {
         if let Some(window) = &self.window {
             window.set_title(&metadata.title);
-            
-            if let Some(ref icon_source) = metadata.icon {
-                if let Err(e) = crate::platform::desktop::infra::DesktopInfra::set_icon(window, icon_source) {
-                    log::error!("Desktop: Failed to set window icon: {}", e);
-                }
-            }
         }
         Ok(())
     }
 
-    fn run(mut self) -> Result<(), crate::support::error::Error> {
+    fn run(mut self) -> Result<(), Error> {
         let event_loop = EventLoop::<PlatformEvent>::with_user_event().build()
-            .map_err(|e| crate::support::error::Error::Platform(format!("Failed to build event loop: {}", e)))?;
+            .map_err(|e| Error::Platform(format!("Failed to build event loop: {}", e)))?;
             
         let proxy = event_loop.create_proxy();
-        register_redraw_proxy(move || {
+        register_redraw_proxy(Box::new(move || {
             let _ = proxy.send_event(PlatformEvent::RequestRedraw);
-        });
+        }));
 
         event_loop.run_app(&mut self)
-            .map_err(|e| crate::support::error::Error::Platform(format!("Failed to run app: {}", e)))
+            .map_err(|e| Error::Platform(format!("Failed to run app: {}", e)))
     }
 }
 
 impl ApplicationHandler<PlatformEvent> for DesktopRunner {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         if self.window.is_none() {
-            let core_lock = match self.core.read() {
-                Ok(c) => c,
-                Err(e) => {
-                    log::error!("Failed to acquire core lock: {}", e);
-                    event_loop.exit();
-                    return;
-                }
-            };
-
+            let core_lock = self.core.read().unwrap();
             let title = core_lock.metadata.title.clone();
-            match crate::platform::desktop::infra::DesktopInfra::create_window(event_loop, &title, 1024, 768) {
-                Ok(window) => {
-                    let _ = self.sync_metadata(&core_lock.metadata);
-                    let size = window.inner_size();
-                    let scale = window.scale_factor();
-                    let renderer = pollster::block_on(Renderer::new(window.clone(), size.width, size.height, scale as f32));
-                    self.scale_factor = scale;
-                    self.window = Some(window);
-                    self.renderer = Some(renderer);
-                }
-                Err(e) => {
-                    log::error!("Failed to create window: {}", e);
-                    event_loop.exit();
-                }
-            }
+            
+            let window_attributes = WinitWindow::default_attributes()
+                .with_title(title)
+                .with_inner_size(winit::dpi::LogicalSize::new(1024.0, 768.0));
+            
+            let window = Arc::new(event_loop.create_window(window_attributes).unwrap());
+            let size = window.inner_size();
+            let scale = window.scale_factor();
+            let renderer = pollster::block_on(GuiRenderer::new(window.clone(), size.width, size.height, scale as f32));
+            
+            self.scale_factor = scale;
+            self.window = Some(window);
+            self.renderer = Some(renderer);
         }
     }
 
@@ -202,7 +180,6 @@ impl ApplicationHandler<PlatformEvent> for DesktopRunner {
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
         match event {
             WindowEvent::CloseRequested => {
-                self.dispatch_event(InputEvent::Quit);
                 event_loop.exit();
             }
             WindowEvent::Resized(size) => {
@@ -217,15 +194,8 @@ impl ApplicationHandler<PlatformEvent> for DesktopRunner {
             }
             WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
                 self.scale_factor = scale_factor;
-                if let Some(window) = &self.window {
-                    let size = window.inner_size();
-                    if let Some(renderer) = &mut self.renderer {
-                        renderer.resize(size.width, size.height, scale_factor as f32);
-                    }
-                }
             }
             WindowEvent::CursorMoved { position, .. } => {
-                // Convert physical pixel position to logical position
                 let logical_pos = Vec2::new(
                     (position.x / self.scale_factor) as f32, 
                     (position.y / self.scale_factor) as f32
@@ -272,20 +242,11 @@ impl ApplicationHandler<PlatformEvent> for DesktopRunner {
                     ElementState::Pressed => ButtonState::Pressed,
                     ElementState::Released => ButtonState::Released,
                 };
-
-                // Exit on Q (keep as a convenience for now)
-                if state == ButtonState::Pressed && key_code == KeyCode::Char('Q') {
-                     event_loop.exit();
-                }
-
                 self.dispatch_event(InputEvent::Key { 
                     key: key_code, 
                     state, 
                     modifiers: self.modifiers 
                 });
-            }
-            WindowEvent::Ime(winit::event::Ime::Commit(text)) => {
-                self.dispatch_event(InputEvent::Ime(text));
             }
             WindowEvent::RedrawRequested => {
                 self.handle_redraw();

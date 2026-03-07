@@ -1,37 +1,43 @@
 # Component: VStack ↕️
 
-The `VStack` (Vertical Stack) is a specialized layout component that arranges its children in a vertical column. it is built on top of the `Flex` primitive with a pre-configured vertical direction.
+The `VStack` (Vertical Stack) is a layout component that arranges its children in a vertical column. It is a semantic wrapper around the `Flex` primitive with a pre-configured column direction.
 
 ---
 
-## 🧠 Internal Anatomy
+## 🏗️ Architecture
 
-### 1. VStack Logic
-- **Role:** Vertical collection management.
-- **Responsibility:** Delegates child storage to the underlying `Flex` logic. It provides a semantic interface for setting gaps between vertical items.
-
-### 2. VStack View
-- **Infrastructure:** Composes **`ViewCore`** via the inner Flex primitive.
-- **Mapping:** Automatically sets `FlexDirection::Col` in the Taffy tree. It ensures that vertical spacing is calculated accurately during the layout phase.
+- **Composition:** Composes a `Flex` primitive internally.
+- **Pre-configuration:** Automatically sets `FlexDirection::Col` on its internal style.
+- **VNode Mapping:** Renders as a `VNode::Element` with the tag "vstack" (or "flex" with column direction depending on the target).
 
 ---
 
-## 🗝️ Public API (Usage)
-
-### Constructor
-- `VStack::new()`: Initializes an empty vertical stack.
-
-### Methods
-- `.gap(f32)`: Sets the vertical spacing between children.
-- `.child(Box<dyn Component>)`: Appends an element to the column.
-
----
-
-## 💻 Usage Example
+## 🗝️ API & Usage
 
 ```rust
+use rupa::prelude::*;
+
 VStack::new()
-    .gap(10.0)
-    .child(Box::new(Text::new("Header")))
-    .child(Box::new(Text::new("Content body...")))
+    .style(gap(10.0))
+    .child(Box::new(Text::new("Item 1")))
+    .child(Box::new(Text::new("Item 2")))
+```
+
+### Methods
+- `.new()`: Initializes an empty vertical stack.
+- `.child(component)`: Adds a child to the stack.
+
+---
+
+## 🌳 VNode Representation
+
+When `render()` is called, a `VStack` produces:
+```rust
+VNode::Element(VElement {
+    tag: "vstack",
+    style: /* current style with FlexDirection::Col */,
+    attributes: /* current attributes */,
+    children: /* rendered children */,
+    key: Some(id),
+})
 ```

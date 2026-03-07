@@ -1,4 +1,4 @@
-use crate::vector::Vec2;
+use rupa_support::Vec2;
 use crate::types::TextAlign;
 
 /// Shared internal state for all renderers.

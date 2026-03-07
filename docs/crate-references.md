@@ -10,7 +10,8 @@ These crates handle single responsibilities and are the foundations of the frame
 
 | Crate Name | Tier | Purpose | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| **`rupa-signals`** | Atom | The fine-grained reactivity engine and ID generation. | `serde` |
+| **`rupa-support`** | Atom | The absolute foundation. Contains math (Vec2), ID generation, and common Errors. | `serde`, `thiserror` |
+| **`rupa-signals`** | Atom | The fine-grained reactivity engine. | `rupa-support`, `serde` |
 | **`rupa-styling`** | Atom | The visual DNA, OKLCH color math, and unified design tokens. | `rupa-signals`, `taffy`, `once_cell` |
 | **`rupa-vnode`** | Atom | The agnostic Virtual Tree structure used as a universal interface. | `rupa-styling`, `serde`, `serde_json` |
 
@@ -24,9 +25,10 @@ These crates assemble multiple atoms into functional, ready-to-use engines.
 | :--- | :--- | :--- | :--- |
 | **`rupa-core`** | Composite | The primary foundation. Integrates VNodes and base traits. | `rupa-signals`, `rupa-styling`, `rupa-vnode`, `taffy` |
 | **`rupa-ui`** | Composite | The Artisan Component Library. Contains `Button`, `Text`, `VStack`. | `rupa-core` |
-| **`rupa-engine`** | Composite | The Native Runtime. Handles GPU (WGPU) and Terminal (TUI). | `rupa-core`, `wgpu`, `winit`, `crossterm` |
+| **`rupa-engine`** | Composite | The Native Runtime. Handles hardware-accelerated rendering for Desktop and Terminal. | `rupa-core`, `wgpu`, `winit`, `crossterm` |
 | **`rupa-server`** | Composite | The Backend & SSR Engine. Generates HTML/CSS. | `rupa-core`, `rupa-ui`, `axum`, `tokio` |
 | **`rupa-client`** | Composite | The Web Frontend Engine. Handles DOM and WASM Hydration. | `rupa-core`, `rupa-ui`, `wasm-bindgen`, `web-sys` |
+| **`rupa-mobile`** | Composite | The Mobile Integration bridge. Handles native interop and touch events. | `rupa-core`, `rupa-engine`, `winit` |
 | **`rupa-macros`** | Composite | Procedural stencils for code generation. | `syn`, `quote`, `proc-macro2` |
 | **`rupa-docs`** | Composite | The official documentation app built using Rupa. | `rupa`, `rupa-ui` |
 
@@ -36,4 +38,22 @@ These crates assemble multiple atoms into functional, ready-to-use engines.
 
 | Crate Name | Tier | Purpose | Key Features |
 | :--- | :--- | :--- | :--- |
-| **`rupa`** | Facade | The unified entry point. Re-exports composites. | `desktop`, `tui`, `ssr`, `web` |
+| **`rupa`** | Facade | The unified entry point. Re-exports composites. | `desktop`, `tui`, `ssr`, `web`, `mobile` |
+
+---
+
+## 🛠️ Usage Summary
+
+Users typically depend on the `rupa` crate and enable the necessary features:
+
+```toml
+[dependencies]
+# Standard Full-Stack Web build
+rupa = { version = "0.1", features = ["web", "ssr"] }
+
+# Specialized Native Desktop build
+rupa = { version = "0.1", features = ["desktop"] }
+
+# Specialized Native Mobile build
+rupa = { version = "0.1", features = ["mobile"] }
+```

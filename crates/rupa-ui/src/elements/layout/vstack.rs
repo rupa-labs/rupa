@@ -1,44 +1,41 @@
-use rupa_core::vnode::VNode; use rupa_core::component::Component;
-use rupa_core::{FlexDirection, Vec2, Style};
-use rupa_core::component::Component;
-use crate::primitives::flex::Flex;
-use rupa_core::renderer::{Renderer, TextMeasurer};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
+use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
 use crate::style::modifiers::base::Stylable;
-use rupa_core::scene::SceneNode;
+use crate::primitives::flex::Flex;
 use taffy::prelude::*;
 use std::sync::RwLockWriteGuard;
 
-/// A specialized Flex container that stacks children vertically.
 pub struct VStack<'a> {
     pub inner: Flex<'a>,
 }
 
 impl<'a> VStack<'a> {
     pub fn new() -> Self {
-        let flex = Flex::new();
-        flex.view.core.get_style_mut().flex.flex_direction = FlexDirection::Col;
-        Self { inner: flex }
+        let mut inner = Flex::new();
+        inner.view.core.style().flex.flex_direction = rupa_styling::FlexDirection::Col;
+        Self { inner }
     }
 
-    pub fn gap(self, val: f32) -> Self {
-        self.inner.view.core.get_style_mut().flex.gap = Some(val);
+    pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self {
+        self.inner = self.inner.child(child);
         self
     }
 
-    pub fn child(mut self, c: Box<dyn Component + 'a>) -> Self {
-        self.inner = self.inner.child(c);
+    pub fn gap(self, val: f32) -> Self {
+        self.inner.view.core.style().flex.gap = Some(val);
         self
     }
 }
 
 impl<'a> Stylable for VStack<'a> {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.inner.view.core.get_style_mut() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.inner.view.core.style() }
 }
 
 impl<'a> Component for VStack<'a> {
-    fn render(&self) -> VNode { VNode::Empty }
     fn id(&self) -> &str { self.inner.id() }
     fn children(&self) -> Vec<&dyn Component> { self.inner.children() }
+    fn render(&self) -> VNode { self.inner.render() }
+
     fn get_node(&self) -> Option<SceneNode> { self.inner.get_node() }
     fn set_node(&self, node: SceneNode) { self.inner.set_node(node); }
     fn is_dirty(&self) -> bool { self.inner.is_dirty() }

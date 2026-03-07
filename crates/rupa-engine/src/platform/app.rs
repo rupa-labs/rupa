@@ -1,9 +1,10 @@
 use std::sync::{Arc, RwLock};
 use rupa_core::component::Component;
-use rupa_core::plugin::PluginRegistry;
-use rupa_core::Style;
-use rupa_core::Theme;
+use crate::plugin::PluginRegistry;
+use rupa_styling::{Style, Theme};
 use crate::platform::context::PlatformCore;
+use rupa_core::{Signal, Vec2, Error};
+use rupa_core::events::InputEvent;
 
 #[cfg(feature = "desktop")]
 use crate::platform::desktop::DesktopRunner;
@@ -36,7 +37,7 @@ pub struct AppMetadata {
     pub version: String,
     pub description: String,
     pub author: String,
-    pub identifier: String, // e.g. "com.reasnov.myapp"
+    pub identifier: String,
     pub icon: Option<IconSource>,
     pub theme_color: Option<[f32; 4]>,
     pub background_color: Option<[f32; 4]>,
@@ -50,8 +51,8 @@ pub struct App {
     pub body_style: Style,
     pub debug: bool,
     pub initial_overlays: Vec<Box<dyn Component>>,
-    pub error_handler: Option<Arc<dyn Fn(crate::support::error::Error) + Send + Sync>>,
-    initial_listeners: Vec<Arc<dyn Fn(&crate::platform::events::InputEvent) + Send + Sync>>,
+    pub error_handler: Option<Arc<dyn Fn(Error) + Send + Sync>>,
+    initial_listeners: Vec<Arc<dyn Fn(&InputEvent) + Send + Sync>>,
 }
 
 impl App {
@@ -84,7 +85,7 @@ impl App {
         self
     }
 
-    pub fn on_error(mut self, handler: impl Fn(crate::support::error::Error) + Send + Sync + 'static) -> Self {
+    pub fn on_error(mut self, handler: impl Fn(Error) + Send + Sync + 'static) -> Self {
         self.error_handler = Some(Arc::new(handler));
         self
     }
@@ -134,14 +135,13 @@ impl App {
         self
     }
 
-    /// Style the implicit root 'Body' element (Viewport).
-    pub fn style(mut self, modifier: impl crate::style::modifiers::base::StyleModifier) -> Self {
-        modifier.apply(&mut self.body_style);
+    /// Style the implicit root 'Body' element.
+    pub fn style(mut self, modifier: impl Fn(&mut Style)) -> Self {
+        modifier(&mut self.body_style);
         self
     }
 
-    /// Register a global event listener, typically called by plugins during bootstrap.
-    pub fn add_event_listener(&mut self, listener: impl Fn(&crate::platform::events::InputEvent) + Send + Sync + 'static) {
+    pub fn add_event_listener(&mut self, listener: impl Fn(&InputEvent) + Send + Sync + 'static) {
         self.initial_listeners.push(Arc::new(listener));
     }
 
@@ -161,12 +161,13 @@ impl App {
         registry.build_all(self);
     }
 
-    fn prepare_root(&mut self, viewport: crate::support::state::Signal<crate::support::vector::Vec2>) -> Box<dyn Component> {
-        // Automatically wrap user root into an implicit internal Body primitive
-        let mut body = crate::core::body::Body::new(self.body_style.clone(), self.root.take());
-        body.logic.viewport = viewport;
-        for overlay in self.initial_overlays.drain(..) {
-            body.logic.add_overlay(overlay);
+    fn prepare_root(&mut self, viewport: Signal<Vec2>) -> Box<dyn Component> {
+        let mut body = rupa_ui::Body::new();
+        *body.view.core.style() = self.body_style.clone();
+        // Overlays and children will be handled differently in the new architecture
+        // For now, if we have a root, we should add it
+        if let Some(r) = self.root.take() {
+            body = body.child(r);
         }
         Box::new(body)
     }
@@ -179,12 +180,6 @@ impl App {
         core_data.root = Some(final_root);
         core_data.event_listeners = std::mem::take(&mut self.initial_listeners);
         core_data.debug = self.debug;
-        
-        if let Some(ref handler) = self.error_handler {
-            core_data.diagnostic_center = Some(crate::support::error::DiagnosticCenter {
-                handler: Arc::clone(handler),
-            });
-        }
         
         let core = Arc::new(RwLock::new(core_data));
         let runner = DesktopRunner::new(Arc::clone(&core));
@@ -202,48 +197,10 @@ impl App {
         core_data.event_listeners = std::mem::take(&mut self.initial_listeners);
         core_data.debug = self.debug;
 
-        if let Some(ref handler) = self.error_handler {
-            core_data.diagnostic_center = Some(crate::support::error::DiagnosticCenter {
-                handler: Arc::clone(handler),
-            });
-        }
-
         let core = Arc::new(RwLock::new(core_data));
         let runner = TerminalRunner::new(Arc::clone(&core));
         if let Err(e) = runner.run() {
             log::error!("Terminal Error: {}", e);
-        }
-    }
-
-    #[cfg(feature = "web")]
-    pub fn run_web(mut self, canvas_id: impl Into<String>) {
-        self.bootstrap();
-        let mut core_data = PlatformCore::new(self.metadata.clone(), None);
-        let final_root = self.prepare_root(core_data.viewport.clone());
-        core_data.root = Some(final_root);
-        core_data.event_listeners = std::mem::take(&mut self.initial_listeners);
-        core_data.debug = self.debug;
-        
-        let core = Arc::new(RwLock::new(core_data));
-        let runner = WebRunner::new(Arc::clone(&core), canvas_id);
-        if let Err(e) = runner.run() {
-            log::error!("Web Error: {}", e);
-        }
-    }
-
-    #[cfg(feature = "mobile")]
-    pub fn run_mobile(mut self) {
-        self.bootstrap();
-        let mut core_data = PlatformCore::new(self.metadata.clone(), None);
-        let final_root = self.prepare_root(core_data.viewport.clone());
-        core_data.root = Some(final_root);
-        core_data.event_listeners = std::mem::take(&mut self.initial_listeners);
-        core_data.debug = self.debug;
-        
-        let core = Arc::new(RwLock::new(core_data));
-        let runner = MobileRunner::new(Arc::clone(&core));
-        if let Err(e) = runner.run() {
-            log::error!("Mobile Error: {}", e);
         }
     }
 }
