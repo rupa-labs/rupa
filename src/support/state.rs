@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock, atomic::{AtomicU64, AtomicU32, Ordering}};
+use std::sync::{Arc, RwLock, atomic::{AtomicU64, Ordering}};
 use std::fmt::Debug;
 use std::cell::Cell;
 use crate::platform::request_redraw;

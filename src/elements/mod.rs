@@ -13,7 +13,7 @@ pub mod theme_switcher;
 pub mod viewport;
 
 pub use brand::Brand;
-pub use button::{Button, ButtonGroup};
+pub use button::Button;
 pub use content::{Card, Table, Accordion};
 pub use control_flow::{Show, ForEach};
 pub use feedback::{Progress, Skeleton, Badge, Spinner, Alert};

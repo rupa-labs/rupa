@@ -8,7 +8,7 @@ use super::layout::{Layout as RupaLayout, Display as RupaDisplay, Position as Ru
 use super::flex::{Flex as RupaFlex, FlexDirection as RupaFlexDirection, AlignItems as RupaAlignItems, JustifyContent as RupaJustifyContent};
 use super::grid::Grid as RupaGrid;
 use super::sizing::Sizing as RupaSizing;
-use super::typography::Typography;
+use super::typography::TypographyStyle;
 use super::effects::Shadow;
 use super::filters::Filter;
 use crate::style::modifiers::animation::Motion;
@@ -26,13 +26,17 @@ pub struct Style {
     pub border: Border,
     pub rounding: Rounding,
     pub outline: Outline,
-    pub typography: Typography,
+    pub typography: TypographyStyle,
     pub shadow: Option<Shadow>,
     pub filter: Option<Filter>,
     pub motion: Option<Motion>,
     pub is_group: bool,
     pub group_hover: Option<Box<Style>>,
     pub variants: HashMap<String, Style>,
+}
+
+fn length(v: f32) -> LengthPercentage {
+    LengthPercentage::Length(v)
 }
 
 impl Style {
@@ -60,14 +64,14 @@ impl Style {
         };
 
         s.margin = Rect {
-            left: length(self.margin.left),
-            right: length(self.margin.right),
-            top: length(self.margin.top),
-            bottom: length(self.margin.bottom),
+            left: length(self.margin.left).into(),
+            right: length(self.margin.right).into(),
+            top: length(self.margin.top).into(),
+            bottom: length(self.margin.bottom).into(),
         };
 
-        if let Some(w) = self.sizing.width { s.size.width = length(w); }
-        if let Some(h) = self.sizing.height { s.size.height = length(h); }
+        if let Some(w) = self.sizing.width { s.size.width = length(w).into(); }
+        if let Some(h) = self.sizing.height { s.size.height = length(h).into(); }
 
         s.flex_direction = match self.flex.flex_direction {
             RupaFlexDirection::Row => FlexDirection::Row,

@@ -1,22 +1,22 @@
-use std::cell::{Cell, RefCell, RefMut};
+use std::sync::{RwLock, RwLockWriteGuard};
 use std::sync::atomic::{AtomicBool, Ordering};
 use crate::support::Style;
 use crate::scene::SceneNode;
 
 /// The standardized infrastructure for any Component View.
 /// Handles styling, geometric nodes, and invalidation.
-/// Follows "Composition over Inheritance".
+/// Follows "Composition over Inheritance" and is thread-safe.
 pub struct ViewCore {
-    pub style: RefCell<Style>,
-    pub node: Cell<Option<SceneNode>>,
+    pub style: RwLock<Style>,
+    pub node: RwLock<Option<SceneNode>>,
     pub dirty: AtomicBool,
 }
 
 impl ViewCore {
     pub fn new(style: Style) -> Self {
         Self {
-            style: RefCell::new(style),
-            node: Cell::new(None),
+            style: RwLock::new(style),
+            node: RwLock::new(None),
             dirty: AtomicBool::new(true),
         }
     }
@@ -37,15 +37,15 @@ impl ViewCore {
         self.dirty.store(false, Ordering::Relaxed);
     }
 
-    pub fn get_style_mut(&self) -> RefMut<'_, Style> {
-        self.style.borrow_mut()
+    pub fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> {
+        self.style.write().unwrap()
     }
 
     pub fn set_node(&self, node: SceneNode) {
-        self.node.set(Some(node));
+        *self.node.write().unwrap() = Some(node);
     }
 
     pub fn get_node(&self) -> Option<SceneNode> {
-        self.node.get()
+        *self.node.read().unwrap()
     }
 }

@@ -1,5 +1,5 @@
 use crate::support::vector::Vec2;
-use crate::support::typography::TextAlign;
+use crate::style::utilities::typography::TextAlign;
 use crate::renderer::{Renderer, RenderCore};
 use std::io::{Write, stdout};
 
@@ -26,7 +26,7 @@ impl TuiRenderer {
     pub fn new(width: u16, height: u16) -> Self {
         let size = (width * height) as usize;
         Self {
-            core: RenderCore::new(width as f32, height as f32),
+            core: RenderCore::new(width as f32, height as f32, 1.0),
             buffer: vec![TuiCell::default(); size],
             prev_buffer: vec![TuiCell::default(); size],
         }
@@ -34,6 +34,7 @@ impl TuiRenderer {
 
     pub fn resize(&mut self, width: u16, height: u16) {
         self.core.logical_size = Vec2::new(width as f32, height as f32);
+        self.core.scale_factor = 1.0;
         let size = (width * height) as usize;
         self.buffer = vec![TuiCell::default(); size];
         self.prev_buffer = vec![TuiCell::default(); size];
@@ -66,10 +67,11 @@ impl Renderer for TuiRenderer {
     fn core_mut(&mut self) -> &mut RenderCore { &mut self.core }
 
     fn draw_rect(&mut self, x: f32, y: f32, width: f32, height: f32, color: [f32; 4], _radius: f32) {
-        let tx = (x + self.core.camera_offset.x) * self.core.camera_zoom;
-        let ty = (y + self.core.camera_offset.y) * self.core.camera_zoom;
-        let tw = width * self.core.camera_zoom;
-        let th = height * self.core.camera_zoom;
+        let scale = self.core.scale_factor;
+        let tx = (x + self.core.camera_offset.x) * self.core.camera_zoom * scale;
+        let ty = (y + self.core.camera_offset.y) * self.core.camera_zoom * scale;
+        let tw = width * self.core.camera_zoom * scale;
+        let th = height * self.core.camera_zoom * scale;
 
         let ix = tx.round() as i32;
         let iy = ty.round() as i32;
@@ -95,8 +97,9 @@ impl Renderer for TuiRenderer {
     }
 
     fn draw_text(&mut self, text: &str, x: f32, y: f32, _size: f32, color: [f32; 4], _align: TextAlign) {
-        let tx = (x + self.core.camera_offset.x) * self.core.camera_zoom;
-        let ty = (y + self.core.camera_offset.y) * self.core.camera_zoom;
+        let scale = self.core.scale_factor;
+        let tx = (x + self.core.camera_offset.x) * self.core.camera_zoom * scale;
+        let ty = (y + self.core.camera_offset.y) * self.core.camera_zoom * scale;
         let ix = tx.round() as i32;
         let iy = ty.round() as i32;
         let fg = [(color[0] * 255.0) as u8, (color[1] * 255.0) as u8, (color[2] * 255.0) as u8];

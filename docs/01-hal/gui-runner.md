@@ -1,34 +1,53 @@
-# Module: GUI Runner (`gui/mod.rs`) 🖼️🏃
+# Module: GUI Runner (`src/platform/gui/mod.rs`) 🖥️
 
-The GUI Runner is the implementation of the platform shell for graphical environments. it bridges the asynchronous world of Winit with the high-performance drawing of WGPU.
-
----
-
-## 🧠 Internal Anatomy
-
-### 1. Winit Handler
-- **Mechanism:** Implements `ApplicationHandler`. It listens for native OS signals (Resume, Suspend, Resize) and translates them into framework-ready instructions.
-
-### 2. Composition Shell
-- **Composition:** It wraps **`PlatformCore`** (L1) and **`GuiRenderer`** (L2).
-- **Responsibility:** Coordinates the "Big Loop" (Input -> Layout -> Paint -> Present).
+The GUI Runner is the hardware-accelerated backend for Rupaui, built on top of **Winit** (Windowing) and **WGPU** (Graphics).
 
 ---
 
-## 🗝️ Logic & Flow
+## 🏗️ Technical Architecture
 
-### Redraw Handling
-When `RedrawRequested` is triggered:
-1. It queries `self.core.compute_layout()`.
-2. It initializes a WGPU frame via the renderer.
-3. It traverses the tree to execute `component.paint()`.
-4. It calls `renderer.present()` to flip the GPU buffers.
+### 1. Robust Lifecycle
+The GUI Runner implements the `ApplicationHandler` pattern from Winit, ensuring reliable startup and resume behavior across Windows, MacOS, and Linux.
+- **Error Handling:** All window creation and event loop builds are `Result`-based, avoiding abrupt crashes.
+- **Resource Management:** Automatically initializes and manages the **WGPU Renderer** context.
 
-### Event Dispatching
-Translates native Winit mouse/keyboard enums into `InputEvent` before passing them to the `InputDispatcher`.
+### 2. Precise Coordination (HiDPI)
+The Runner handles the conversion between **Physical Pixels** (OS units) and **Logical Pixels** (Framework units).
+- **Scale Factor:** Automatically applied to mouse coordinates, scroll deltas, and window sizes.
+- **Layout Consistency:** Ensures UI elements look identical across different display densities.
+
+### 3. Isolated Input Mapping (`input.rs`)
+To prevent "God File" issues, key mapping logic is isolated.
+- **Logical Mapping:** Uses `logical_key` and `text` properties from Winit to ensure correct text input regardless of the physical keyboard layout.
+- **IME Support:** Native handling of `WindowEvent::Ime` for international character input.
 
 ---
 
-## 🔄 Interaction Flow
-- **L1 (HAL) -> L2 (Renderer):** Manages the WGPU device lifecycle.
-- **L1 (HAL) -> L1 (PlatformCore):** Coordinates tree updates.
+## 🗝️ Implementation Details
+
+### `struct GuiRunner`
+- `core`: A `SharedPlatformCore` (Arc<RwLock>) for thread-safe access.
+- `window`: A `Window` wrapper isolating the renderer from Winit specifics.
+- `renderer`: The Layer 2 WGPU backend.
+- `modifiers`: Current state of Shift, Ctrl, Alt, and Logo keys.
+
+---
+
+## 🌟 Advanced Display Capabilities
+
+### High-DPI Synchronization (Retina/4K)
+Rupaui automatically synchronizes the OS `scale_factor` across all internal layers. This ensures that:
+- Coordinates are calculated in logical units for consistent layout.
+- Rendering is performed in physical units for pixel-perfect sharpness.
+- Element sizes remain consistent regardless of the monitor's pixel density.
+
+### Multi-Window Architecture
+The framework is designed to support complex desktop environments where an application can orchestrate multiple independent windows sharing a unified state.
+
+### OS Services Integration
+Future updates to the GUI Runner include native bridging for:
+- **System Clipboard:** Seamless copy-paste of text and assets.
+- **Drag-and-Drop:** Native file and data ingestion into UI components.
+- **Shell Customization:** Controls for window transparency, custom titlebars, and fullscreen states.
+
+

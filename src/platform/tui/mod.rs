@@ -6,24 +6,24 @@ use crate::core::component::Component;
 use crate::support::vector::Vec2;
 use crate::platform::dispatcher::InputDispatcher;
 use crate::platform::events::*;
-use crate::platform::PlatformCore;
+use crate::platform::SharedPlatformCore;
 use crate::renderer::tui::TuiRenderer;
 use crate::renderer::Renderer;
 use self::terminal::TerminalInterface;
 
 pub struct TuiRunner {
-    pub core: PlatformCore,
+    pub core: SharedPlatformCore,
     pub terminal: TerminalInterface,
     pub renderer: TuiRenderer,
     pub should_quit: bool,
 }
 
 impl TuiRunner {
-    pub fn new(app_name: String, root: Option<Box<dyn Component>>) -> Self {
+    pub fn new(core: SharedPlatformCore) -> Self {
         let terminal = TerminalInterface::new();
         let (cols, rows) = terminal.get_size();
         Self {
-            core: PlatformCore::new(app_name, root),
+            core,
             terminal,
             renderer: TuiRenderer::new(cols, rows),
             should_quit: false,
@@ -33,8 +33,18 @@ impl TuiRunner {
     pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         self.terminal.setup()?;
 
-        let (cols, rows) = self.terminal.get_size();
-        let mut current_size = Vec2::new(cols as f32, rows as f32);
+        let mut _current_size = {
+            let (cols, rows) = self.terminal.get_size();
+            Vec2::new(cols as f32, rows as f32)
+        };
+
+        // For TUI, we don't have a winit event loop, but we could hook into the global proxy
+        // if we use a different event-driven strategy. For now, polling is used.
+        crate::platform::register_redraw_proxy(|| {
+            // In a polling TUI, redraws happen every frame or can be signaled 
+            // by waking up the poll_event thread. For now, this is a no-op 
+            // as we poll frequently, but could write to a channel in the future.
+        });
 
         while !self.should_quit {
             self.handle_redraw();
@@ -67,10 +77,14 @@ impl TuiRunner {
                         let pos = Vec2::new(mouse.column as f32, mouse.row as f32);
                         self.dispatch_event(InputEvent::PointerMove { position: pos });
 
-                        let button = match mouse.button {
-                            CrossMouseButton::Left => Some(PointerButton::Primary),
-                            CrossMouseButton::Right => Some(PointerButton::Secondary),
-                            CrossMouseButton::Middle => Some(PointerButton::Auxiliary),
+                        let button = match mouse.kind {
+                            MouseEventKind::Down(btn) | MouseEventKind::Up(btn) | MouseEventKind::Drag(btn) => {
+                                match btn {
+                                    CrossMouseButton::Left => Some(PointerButton::Primary),
+                                    CrossMouseButton::Right => Some(PointerButton::Secondary),
+                                    CrossMouseButton::Middle => Some(PointerButton::Auxiliary),
+                                }
+                            }
                             _ => None,
                         };
 
@@ -87,7 +101,7 @@ impl TuiRunner {
                     }
                     Event::Resize(w, h) => {
                         self.renderer.resize(w, h);
-                        current_size = Vec2::new(w as f32, h as f32);
+                        let current_size = Vec2::new(w as f32, h as f32);
                         self.dispatch_event(InputEvent::Resize { 
                             size: current_size, 
                             scale_factor: 1.0 
@@ -103,12 +117,20 @@ impl TuiRunner {
     }
 
     fn handle_redraw(&mut self) {
-        let scene_node = self.core.compute_layout(self.renderer.width() as f32, self.renderer.height() as f32);
+        let mut core = match self.core.write() {
+            Ok(c) => c,
+            Err(_) => return,
+        };
 
-        if let Some(ref root) = self.core.root {
+        let scene_node = match core.compute_layout(&self.renderer, self.renderer.width() as f32, self.renderer.height() as f32) {
+            Some(node) => node,
+            None => return,
+        };
+
+        if let Some(ref root) = core.root {
             root.paint(
                 &mut self.renderer,
-                &self.core.scene.layout_engine.taffy,
+                &core.scene.layout_engine.taffy,
                 scene_node.raw(),
                 false, 
                 Vec2::zero(),
@@ -118,13 +140,32 @@ impl TuiRunner {
     }
 
     fn dispatch_event(&mut self, event: InputEvent) {
-        if let Some(ref root) = self.core.root {
+        let mut core = match self.core.write() {
+            Ok(c) => c,
+            Err(_) => return,
+        };
+
+        let mut cursor_pos = core.cursor_pos;
+        let mut pointer_capture = core.pointer_capture.take();
+        let mut focused_id = core.focused_id.take();
+        let event_listeners = core.event_listeners.clone();
+
+        if let Some(ref root) = core.root {
+            let root_ref: &dyn Component = root.as_ref();
             InputDispatcher::dispatch(
                 event,
-                root.as_ref(),
-                &self.core.scene,
-                &mut self.core.cursor_pos,
+                root_ref,
+                &core.scene,
+                &mut cursor_pos,
+                &mut pointer_capture,
+                &mut focused_id,
+                &event_listeners,
             );
         }
+
+        // Put things back
+        core.cursor_pos = cursor_pos;
+        core.pointer_capture = pointer_capture;
+        core.focused_id = focused_id;
     }
 }

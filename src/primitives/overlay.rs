@@ -2,12 +2,12 @@ use crate::support::{Style, generate_id, Vec2, Position};
 use crate::core::component::Component;
 use crate::core::ViewCore;
 use crate::renderer::{Renderer, TextMeasurer};
-use crate::style::modifiers::utilities::Stylable;
+use crate::style::modifiers::base::Stylable;
 use crate::platform::dispatcher::UIEvent;
 use crate::scene::SceneNode;
 use crate::elements::layout::container::Children;
 use taffy::prelude::*;
-use std::cell::{RefMut};
+use std::sync::RwLockWriteGuard;
 
 // --- LOGIC ---
 pub struct OverlayLogic<'a> {
@@ -46,7 +46,7 @@ impl<'a> Overlay<'a> {
 }
 
 impl<'a> Stylable for Overlay<'a> {
-    fn get_style_mut(&self) -> RefMut<'_, Style> { self.view.core.get_style_mut() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() }
 }
 
 impl<'a> Component for Overlay<'a> {
@@ -80,11 +80,8 @@ impl<'a> Component for Overlay<'a> {
         node
     }
 
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
-        self.logic.children.paint_all(renderer, taffy, node, is_group_hovered, global_pos, 0);
+    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, _node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
+        let style_ref = self.view.core.style.read().unwrap();
+        self.logic.children.paint_all(renderer, taffy, _node, is_group_hovered || style_ref.is_group, global_pos, 0);
     }
-
-    fn on_click(&self, _: &mut UIEvent) {}
-    fn on_scroll(&self, _: &mut UIEvent, _: f32) {}
-    fn on_drag(&self, _: &mut UIEvent, _: Vec2) {}
 }

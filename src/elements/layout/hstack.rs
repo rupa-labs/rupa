@@ -1,13 +1,12 @@
 use crate::support::{FlexDirection, Vec2, Style};
 use crate::core::component::Component;
-use crate::core::ViewCore;
 use crate::primitives::flex::Flex;
 use crate::renderer::{Renderer, TextMeasurer};
 use crate::style::modifiers::base::Stylable;
 use crate::platform::dispatcher::UIEvent;
 use crate::scene::SceneNode;
 use taffy::prelude::*;
-use std::cell::RefMut;
+use std::sync::RwLockWriteGuard;
 
 /// A specialized Flex container that stacks children horizontally.
 pub struct HStack<'a> {
@@ -16,12 +15,12 @@ pub struct HStack<'a> {
 
 impl<'a> HStack<'a> {
     pub fn new() -> Self {
-        let mut flex = Flex::new();
+        let flex = Flex::new();
         flex.view.core.get_style_mut().flex.flex_direction = FlexDirection::Row;
         Self { inner: flex }
     }
 
-    pub fn gap(mut self, val: f32) -> Self {
+    pub fn gap(self, val: f32) -> Self {
         self.inner.view.core.get_style_mut().flex.gap = Some(val);
         self
     }
@@ -33,7 +32,7 @@ impl<'a> HStack<'a> {
 }
 
 impl<'a> Stylable for HStack<'a> {
-    fn get_style_mut(&self) -> RefMut<'_, Style> { self.inner.view.core.get_style_mut() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.inner.view.core.get_style_mut() }
 }
 
 impl<'a> Component for HStack<'a> {
@@ -52,8 +51,4 @@ impl<'a> Component for HStack<'a> {
     fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
         self.inner.paint(renderer, taffy, node, is_group_hovered, global_pos);
     }
-
-    fn on_click(&self, event: &mut UIEvent) { self.inner.on_click(event); }
-    fn on_scroll(&self, event: &mut UIEvent, d: f32) { self.inner.on_scroll(event, d); }
-    fn on_drag(&self, event: &mut UIEvent, d: Vec2) { self.inner.on_drag(event, d); }
 }

@@ -1,36 +1,46 @@
-# Module: Platform Orchestrator (`mod.rs`) 🏛️
+# Module: Platform Orchestrator (`src/platform/mod.rs`) 🏛️
 
-The Platform Orchestrator is the high-level manager of the Rupaui execution lifecycle. It abstracts the "How" of starting an application, allowing the developer to focus on the "What."
+The Platform Orchestrator manages the application's lifecycle, shared state, and inter-thread communication in an OS-agnostic way.
 
 ---
 
-## 🧠 Internal Anatomy
+## 🧠 Core Architecture
 
-### 1. App Struct (The Conductor)
-- **Role:** High-level builder.
-- **Responsibility:** Orchestrates the bootstrap process, including plugin registration and theme initialization. It holds the root component until the platform runner is ready.
+### 1. App Struct (The Builder)
+- **Role:** High-level builder and plugin entry point.
+- **Responsibility:** Configures plugins, themes, and root components before handover to a specific platform runner.
+- **Plugin Integration:** Provides `add_event_listener()` to register global plugin hooks that can monitor or intercept input events.
 
-### 2. PlatformCore (The Heart)
-- **Role:** Shared State Container.
-- **Responsibility:** Composes the **SceneCore (L3)** and tracks global cursor positions. By being composed into both `GuiRunner` and `TuiRunner`, it ensures that UI logic remains identical across backends.
+### 2. SharedPlatformCore (The Heart)
+- **Role:** Thread-Safe State Container.
+- **Implementation:** `Arc<RwLock<PlatformCore>>`.
+- **Responsibility:**
+  - Manages **Geometric Tree**: Integrates `SceneCore (L3)` for hit-testing and layout.
+  - Tracks **Interaction State**: Cursor position, Pointer Capture ID, and Keyboard Focus ID.
+  - Exposes **Plugin Hooks**: Stores `event_listeners` called by the dispatcher.
 
-### 3. Redraw Proxy
-- **Role:** Communication Bridge.
-- **Mechanism:** Provides a `request_redraw()` hook that uses an internal `OnceLock` proxy to signal the active event loop (Winit or Crossterm) without exposing their specific types.
+### 3. Redraw Strategy
+- **Mechanism:** Redraws are managed through a global thread-safe registry (`GLOBAL_REDRAW_PROXY`).
+- **Functionality:** `request_redraw()` can be safely called from any thread (including reactive signals) to signal the OS to refresh the frame.
 
 ---
 
 ## 🗝️ Public API
 
 ### `struct App`
-- `App::new(name)`: Entry point.
-- `.root(component)`: Definining the UI entry.
-- `.run()`: Executes the GUI shell.
-- `.run_tui()`: Executes the Terminal shell.
+- `App::new(name)`: Initialize construction.
+- `.root(component)`: Set the UI entry point.
+- `.add_event_listener(f)`: Register a plugin hook for input monitoring.
+- `.run()`: Start the **GUI Runner**.
+- `.run_tui()`: Start the **TUI Runner**.
+
+### `enum PlatformEvent`
+- `RequestRedraw`: Siganls the event loop to refresh the current viewport.
 
 ---
 
-## 🔄 Interaction Flow
-1. **Bootstrap:** `App` initializes L9 (Themes) and L5 (Plugins).
-2. **Handover:** `App` transfers the `PlatformCore` to a specific `Runner`.
-3. **Loop:** The `Runner` enters an infinite loop, delegating redraws to the hardware.
+## 🔄 Lifecycle Logic
+1. **Creation:** Developer configures `App`.
+2. **Handover:** `App` creates the `SharedPlatformCore` and hands it to a backend Runner.
+3. **Execution:** The Runner enters the OS event loop and registers its redraw proxy.
+4. **Update:** Input or reactive signals trigger a redraw signal via the proxy.

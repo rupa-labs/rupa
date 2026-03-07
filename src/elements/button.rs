@@ -1,14 +1,14 @@
-use crate::support::{Style, generate_id, Accessibility, Role, Signal, Variant, Attributes, EventListeners, Theme, Color, Scale, TextAlign, Vec2, Display, FlexDirection, Spacing, Rounding};
+use crate::support::{Style, generate_id, Accessibility, Signal, Variant, EventListeners, Theme, Scale, Vec2, Spacing, Readable};
+use crate::style::utilities::typography::TextAlign;
 use crate::core::component::Component;
 use crate::core::ViewCore;
 use crate::renderer::{Renderer, TextMeasurer};
-use crate::style::modifiers::utilities::Stylable;
+use crate::style::modifiers::base::Stylable;
 use crate::platform::dispatcher::UIEvent;
 use crate::scene::SceneNode;
 use std::sync::Arc;
 use taffy::prelude::*;
-use std::cell::{Cell, RefCell, RefMut};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::RwLockWriteGuard;
 
 // --- LOGIC ---
 
@@ -42,7 +42,7 @@ impl ButtonLogic {
             size: ButtonSize::Md,
             disabled: Signal::new(false),
             events: EventListeners::default(),
-            accessibility: Accessibility { role: Role::Button, ..Default::default() },
+            accessibility: Accessibility::default(),
         }
     }
 }
@@ -62,7 +62,7 @@ impl ButtonView {
         }
     }
 
-    pub fn compute_layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, parent: Option<NodeId>, logic: &ButtonLogic) -> NodeId {
+    pub fn compute_layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, parent: Option<NodeId>, logic: &ButtonLogic) -> NodeId {
         let mut t_style = self.core.get_style_mut().to_taffy();
         t_style.display = taffy::Display::Flex;
         
@@ -93,7 +93,7 @@ impl ButtonView {
 
     pub fn render(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, logic: &ButtonLogic, global_pos: Vec2) {
         let layout = taffy.layout(node).unwrap();
-        let style = self.core.style.borrow();
+        let style = self.core.style.read().unwrap();
         
         if let Some(color) = style.background.color.clone() { 
             renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw); 
@@ -138,7 +138,7 @@ impl Button {
 }
 
 impl Stylable for Button {
-    fn get_style_mut(&self) -> RefMut<'_, Style> { self.view.core.get_style_mut() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() }
 }
 
 impl Component for Button {
@@ -163,6 +163,4 @@ impl Component for Button {
             if let Some(ref cb) = self.logic.events.on_click { (cb)(event); }
         }
     }
-    fn on_scroll(&self, _: &mut UIEvent, _: f32) {}
-    fn on_drag(&self, _: &mut UIEvent, _: Vec2) {}
 }

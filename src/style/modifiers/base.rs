@@ -1,28 +1,28 @@
 use crate::style::utilities::style::Style;
-use std::cell::RefMut;
 use crate::core::component::Component;
+use std::sync::RwLockWriteGuard;
 
+/// A trait for modifying styles in a functional or chaining manner.
 pub trait StyleModifier {
     fn apply(&self, style: &mut Style);
 }
 
-impl<F> StyleModifier for F where F: Fn(&mut Style) {
-    fn apply(&self, style: &mut Style) { self(style); }
+impl<F> StyleModifier for F
+where
+    F: Fn(&mut Style),
+{
+    fn apply(&self, style: &mut Style) {
+        (self)(style);
+    }
 }
 
-// Tuple support for composition (DRY implementation via macro would be better, but we keep it explicit for now)
-impl<A: StyleModifier, B: StyleModifier> StyleModifier for (A, B) {
-    fn apply(&self, style: &mut Style) { self.0.apply(style); self.1.apply(style); }
-}
-impl<A: StyleModifier, B: StyleModifier, C: StyleModifier> StyleModifier for (A, B, C) {
-    fn apply(&self, style: &mut Style) { self.0.apply(style); self.1.apply(style); self.2.apply(style); }
-}
-impl<A: StyleModifier, B: StyleModifier, C: StyleModifier, D: StyleModifier> StyleModifier for (A, B, C, D) {
-    fn apply(&self, style: &mut Style) { self.0.apply(style); self.1.apply(style); self.2.apply(style); self.3.apply(style); }
-}
-
-/// The core trait that enables utility-first chaining for any component.
+/// A trait for components that can be styled.
+/// This provides the glue between the component and the modifier system.
 pub trait Stylable: Component + Sized {
+    /// Returns a write lock guard to the component's internal style.
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style>;
+
+    /// Applies a style modifier to the component.
     fn style(self, modifier: impl StyleModifier) -> Self {
         {
             let mut style = self.get_style_mut();
@@ -31,7 +31,4 @@ pub trait Stylable: Component + Sized {
         self.mark_dirty();
         self
     }
-
-    /// internal helper to get mutable access to style.
-    fn get_style_mut(&self) -> RefMut<'_, Style>;
 }

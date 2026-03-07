@@ -3,7 +3,6 @@ pub mod elements;
 pub mod primitives;
 pub mod scene;
 pub mod renderer;
-pub mod graphic;
 pub mod platform;
 pub mod style;
 pub mod support;

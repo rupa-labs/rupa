@@ -30,6 +30,7 @@ pub enum HitDiscovery<'a> {
 pub struct HitResult<'a> {
     pub path: Vec<&'a dyn Component>,
     pub local_pos: Vec2,
+    pub component: &'a dyn Component,
 }
 
 pub struct SceneCore {
@@ -43,6 +44,52 @@ impl SceneCore {
             layout_engine: LayoutEngine::new(),
             state: SceneState::Empty,
         }
+    }
+
+    /// Finds a component by its ID and returns its global position.
+    /// This is crucial for mouse capture when the cursor moves outside the component bounds.
+    pub fn find_by_id<'a>(
+        &self, 
+        root: &'a dyn Component, 
+        target_id: &str
+    ) -> Option<HitResult<'a>> {
+        if let SceneState::Resolved(root_node) = self.state {
+            return self.recursive_find_id(root, root_node.raw(), target_id, Vec2::zero());
+        }
+        None
+    }
+
+    fn recursive_find_id<'a>(
+        &self,
+        root: &'a dyn Component,
+        node: taffy::prelude::NodeId,
+        target_id: &str,
+        parent_global_pos: Vec2,
+    ) -> Option<HitResult<'a>> {
+        let layout = self.layout_engine.taffy.layout(node).ok()?;
+        let global_pos = parent_global_pos + Vec2::new(layout.location.x, layout.location.y);
+
+        if root.id() == target_id {
+            return Some(HitResult {
+                path: vec![root],
+                local_pos: global_pos, // Return global_pos as local_pos for now
+                component: root,
+            });
+        }
+
+        let children = root.children();
+        let taffy_children = self.layout_engine.taffy.children(node).ok()?;
+
+        for (i, child) in children.iter().enumerate() {
+            if let Some(child_node) = taffy_children.get(i) {
+                if let Some(mut result) = self.recursive_find_id(*child, *child_node, target_id, global_pos) {
+                    result.path.push(root);
+                    return Some(result);
+                }
+            }
+        }
+
+        None
     }
 
     /// Resolves the spatial coordinates for the entire tree.
@@ -98,6 +145,7 @@ impl SceneCore {
         Some(HitResult {
             path: vec![root],
             local_pos: cursor_pos - global_pos,
+            component: root,
         })
     }
 }

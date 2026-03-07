@@ -1,14 +1,12 @@
-use crate::support::{Style, StyleModifier, generate_id, Theme, Vec2};
+use crate::support::{Style, generate_id, Theme, Vec2};
 use crate::core::component::Component;
 use crate::core::ViewCore;
 use crate::elements::layout::container::Children;
 use crate::renderer::{Renderer, TextMeasurer};
-use crate::style::modifiers::utilities::Stylable;
-use crate::platform::events::UIEvent;
+use crate::style::modifiers::base::Stylable;
 use crate::scene::SceneNode;
 use taffy::prelude::*;
-use std::cell::{Cell, RefCell, RefMut};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::RwLockWriteGuard;
 
 // --- LOGIC ---
 pub struct SectionLogic<'a> { pub name: String, pub children: Children<'a> }
@@ -26,7 +24,7 @@ impl<'a> Section<'a> {
     pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self { self.logic.children.add(child); self.view.core.mark_dirty(); self }
 }
 
-impl<'a> Stylable for Section<'a> { fn get_style_mut(&self) -> RefMut<'_, Style> { self.view.core.get_style_mut() } }
+impl<'a> Stylable for Section<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } }
 
 impl<'a> Component for Section<'a> {
     fn id(&self) -> &str { &self.id }
@@ -47,12 +45,17 @@ impl<'a> Component for Section<'a> {
         self.logic.children.layout_all(taffy, measurer, node); self.view.core.clear_dirty(); node
     }
     fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap(); let style_ref = self.view.core.style.borrow();
-        let style = if is_group_hovered && style_ref.group_hover.is_some() { style_ref.group_hover.as_ref().unwrap() } else { &style_ref };
-        if let Some(color) = style.background.color.clone() { renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw); }
+        let layout = taffy.layout(node).unwrap(); 
+        let style_ref = self.view.core.style.read().unwrap();
+        let style: &Style = if is_group_hovered && style_ref.group_hover.is_some() { 
+            style_ref.group_hover.as_ref().unwrap() 
+        } else { 
+            &style_ref 
+        };
+        
+        if let Some(color) = style.background.color.as_ref() { 
+            renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), style.rounding.nw); 
+        }
         self.logic.children.paint_all(renderer, taffy, node, is_group_hovered || style.is_group, global_pos, 0);
     }
-    fn on_click(&self, _: &mut UIEvent) {}
-    fn on_scroll(&self, _: &mut UIEvent, _: f32) {}
-    fn on_drag(&self, _: &mut UIEvent, _: Vec2) {}
 }

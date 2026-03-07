@@ -1,11 +1,10 @@
 pub mod window;
+pub mod input;
 
-use std::sync::OnceLock;
 use winit::application::ApplicationHandler;
-use winit::event::{ElementState, MouseButton, MouseScrollDelta, WindowEvent, KeyEvent};
-use winit::event_loop::{ActiveEventLoop, EventLoopProxy, EventLoop};
+use winit::event::{ElementState, MouseButton, MouseScrollDelta, WindowEvent};
+use winit::event_loop::{ActiveEventLoop, EventLoop};
 use winit::window::WindowId;
-use winit::keyboard::{PhysicalKey, KeyCode as WinitKeyCode};
 
 use crate::core::component::Component;
 use crate::renderer::Renderer as _;
@@ -13,55 +12,76 @@ use crate::renderer::gui::renderer::Renderer;
 use crate::support::vector::Vec2;
 use crate::platform::gui::window::Window;
 use crate::platform::dispatcher::InputDispatcher;
-use crate::platform::{RupauiEvent, PlatformCore, events::*};
-
-static EVENT_PROXY: OnceLock<EventLoopProxy<RupauiEvent>> = OnceLock::new();
-
-pub fn get_event_proxy() -> Option<&'static EventLoopProxy<RupauiEvent>> {
-    EVENT_PROXY.get()
-}
-
-pub fn set_event_proxy(proxy: EventLoopProxy<RupauiEvent>) {
-    let _ = EVENT_PROXY.set(proxy);
-}
+use crate::platform::gui::input::map_key;
+use crate::platform::{PlatformEvent, SharedPlatformCore, events::*, register_redraw_proxy};
 
 pub struct GuiRunner {
-    pub core: PlatformCore,
+    pub core: SharedPlatformCore,
     pub window: Option<Window>,
     pub renderer: Option<Renderer>,
     pub scale_factor: f64,
+    pub modifiers: Modifiers,
+    pub a11y_adapter: Option<Box<dyn std::any::Any + Send + Sync>>,
 }
 
 impl GuiRunner {
-    pub fn new(app_name: String, root: Option<Box<dyn Component>>) -> Self {
+    pub fn new(core: SharedPlatformCore) -> Self {
         Self {
-            core: PlatformCore::new(app_name, root),
+            core,
             window: None,
             renderer: None,
             scale_factor: 1.0,
+            modifiers: Modifiers::default(),
+            a11y_adapter: None,
         }
     }
 
-    pub fn run_app(mut self) {
-        let event_loop = EventLoop::<RupauiEvent>::with_user_event().build().unwrap();
-        set_event_proxy(event_loop.create_proxy());
-        event_loop.run_app(&mut self).unwrap();
+    pub fn run_app(mut self) -> Result<(), Box<dyn std::error::Error>> {
+        let event_loop = EventLoop::<PlatformEvent>::with_user_event().build()
+            .map_err(|e| format!("Failed to build event loop: {}", e))?;
+            
+        let proxy = event_loop.create_proxy();
+        register_redraw_proxy(move || {
+            let _ = proxy.send_event(PlatformEvent::RequestRedraw);
+        });
+
+        event_loop.run_app(&mut self)
+            .map_err(|e| format!("Failed to run app: {}", e).into())
     }
 
     fn handle_redraw(&mut self) {
-        let (win_width, win_height) = self.window.as_ref().unwrap().size();
-        let scene_node = self.core.compute_layout(win_width as f32, win_height as f32);
-
+        let mut core = match self.core.write() {
+            Ok(c) => c,
+            Err(_) => return,
+        };
+        
+        let window = match &self.window {
+            Some(w) => w,
+            None => return,
+        };
+        
+        let (win_width, win_height) = window.size();
+        
         let renderer = match &mut self.renderer {
             Some(r) => r,
             None => return,
         };
 
+        // Compute layout in logical units
+        let scene_node = match core.compute_layout(
+            renderer,
+            win_width as f32 / self.scale_factor as f32, 
+            win_height as f32 / self.scale_factor as f32
+        ) {
+            Some(node) => node,
+            None => return,
+        };
+
         if let Ok(()) = renderer.begin_frame() {
-            if let Some(ref root) = self.core.root {
+            if let Some(ref root) = core.root {
                 root.paint(
                     renderer,
-                    &self.core.scene.layout_engine.taffy,
+                    &core.scene.layout_engine.taffy,
                     scene_node.raw(),
                     false, 
                     Vec2::zero(),
@@ -72,30 +92,72 @@ impl GuiRunner {
     }
 
     fn dispatch_event(&mut self, event: InputEvent) {
-        if let Some(ref root) = self.core.root {
+        let mut core = match self.core.write() {
+            Ok(c) => c,
+            Err(_) => return,
+        };
+        
+        let mut cursor_pos = core.cursor_pos;
+        let mut pointer_capture = core.pointer_capture.take();
+        let mut focused_id = core.focused_id.take();
+        let event_listeners = core.event_listeners.clone();
+        
+        if let Some(ref root) = core.root {
+            let root_ref: &dyn Component = root.as_ref();
             InputDispatcher::dispatch(
                 event,
-                root.as_ref(),
-                &self.core.scene,
-                &mut self.core.cursor_pos,
+                root_ref,
+                &core.scene,
+                &mut cursor_pos,
+                &mut pointer_capture,
+                &mut focused_id,
+                &event_listeners,
             );
+        }
+
+        // Put things back
+        core.cursor_pos = cursor_pos;
+        core.pointer_capture = pointer_capture;
+        core.focused_id = focused_id;
+        
+        // Request redraw after dispatching user input as it likely changed something visual
+        if let Some(window) = &self.window {
+            window.request_redraw();
         }
     }
 }
 
-impl ApplicationHandler<RupauiEvent> for GuiRunner {
+impl ApplicationHandler<PlatformEvent> for GuiRunner {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         if self.window.is_none() {
-            let window = Window::new(event_loop, &self.core.app_name, 1024, 768).unwrap();
-            let renderer = pollster::block_on(Renderer::new(window.raw()));
-            self.scale_factor = window.raw().scale_factor();
-            self.window = Some(window);
-            self.renderer = Some(renderer);
+            let core_lock = match self.core.read() {
+                Ok(c) => c,
+                Err(e) => {
+                    eprintln!("Failed to acquire core lock: {}", e);
+                    event_loop.exit();
+                    return;
+                }
+            };
+
+            match Window::new(event_loop, &core_lock.app_name, 1024, 768) {
+                Ok(window) => {
+                    let (width, height) = window.size();
+                    let scale = window.scale_factor();
+                    let renderer = pollster::block_on(Renderer::new(window.handle(), width, height, scale as f32));
+                    self.scale_factor = scale;
+                    self.window = Some(window);
+                    self.renderer = Some(renderer);
+                }
+                Err(e) => {
+                    eprintln!("Failed to create window: {}", e);
+                    event_loop.exit();
+                }
+            }
         }
     }
 
-    fn user_event(&mut self, _: &ActiveEventLoop, event: RupauiEvent) {
-        let RupauiEvent::RequestRedraw = event;
+    fn user_event(&mut self, _: &ActiveEventLoop, event: PlatformEvent) {
+        let PlatformEvent::RequestRedraw = event;
         if let Some(window) = &self.window {
             window.request_redraw();
         }
@@ -108,27 +170,48 @@ impl ApplicationHandler<RupauiEvent> for GuiRunner {
                 event_loop.exit();
             }
             WindowEvent::Resized(size) => {
-                if let Some(renderer) = &mut self.renderer {
-                    renderer.resize(size);
-                }
                 let scale = self.scale_factor;
+                if let Some(renderer) = &mut self.renderer {
+                    renderer.resize(size.width, size.height, scale as f32);
+                }
                 self.dispatch_event(InputEvent::Resize { 
-                    size: Vec2::new(size.width as f32, size.height as f32),
+                    size: Vec2::new(size.width as f32 / scale as f32, size.height as f32 / scale as f32),
                     scale_factor: scale 
                 });
             }
             WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
                 self.scale_factor = scale_factor;
+                if let Some(window) = &self.window {
+                    let (w, h) = window.size();
+                    if let Some(renderer) = &mut self.renderer {
+                        renderer.resize(w, h, scale_factor as f32);
+                    }
+                }
             }
             WindowEvent::CursorMoved { position, .. } => {
-                let logical_pos = Vec2::new(position.x as f32, position.y as f32);
+                // Convert physical pixel position to logical position
+                let logical_pos = Vec2::new(
+                    (position.x / self.scale_factor) as f32, 
+                    (position.y / self.scale_factor) as f32
+                );
                 self.dispatch_event(InputEvent::PointerMove { position: logical_pos });
+            }
+            WindowEvent::ModifiersChanged(modifiers) => {
+                let state = modifiers.state();
+                self.modifiers = Modifiers {
+                    shift: state.shift_key(),
+                    ctrl: state.control_key(),
+                    alt: state.alt_key(),
+                    logo: state.super_key(),
+                };
             }
             WindowEvent::MouseInput { state, button, .. } => {
                 let btn = match button {
                     MouseButton::Left => PointerButton::Primary,
                     MouseButton::Right => PointerButton::Secondary,
                     MouseButton::Middle => PointerButton::Auxiliary,
+                    MouseButton::Back => PointerButton::Extra(0),
+                    MouseButton::Forward => PointerButton::Extra(1),
                     MouseButton::Other(id) => PointerButton::Extra(id),
                 };
                 let st = match state {
@@ -140,22 +223,38 @@ impl ApplicationHandler<RupauiEvent> for GuiRunner {
             WindowEvent::MouseWheel { delta, .. } => {
                 let scroll = match delta {
                     MouseScrollDelta::LineDelta(x, y) => Vec2::new(x, y * 20.0),
-                    MouseScrollDelta::PixelDelta(pos) => Vec2::new(pos.x as f32, pos.y as f32),
+                    MouseScrollDelta::PixelDelta(pos) => Vec2::new(
+                        (pos.x / self.scale_factor) as f32, 
+                        (pos.y / self.scale_factor) as f32
+                    ),
                 };
                 self.dispatch_event(InputEvent::PointerScroll { delta: scroll });
             }
-            WindowEvent::KeyboardInput { event: KeyEvent { physical_key, state, .. }, .. } => {
-                if state == ElementState::Pressed {
-                    if let PhysicalKey::Code(WinitKeyCode::KeyQ) = physical_key {
-                        event_loop.exit();
-                    }
+            WindowEvent::KeyboardInput { event, .. } => {
+                let key_code = map_key(&event);
+                let state = match event.state {
+                    ElementState::Pressed => ButtonState::Pressed,
+                    ElementState::Released => ButtonState::Released,
+                };
+
+                // Exit on Q (keep as a convenience for now)
+                if state == ButtonState::Pressed && key_code == KeyCode::Char('Q') {
+                     event_loop.exit();
                 }
+
+                self.dispatch_event(InputEvent::Key { 
+                    key: key_code, 
+                    state, 
+                    modifiers: self.modifiers 
+                });
+            }
+            WindowEvent::Ime(winit::event::Ime::Commit(text)) => {
+                self.dispatch_event(InputEvent::Ime(text));
             }
             WindowEvent::RedrawRequested => {
                 self.handle_redraw();
-                if let Some(window) = &self.window {
-                    window.request_redraw();
-                }
+                // REMOVED: self.window.request_redraw() here 
+                // Redraw should only be requested when state changes (via request_redraw function)
             }
             _ => {}
         }

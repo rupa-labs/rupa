@@ -1,13 +1,12 @@
-use crate::support::{Style, StyleModifier, generate_id, Theme, Color, Attributes, Accessibility, Vec2, TextAlign};
+use crate::support::{Style, generate_id, Theme, Color, Attributes, Accessibility, Vec2};
+use crate::style::utilities::typography::TextAlign;
 use crate::core::component::Component;
 use crate::core::ViewCore;
 use crate::renderer::{Renderer, TextMeasurer};
-use crate::style::modifiers::utilities::Stylable;
-use crate::platform::dispatcher::UIEvent;
+use crate::style::modifiers::base::Stylable;
 use crate::scene::SceneNode;
 use taffy::prelude::*;
-use std::cell::{Cell, RefCell, RefMut};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::RwLockWriteGuard;
 
 // --- LOGIC ---
 
@@ -37,7 +36,6 @@ impl TextView {
             if self.core.is_dirty() { taffy.set_style(existing.raw(), t_style).unwrap(); }
             existing.raw()
         } else {
-            // Basic text leaf for now
             let new_node = taffy.new_leaf(t_style).unwrap();
             self.core.set_node(SceneNode::from(new_node));
             new_node
@@ -53,8 +51,8 @@ impl TextView {
     }
 
     pub fn render(&self, renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, logic: &TextLogic, global_pos: Vec2) {
-        let style = self.core.style.borrow();
-        let color = style.typography.color.clone().unwrap_or(Color::Rgba(1.0, 1.0, 1.0, 1.0)).to_rgba();
+        let style = self.core.style.read().unwrap();
+        let color = style.typography.color.clone().unwrap_or(Color::Semantic("text".into(), None)).to_rgba();
         renderer.draw_text(&logic.content, global_pos.x, global_pos.y, 16.0, color, TextAlign::Left);
     }
 }
@@ -79,7 +77,7 @@ impl Text {
 }
 
 impl Stylable for Text {
-    fn get_style_mut(&self) -> RefMut<'_, Style> { self.view.core.get_style_mut() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() }
 }
 
 impl Component for Text {
@@ -98,8 +96,4 @@ impl Component for Text {
     fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
         self.view.render(renderer, taffy, node, &self.logic, global_pos);
     }
-    
-    fn on_click(&self, _event: &mut UIEvent) {}
-    fn on_scroll(&self, _event: &mut UIEvent, _: f32) {}
-    fn on_drag(&self, _event: &mut UIEvent, _: Vec2) {}
 }

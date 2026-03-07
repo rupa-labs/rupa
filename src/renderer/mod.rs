@@ -1,5 +1,5 @@
 use crate::support::vector::Vec2;
-use crate::support::typography::TextAlign;
+use crate::style::utilities::typography::TextAlign;
 
 #[cfg(feature = "gui")]
 pub mod gui;
@@ -12,14 +12,16 @@ pub struct RenderCore {
     pub logical_size: Vec2,
     pub camera_offset: Vec2,
     pub camera_zoom: f32,
+    pub scale_factor: f32,
 }
 
 impl RenderCore {
-    pub fn new(width: f32, height: f32) -> Self {
+    pub fn new(width: f32, height: f32, scale_factor: f32) -> Self {
         Self {
             logical_size: Vec2::new(width, height),
             camera_offset: Vec2::zero(),
             camera_zoom: 1.0,
+            scale_factor,
         }
     }
 }

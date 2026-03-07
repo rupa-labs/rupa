@@ -1,3 +1,5 @@
+use crate::style::modifiers::theme::{Theme, ColorMode};
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Color {
     Rgba(f32, f32, f32, f32),
@@ -15,11 +17,30 @@ impl Color {
                 [rgba.0, rgba.1, rgba.2, *a]
             },
             Color::Semantic(name, alpha) => {
+                let mode = Theme::current().mode;
+                let a = alpha.unwrap_or(1.0);
                 match name.as_str() {
-                    "primary" => [0.39, 0.45, 1.0, alpha.unwrap_or(1.0)],
-                    "background" => [0.05, 0.05, 0.05, alpha.unwrap_or(1.0)],
-                    "surface" => [0.12, 0.12, 0.12, alpha.unwrap_or(1.0)],
-                    _ => [1.0, 1.0, 1.0, alpha.unwrap_or(1.0)],
+                    "primary" => match mode {
+                        ColorMode::Light => [0.3, 0.4, 0.9, a],
+                        _ => [0.39, 0.45, 1.0, a],
+                    },
+                    "background" => match mode {
+                        ColorMode::Light => [0.98, 0.98, 0.98, a],
+                        _ => [0.05, 0.05, 0.05, a],
+                    },
+                    "surface" => match mode {
+                        ColorMode::Light => [1.0, 1.0, 1.0, a],
+                        _ => [0.12, 0.12, 0.12, a],
+                    },
+                    "text" => match mode {
+                        ColorMode::Light => [0.1, 0.1, 0.1, a],
+                        _ => [0.95, 0.95, 0.95, a],
+                    },
+                    "text-muted" => match mode {
+                        ColorMode::Light => [0.4, 0.4, 0.4, a],
+                        _ => [0.6, 0.6, 0.6, a],
+                    },
+                    _ => [1.0, 1.0, 1.0, a],
                 }
             },
             Color::Transparent => [0.0, 0.0, 0.0, 0.0],
