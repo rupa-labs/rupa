@@ -17,6 +17,7 @@ members = [
 version = "0.1.0"
 edition = "2021"
 authors = ["Reas Vyn <reasvyn@gmail.com>"]
+description = "A high-performance, full-stack cross-platform UI framework for Rust artisans. Built with an Atoms & Composites modular architecture."
 license = "MIT"
 repository = "https://github.com/rupa-labs/rupa"
 
