@@ -8,7 +8,7 @@ use super::layout::{Layout as RupaLayout, Display as RupaDisplay, Position as Ru
 use super::flex::{Flex as RupaFlex, FlexDirection as RupaFlexDirection, AlignItems as RupaAlignItems, JustifyContent as RupaJustifyContent};
 use super::grid::Grid as RupaGrid;
 use super::sizing::Sizing as RupaSizing;
-use super::typography::Typography;
+use super::typography::TypographyStyle;
 use super::effects::Shadow;
 use super::filters::Filter;
 use crate::style::modifiers::animation::Motion;
@@ -26,16 +26,41 @@ pub struct Style {
     pub border: Border,
     pub rounding: Rounding,
     pub outline: Outline,
-    pub typography: Typography,
+    pub typography: TypographyStyle,
     pub shadow: Option<Shadow>,
     pub filter: Option<Filter>,
     pub motion: Option<Motion>,
     pub is_group: bool,
     pub group_hover: Option<Box<Style>>,
+    pub responsive: HashMap<crate::style::modifiers::responsive::Breakpoint, Box<Style>>,
     pub variants: HashMap<String, Style>,
 }
 
+fn length(v: f32) -> LengthPercentage {
+    LengthPercentage::Length(v)
+}
+
 impl Style {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn p(mut self, val: f32) -> Self { self.padding = Spacing::all(val); self }
+    pub fn px(mut self, val: f32) -> Self { self.padding.left = val; self.padding.right = val; self }
+    pub fn py(mut self, val: f32) -> Self { self.padding.top = val; self.padding.bottom = val; self }
+    
+    pub fn m(mut self, val: f32) -> Self { self.margin = Spacing::all(val); self }
+    pub fn mx(mut self, val: f32) -> Self { self.margin.left = val; self.margin.right = val; self }
+    pub fn my(mut self, val: f32) -> Self { self.margin.top = val; self.margin.bottom = val; self }
+
+    pub fn w(mut self, val: f32) -> Self { self.sizing.width = Some(val); self }
+    pub fn h(mut self, val: f32) -> Self { self.sizing.height = Some(val); self }
+    pub fn w_full(mut self) -> Self { self.sizing.width = Some(100.0); self }
+    pub fn h_full(mut self) -> Self { self.sizing.height = Some(100.0); self }
+
+    pub fn bg(mut self, color: Color) -> Self { self.background.color = Some(color); self }
+    pub fn rounded(mut self, val: f32) -> Self { self.rounding = Rounding::all(val); self }
+
     pub fn to_taffy(&self) -> taffy::style::Style {
         let mut s = taffy::style::Style::default();
         
@@ -60,14 +85,14 @@ impl Style {
         };
 
         s.margin = Rect {
-            left: length(self.margin.left),
-            right: length(self.margin.right),
-            top: length(self.margin.top),
-            bottom: length(self.margin.bottom),
+            left: length(self.margin.left).into(),
+            right: length(self.margin.right).into(),
+            top: length(self.margin.top).into(),
+            bottom: length(self.margin.bottom).into(),
         };
 
-        if let Some(w) = self.sizing.width { s.size.width = length(w); }
-        if let Some(h) = self.sizing.height { s.size.height = length(h); }
+        if let Some(w) = self.sizing.width { s.size.width = length(w).into(); }
+        if let Some(h) = self.sizing.height { s.size.height = length(h).into(); }
 
         s.flex_direction = match self.flex.flex_direction {
             RupaFlexDirection::Row => FlexDirection::Row,
@@ -99,7 +124,4 @@ impl Style {
 
         s
     }
-
-    pub fn bg(mut self, color: Color) -> Self { self.background.color = Some(color); self }
-    pub fn rounded(mut self, val: f32) -> Self { self.rounding = Rounding::all(val); self }
 }

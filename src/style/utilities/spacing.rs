@@ -6,9 +6,21 @@ pub struct Spacing {
     pub left: f32,
 }
 
+use taffy::prelude::Rect;
+use taffy::style::LengthPercentage;
+
 impl Spacing {
     pub fn all(val: f32) -> Self {
         Self { top: val, right: val, bottom: val, left: val }
+    }
+
+    pub fn to_taffy(&self) -> Rect<LengthPercentage> {
+        Rect {
+            left: LengthPercentage::Length(self.left),
+            right: LengthPercentage::Length(self.right),
+            top: LengthPercentage::Length(self.top),
+            bottom: LengthPercentage::Length(self.bottom),
+        }
     }
 }
 

@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn test_rounding_all() {
-        let r = crate::utils::Rounding::all(8.0);
+        let r = crate::support::Rounding::all(8.0);
         assert_eq!(r.nw, 8.0);
         assert_eq!(r.se, 8.0);
     }

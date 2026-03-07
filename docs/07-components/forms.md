@@ -1,93 +1,42 @@
-# Forms & Reactive Inputs
+# Components: Form Controls 📝
 
-Rupaui provides a complete set of semantic form components that map to Bootstrap's layout while leveraging **Signals** for reactive state management and validation.
-
-## 🔡 Input & Textarea
-
-The `Input` component handles text-based user input.
-
-### Attributes & State
-- `.label(String)`: Adds a floating or standard label.
-- `.value(Signal<String>)`: Binds the input value to a reactive signal.
-- `.state(Signal<FormState>)`: Binds the visual state (`Normal`, `Valid`, `Invalid`).
-- `.textarea()`: Converts the input into a multi-line textarea.
-
-### Functional Modifiers
-- `.disabled(Signal<bool>)`: Reactively toggles the disabled state.
-- `.readonly(Signal<bool>)`: Prevents user modification while allowing selection.
-- `.autofocus()`: Automatically focuses the element on mount.
-- `.required()`: Marks the input as mandatory for form submission.
-- `.autocomplete(String)`: Sets the browser's autocomplete hint.
-
-```rust
-let email = Signal::new(String::new());
-let is_readonly = Signal::new(false);
-
-Input::new("name@example.com")
-    .label("Email Address")
-    .value(email)
-    .readonly(is_readonly)
-    .autofocus()
-    .required();
-```
+Form controls in Rupaui are designed to be **Reactive by Default**. They act as a two-way bridge between user input signals and your application's state.
 
 ---
 
-## 🔽 Select
+## 🧠 Internal Anatomy
 
-Semantic dropdown for single selections. Supports `.disabled()` and `.autofocus()`.
+Every form element (Input, Select, Checkbox, etc.) follows a consistent internal structure:
 
-```rust
-let options = vec![
-    ("1".into(), "One".into()),
-    ("2".into(), "Two".into())
-];
-Select::new(options)
-    .required();
-```
+### 1. The Reactive Logic
+- **Data Binding:** Holds a `Signal<T>` (e.g., `Signal<String>` for Input, `Signal<bool>` for Checkbox).
+- **Validation:** (Planned) Internal logic to check data integrity before committing changes to the signal.
+- **Interactivity:** Handles the translation of raw keystrokes or clicks into data mutations.
 
----
-
-## ✅ Checks & Radios
-
-Individual toggles for boolean or exclusive states. Supports `.disabled()`.
-
-```rust
-let is_agreed = Signal::new(false);
-
-Check::checkbox("Agree to terms")
-    .checked(is_agreed)
-    .required();
-
-Check::radio("Exclusive option");
-```
+### 2. The Semantic View
+- **State Visuals:** Automatically updates the component's appearance based on the bound signal (e.g., drawing a checkmark when `checked` is true).
+- **Placeholder Logic:** Manages the display of ghost-text when the logic state is empty.
 
 ---
 
-## 🎚 Range
+## 🗝️ Standard components
 
-A slider for numeric input within a specific boundary. Supports `.disabled()`.
+### `struct Input`
+The primary text entry component.
+- **Logic:** Manages a `Signal<String>` and cursor position.
+- **View:** Renders a focused field with optional masking.
 
-```rust
-let volume = Signal::new(50.0);
-Range::new(0.0, 100.0)
-    .value(volume);
-```
+### `struct Checkbox` & `struct Switch`
+Binary state toggles.
+- **Logic:** Manages a `Signal<bool>`.
+- **View:** Renders a square box (Checkbox) or a rounded slider (Switch).
 
 ---
 
-## 🛡 Validation
-
-Visual feedback is controlled via the `FormState` enum. This is typically used with a `Memo` to calculate validation status dynamically.
+## 🎨 Styling Standard
+All form elements implement `Stylable`, allowing for deep visual customization while preserving their reactive logic.
 
 ```rust
-let is_valid = Memo::new(email.clone(), |val| {
-    if val.contains("@") { FormState::Valid } else { FormState::Invalid }
-});
-
-Input::new("Email").state(is_valid.into_signal());
+Input::new(name_signal, "Username")
+    .style(w(300.0))
 ```
-
-## 🗝 Key Types
-- **FormState**: `Normal`, `Valid`, `Invalid`.
-- **Role**: Inputs are automatically assigned appropriate ARIA roles (`TextBox`, `Checkbox`, etc.).

@@ -32,7 +32,7 @@ pub struct Effects {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::Color;
+    use crate::support::Color;
 
     #[test]
     fn test_shadow_creation() {

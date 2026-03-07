@@ -1,54 +1,30 @@
-# Control Flow & Dynamic Rendering
+# Module: Control Flow (`control_flow.rs`) 🔀
 
-Rupaui brings modern declarative patterns to Rust, allowing you to handle conditional rendering and list repetition with high-performance semantic components.
-
-## 🎭 Conditional Rendering (`Show`)
-
-The `Show` component renders its children only when a specific `Signal<bool>` is true. It also supports an optional fallback (else) component.
-
-```rust
-use rupaui::elements::Show;
-
-let is_authenticated = Signal::new(false);
-
-Show::new(is_authenticated.clone())
-    .child(Box::new(Text::new("Welcome back!")))
-    .fallback(Box::new(Button::new("Login")));
-```
+Control Flow components allow developers to describe dynamic UI structures (conditionals and loops) using a declarative, reactive approach.
 
 ---
 
-## 🔁 List Rendering (`ForEach`)
+## 🧠 Internal Anatomy
 
-The `ForEach` component (Repeater) maps a collection of data to a list of components. It is optimized to work with `Signal<Vec<T>>`.
+### 1. Reactive Branching (`Show`)
+- **Logic:** Tracks a `Signal<bool>`.
+- **View:** Performs **Conditional Layout**. If the signal is false, it returns an empty node to Taffy (L3), effectively removing the component from the visual and hit-test tree without destroying its state.
 
-```rust
-use rupaui::elements::ForEach;
-
-let items = Signal::new(vec!["Apple", "Banana", "Cherry"]);
-
-ForEach::new(items.clone(), |name| {
-    Box::new(Text::new(*name))
-});
-```
+### 2. Reactive Lists (`ForEach`)
+- **Logic:** Tracks a `Signal<Vec<T>>`.
+- **Responsibility:** Manages the lifecycle of a collection of components. It ensures that when the list changes, only the necessary children are updated or re-laid out (Fine-Grained Updates).
 
 ---
 
-## ⚡ Event Listeners
+## 🗝️ Public API
 
-Components can respond to user interactions using event listeners. These are integrated with the **CBRA** model to trigger state changes.
+### `struct Show`
+- `Show::new(when: Signal<bool>, content: impl Component)`: Conditionally renders the content.
 
-```rust
-let count = Signal::new(0);
+### `struct ForEach`
+- `ForEach::new(data: Signal<Vec<T>>, factory: impl Fn(T) -> Component)`: Maps data to UI elements.
 
-Button::new("Increment")
-    .on_click({
-        let count = count.clone();
-        move || count.update(|v| *v += 1)
-    });
-```
+---
 
-## 🗝 Implementation Standards
-- **Fine-Grained**: Only the specific `Show` or `ForEach` component re-renders when its source signal changes.
-- **Thread-Safe**: Event callbacks use `Arc` and `Send + Sync` to ensure compatibility with multi-threaded or async environments.
-- **Zero Virtual DOM**: No heavy reconciliation process; Rupaui directly updates the necessary segments of the UI tree.
+## 🚀 Performance
+By integrating directly with the **Geometric Scene Layer (L3)**, Control Flow components ensure that hidden branches consume zero GPU resources and zero layout calculation time.

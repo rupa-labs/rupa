@@ -1,90 +1,137 @@
-use crate::utils::{Style, generate_id, Theme, ColorMode, Accessibility, Role, Attributes, Vec2};
+use crate::support::{Style, generate_id, Theme, ColorMode, Accessibility, Role, Vec2, Color};
+use crate::style::utilities::typography::TextAlign;
 use crate::core::component::Component;
-use crate::renderer::renderer::Renderer;
-use crate::style::modifiers::utilities::Stylable;
-use crate::platform::events::UIEvent;
+use crate::core::ViewCore;
+use crate::renderer::{Renderer, TextMeasurer};
+use crate::style::modifiers::base::Stylable;
+use crate::platform::dispatcher::UIEvent;
+use crate::scene::SceneNode;
 use taffy::prelude::*;
-use std::cell::{Cell, RefCell};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::RwLockWriteGuard;
 
-pub struct ThemeSwitcher { 
-    pub id: String, 
-    pub style: RefCell<Style>, 
-    pub accessibility: Accessibility, 
-    pub attributes: Attributes,
-    node: Cell<Option<NodeId>>,
-    dirty: AtomicBool,
+// --- LOGIC ---
+
+pub struct ThemeSwitcherLogic {
+    pub accessibility: Accessibility,
 }
 
-impl ThemeSwitcher {
+// --- VIEW ---
+
+pub struct ThemeSwitcherView {
+    pub core: ViewCore,
+}
+
+impl ThemeSwitcherView {
     pub fn new() -> Self {
-        Self { 
-            id: generate_id(), 
-            style: RefCell::new(Style::default()), 
-            accessibility: Accessibility { role: Role::Button, ..Default::default() }, 
-            attributes: Attributes::default(),
-            node: Cell::new(None),
-            dirty: AtomicBool::new(true),
-        }
+        let mut style = Style::default();
+        Theme::current().apply_defaults(&mut style);
+        Self { core: ViewCore::new(style) }
     }
-    pub fn cycle_mode() {
-        Theme::update(|t| {
-            t.mode = match t.mode {
-                ColorMode::Dark => ColorMode::Light,
-                ColorMode::Light => ColorMode::Dark,
-                ColorMode::System => ColorMode::Dark,
-            };
-        });
-    }
-}
 
-impl Stylable for ThemeSwitcher {
-    fn get_style_mut(&self) -> &mut Style {
-        unsafe { &mut *self.style.as_ptr() }
-    }
-}
-
-impl Component for ThemeSwitcher {
-    fn id(&self) -> &str { &self.id }
-    
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
-
-    fn get_node(&self) -> Option<NodeId> { self.node.get() }
-    fn set_node(&self, node: NodeId) { self.node.set(Some(node)); }
-    fn is_dirty(&self) -> bool { self.dirty.load(Ordering::Relaxed) }
-    fn mark_dirty(&self) { self.dirty.store(true, Ordering::Relaxed); }
-    fn clear_dirty(&self) { self.dirty.store(false, Ordering::Relaxed); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
-        let node = if let Some(existing) = self.get_node() {
-            if self.is_dirty() {
-                taffy.set_style(existing, self.style.borrow().to_taffy()).unwrap();
-            }
-            existing
+    pub fn compute_layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
+        let t_style = self.core.get_style_mut().to_taffy();
+        
+        let node = if let Some(existing) = self.core.get_node() {
+            if self.core.is_dirty() { taffy.set_style(existing.raw(), t_style).unwrap(); }
+            existing.raw()
         } else {
-            let new_node = taffy.new_leaf(self.style.borrow().to_taffy()).unwrap();
-            self.set_node(new_node);
+            let new_node = taffy.new_leaf(t_style).unwrap();
+            self.core.set_node(SceneNode::from(new_node));
             new_node
         };
 
         if let Some(p) = parent {
             let current_children = taffy.children(p).unwrap_or_default();
-            if !current_children.contains(&node) {
-                taffy.add_child(p, node).unwrap();
-            }
+            if !current_children.contains(&node) { taffy.add_child(p, node).unwrap(); }
         }
 
-        self.clear_dirty();
+        self.core.clear_dirty();
         node
     }
-    
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, _render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
+
+    pub fn render(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, global_pos: Vec2) {
         let layout = taffy.layout(node).unwrap();
-        let color = if Theme::current().mode == ColorMode::Dark { [0.2, 0.2, 0.2, 1.0] } else { [0.9, 0.9, 0.9, 1.0] };
-        renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color, 4.0);
+        
+        let mode = Theme::current().mode;
+        let (label, bg_color) = match mode {
+            ColorMode::Dark => ("🌙 DARK", Color::Semantic("surface".into(), None)),
+            _ => ("☀️ LIGHT", Color::Semantic("surface".into(), None)),
+        };
+
+        // Draw background
+        renderer.draw_rect(
+            global_pos.x, 
+            global_pos.y, 
+            layout.size.width, 
+            layout.size.height, 
+            bg_color.to_rgba(), 
+            8.0
+        );
+
+        // Draw text
+        let text_color = Color::Semantic("text".into(), None).to_rgba();
+        renderer.draw_text(
+            label, 
+            global_pos.x + 12.0, 
+            global_pos.y + 8.0, 
+            layout.size.width - 24.0,
+            12.0, 
+            text_color, 
+            TextAlign::Left
+        );
     }
-    
-    fn on_click(&self, _event: &mut UIEvent) { Self::cycle_mode(); }
-    fn on_scroll(&self, _event: &mut UIEvent, _: f32) {}
-    fn on_drag(&self, _event: &mut UIEvent, _: Vec2) {}
+}
+
+// --- COMPONENT ---
+
+pub struct ThemeSwitcher { 
+    pub id: String, 
+    pub logic: ThemeSwitcherLogic,
+    pub view: ThemeSwitcherView,
+}
+
+impl ThemeSwitcher {
+    pub fn new() -> Self {
+        let view = ThemeSwitcherView::new();
+        // Set default dimensions for the switcher
+        {
+            let mut style = view.core.get_style_mut();
+            style.sizing.width = Some(100.0);
+            style.sizing.height = Some(32.0);
+        }
+
+        Self { 
+            id: generate_id(), 
+            logic: ThemeSwitcherLogic { 
+                accessibility: Accessibility { role: Role::Button, ..Default::default() } 
+            },
+            view,
+        }
+    }
+}
+
+impl Stylable for ThemeSwitcher {
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() }
+}
+
+impl Component for ThemeSwitcher {
+    fn id(&self) -> &str { &self.id }
+    fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
+    fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
+    fn mark_dirty(&self) { self.view.core.mark_dirty(); }
+    fn clear_dirty(&self) { self.view.core.clear_dirty(); }
+
+    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
+        self.view.compute_layout(taffy, measurer, parent)
+    }
+
+    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
+        self.view.render(renderer, taffy, node, global_pos);
+    }
+
+    fn on_click(&self, _event: &mut UIEvent) {
+        Theme::toggle_mode();
+    }
 }

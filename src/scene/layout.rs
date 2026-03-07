@@ -17,7 +17,6 @@ impl LayoutEngine {
 
     /// Recursively builds the Taffy tree and computes the final layout.
     pub fn compute(&mut self, root: &dyn Component, measurer: &dyn TextMeasurer, width: f32, height: f32) -> SceneNode {
-        self.taffy.clear();
         let root_node = root.layout(&mut self.taffy, measurer, None);
         
         self.taffy.compute_layout(

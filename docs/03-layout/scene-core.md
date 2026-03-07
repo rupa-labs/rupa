@@ -1,34 +1,28 @@
 # Module: Scene Core (`mod.rs`) 🌳
 
-The Scene Core is the central database of Layer 3. It maintains the absolute truth regarding the UI's structural hierarchy and coordinates the high-level layout resolution process.
+The Scene Core is the spatial brain of Rupaui. it acts as the Single Source of Truth (SSOT) for the entire UI hierarchy and its geometric resolution.
 
 ---
 
-## 🏗️ Core Responsibilities
+## 🧠 Internal Anatomy
 
-1.  **Scene Lifecycle:** Manages the transitions between `Empty` and `Resolved` states.
-2.  **Resolution Coordination:** Acts as the high-level orchestrator that connects the Component Tree (L5) with the Layout Engine (L3) and the Text Measurer (L2).
-3.  **Spatial Intelligence:** Provides the `find_target` method for hit-testing based on the latest resolved geometry.
+### 1. Spatial State Machine
+- **Role:** Lifecycle manager.
+- **Mechanism:** Uses the `SceneState` enum to strictly define whether the UI geometry is `Empty` or `Resolved`. This prevents interactions with a scene that hasn't been calculated yet.
 
----
-
-## 🗝️ Key API Elements
-
-### `struct SceneCore`
-- `resolve(root, measurer, width, height)`: Orchestrates a full geometric resolution. It now accepts a `measurer` to allow for content-aware sizing.
-- `state`: Holds the `SceneState` enum, ensuring semantic clarity about the readiness of the UI tree.
+### 2. Hit-Discovery Engine
+- **Role:** Inverse Coordinate Mapper.
+- **Responsibility:** Implements the recursive hit-testing algorithm. It translates a physical screen coordinate into a `HitResult` containing the component path.
 
 ---
 
-## 🔄 The Agnostic Pipeline
+## 🗝️ API Anatomy
 
-To maintain the Agnostic Bridge, `SceneCore` never implements rendering itself. Instead:
-1.  It receives a `&dyn TextMeasurer` from the platform runner (L1).
-2.  It passes this measurer down to the `LayoutEngine`.
-3.  The final `SceneNode` produced is then passed to the `Renderer` (L2) for actual painting.
+- `resolve(root, measurer, w, h)`: orchestrates the full tree traversal and Taffy calculation.
+- `find_target(cursor_pos)`: returns a semantic `HitDiscovery` enum.
 
 ---
 
-## 🔄 Interaction
-- **L1 -> L3:** Platform Runners provide the measurer and window dimensions.
-- **L3 -> L2:** Uses the measurer provided by the active backend.
+## 🔄 Interaction Flow
+- **L3 (Scene Core) -> L3 (Layout Engine):** Delegates geometric calculations.
+- **L1 (Dispatcher) -> L3 (Scene Core):** Queries for interaction targets.

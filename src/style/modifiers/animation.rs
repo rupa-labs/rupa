@@ -1,8 +1,16 @@
+use std::time::Duration;
+use crate::style::utilities::style::Style;
+use super::base::{StyleModifier, Stylable};
+
 #[derive(Clone, Debug, PartialEq, Default)]
 pub enum TimingFunction {
     #[default] Ease, Linear, EaseIn, EaseOut, EaseInOut, StepStart, StepEnd,
     CubicBezier(f32, f32, f32, f32),
+    Spring, // Added Spring for motion system
 }
+
+// Alias for ease of use in API
+pub type Easing = TimingFunction;
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub enum TransitionBehavior { #[default] Normal, AllowDiscrete }
@@ -32,6 +40,31 @@ pub struct Motion {
     pub transitions: Vec<Transition>,
     pub animations: Vec<Animation>,
 }
+
+// --- Functional API ---
+
+pub fn motion(duration: Duration, easing: Easing) -> impl StyleModifier {
+    move |s: &mut Style| {
+        let mut m = s.motion.clone().unwrap_or_default();
+        m.transitions.push(Transition {
+            property: "all".into(), // Default to all for now
+            duration: duration.as_millis() as f32,
+            timing: easing.clone(),
+            ..Default::default()
+        });
+        s.motion = Some(m);
+    }
+}
+
+// --- Chaining API ---
+
+pub trait ChainedMotion: Stylable {
+    fn motion(self, duration: Duration, easing: Easing) -> Self { 
+        self.style(motion(duration, easing)) 
+    }
+}
+
+impl<T: Stylable> ChainedMotion for T {}
 
 #[cfg(test)]
 mod tests {

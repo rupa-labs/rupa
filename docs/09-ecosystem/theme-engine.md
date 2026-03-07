@@ -1,30 +1,36 @@
-# DNA Visual (Theme Engine)
+# The Theme Engine: DNA Visual 🧬
 
-The theme system in Rupaui ensures aesthetic consistency throughout the application.
+The Theme Engine manages the global aesthetic identity of a Rupaui application. It ensures consistency across all components by centralizing design tokens.
 
-## Color Space: OKLCH
-Rupaui uses the **OKLCH** color space for better perceptual uniformity. This allows us to adjust lightness without distorting chroma (saturation).
+---
 
-```rust
-Color::Oklch(0.6, 0.12, 250.0, 1.0) // Lightness, Chroma, Hue, Alpha
-```
+## 🧠 Internal Anatomy
 
-## Unified Scale
-The framework implements a 10-step scale for dimensions, spacing, and typography:
-`Xs`, `Sm`, `Md` (Default), `Lg`, `Xl`, `Xl2`, `Xl3`, `Xl4`, `Xl5`, `Xl6`.
+### 1. Global Theme State
+- **Mechanism:** Stores a thread-local or global `Theme` struct.
+- **Tokens:** Contains color palettes, spacing scales, and default rounding values.
 
-Applications:
-- **Button:** `.size(Scale::Lg)`
-- **Spacing:** `p_scale(Scale::Md)`
-- **Layout Gap:** `gap_scale(Scale::Sm)`
-- **Breakpoints:** `Breakpoint::Xl2`
+### 2. Live Handshake
+When a component is created, it performs a **Handshake** with the Theme Engine to retrieve its default variant colors. If the global theme changes (e.g., toggling Dark Mode), the engine notifies the framework to perform a tree-wide redraw.
 
-## Theme Defaults
-Default themes can be accessed and updated globally:
+---
 
-```rust
-Theme::update(|t| {
-    t.borders.radius = 8.0;
-    t.colors.insert("primary".into(), Color::Indigo(500));
-});
-```
+## 🗝️ Public API
+
+- `Theme::current()`: Returns a read-only reference to the active design tokens.
+- `Theme::update(|t| ...)`: Mutates the global theme.
+- `ColorMode`: Enum for `Light`, `Dark`, and `System` settings.
+
+---
+
+## 🎨 Token Structure
+The `Theme` struct organizes tokens into:
+- **Colors:** Perceptual OKLCH palette.
+- **Scales:** 10-step unified sizing system.
+- **Borders:** Default NW/NE/SW/SE rounding.
+
+---
+
+## 🔄 Interaction Flow
+- **L9 (Theme) -> L1 (Bootstrap):** Injected during app startup.
+- **L9 (Theme) -> L7 (Component):** Provides default colors for semantic variants.

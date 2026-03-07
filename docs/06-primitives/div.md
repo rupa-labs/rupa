@@ -1,26 +1,45 @@
-# Div Component
+# Primitive: Div 📦
 
-The `Div` is a generic **Semantic Component** used for grouping and layout within `Section` or other containers.
+The `Div` (Division) is the most fundamental structural atom in Rupaui. It serves as a generic container for grouping components and applying baseline styles without any pre-defined layout constraints.
 
-## 📐 Usage
+---
 
-Use `Div::new()` to create a general-purpose box for nesting content.
+## 🧠 Internal Anatomy
 
+### 1. DivLogic
+- **Role:** Pure hierarchy management.
+- **Responsibility:** Maintains an ordered collection of children (`Children<'a>`). It is logic-light, delegating all spatial concerns to the View.
+
+### 2. DivView
+- **Role:** Structural manifestation.
+- **Infrastructure:** Composes `ViewCore` to manage its link to the Geometric Scene Layer.
+- **Taffy Mapping:** By default, it creates a "Block" node in the Taffy tree, acting as a flexible container for its descendants.
+
+---
+
+## 🗝️ Public API (Usage)
+
+### Constructor
+- `Div::new()`: Initializes an empty generic container.
+
+### Methods
+- `.child(Box<dyn Component>)`: Appends an element to the internal collection.
+
+---
+
+## 🎨 Styling Standard
+As a primitive, `Div` is the primary target for atomic visual modifiers:
 ```rust
-let button_group = Div::new()
-    .style(Style::new()
-        .p(8.0)
-        .rounded(4.0)
-        .bg(Color::Zinc(800)))
-    .child("Confirm")
-    .child("Cancel");
+Div::new()
+    .style((
+        bg(Color::Zinc(900)),
+        p(16.0),
+        rounded(8.0)
+    ))
 ```
 
-## 🛠 Features
-- **Generic Box Model**: Supports full `Style` utilities (Padding, Margin, Rounded).
-- **Flexible Children**: Can hold multiple child components or strings.
-- **Utility-First**: Styled via the centralized `Style` object to stay **DRY**.
+---
 
-## 💡 Best Practices
-- Use `Div` for small groupings, buttons, input wrappers, or layout cells.
-- Prefer `Section` for high-level UI landmarks.
+## ⚡ Interaction
+- **Events:** Supports hit-testing but does not implement any default semantic interaction logic.
+- **Reactivity:** Marks its `ViewCore` as `dirty` whenever a child is added, ensuring the layout tree is recalculated.

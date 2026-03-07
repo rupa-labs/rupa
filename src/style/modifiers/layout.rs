@@ -22,6 +22,8 @@ pub trait ChainedLayout: Stylable {
     fn col(self) -> Self { self.style(col()) }
     fn row(self) -> Self { self.style(row()) }
     fn gap(self, val: f32) -> Self { self.style(gap(val)) }
+    fn items_center(self) -> Self { self.style(items_center()) }
+    fn justify_center(self) -> Self { self.style(justify_center()) }
 }
 
 impl<T: Stylable> ChainedLayout for T {}

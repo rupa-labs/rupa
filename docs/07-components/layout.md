@@ -1,25 +1,35 @@
-# Section Component
+# Components: Layout & Scaffolding 🏗️
 
-`Section` is a **Semantic Layout Component** used to define large structural regions of your interface.
+Layout components are the scaffolding of your application. They provide the spatial structure needed to organize complex interfaces, from high-level regions to directional stacks.
 
-## 📐 Usage
+---
 
-Use `Section::new()` with a descriptive name to create a semantic boundary for your layout.
+## 🧠 Internal Anatomy
 
-```rust
-let sidebar = Section::new("ToolPanel")
-    .style(Style::new()
-        .bg(Color::Slate(900))
-        .w(300.0)
-        .h_full())
-    .child(Box::new(Div::new().child("Tools...")));
-```
+### 1. Structural Logic
+These components are primarily containers for `Children`. They manage the **Spatial Scope** and the flow of their descendants.
 
-## 🛠 Features
-- **Semantic Hierarchy**: Provides a named region for layout resolution.
-- **Style Support**: Accepts a full `Style` object for utility-first decoration.
-- **Children**: Accepts any object implementing the `Component` trait.
+### 2. The View Implementations
+- **Section/Container:** Focus on structural boundaries and hardware clipping.
+- **Stacks (V/H):** Focus on directional flow and item distribution via the Flex primitive.
 
-## 💡 Best Practices
-- Use `Section` for high-level UI parts: `Header`, `Sidebar`, `MainContent`, `Footer`.
-- Avoid nesting many `Sections`; use `Div` for sub-grouping.
+---
+
+## 🗝️ Standard Components
+
+### `struct Section`
+Used for major UI regions (e.g., "Sidebar", "Main").
+
+### `struct Container`
+A flexible box with scrolling support.
+
+### `struct VStack` & `struct HStack`
+Directional wrappers built on Flexbox. They simplify vertical and horizontal alignment by providing semantic defaults.
+
+---
+
+## 🎨 Common Layout Utilities
+These components are the primary targets for:
+- `.style(flex())`
+- `.style(gap(f32))`
+- `.style(items_center())`

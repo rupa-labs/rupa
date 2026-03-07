@@ -50,7 +50,9 @@ Standard for all UI Elements in `src/elements/`.
 
 ### Modularity
 - **One Module, One Responsibility:** Avoid "God Files". If a module exceeds its scope, break it down into sub-modules (e.g., `src/style/modifiers/` split by functional domain).
+- **Clean Indices (`mod.rs`):** All `mod.rs` files MUST be clean indices. They should only contain module declarations (`pub mod ...`) and re-exports (`pub use ...`). NO implementation logic, constants, or traits should be defined directly within a `mod.rs` file.
 - **Flattened Re-exports:** Use `pub use` in `mod.rs` to keep user imports shallow (1-level deep via `prelude`).
+
 
 ---
 

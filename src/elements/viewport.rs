@@ -1,122 +1,100 @@
-use crate::utils::{Style, generate_id, Signal, Vec2};
+use crate::support::{Style, generate_id, Theme, Vec2};
 use crate::core::component::Component;
-use crate::renderer::renderer::Renderer;
-use crate::style::modifiers::utilities::Stylable;
-use crate::platform::events::UIEvent;
+use crate::core::ViewCore;
+use crate::renderer::{Renderer, TextMeasurer};
+use crate::style::modifiers::base::Stylable;
+use crate::scene::SceneNode;
 use taffy::prelude::*;
-use std::cell::{Cell, RefCell, RefMut};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::RwLockWriteGuard;
 
 // --- LOGIC ---
-
-pub struct ViewportLogic {
-    pub content: Box<dyn Component>,
-    pub offset: Signal<Vec2>,
-    pub zoom: Signal<f32>,
-    pub zoomable: bool,
-    pub pannable: bool,
+pub struct ViewportLogic<'a> { 
+    pub child: Option<Box<dyn Component + 'a>> 
 }
 
 // --- VIEW ---
+pub struct ViewportView { 
+    pub core: ViewCore 
+}
 
-pub struct ViewportView {
-    pub style: RefCell<Style>,
-    node: Cell<Option<NodeId>>,
-    dirty: AtomicBool,
+impl ViewportView {
+    pub fn new() -> Self {
+        let mut style = Style::default();
+        Theme::current().apply_defaults(&mut style);
+        Self { core: ViewCore::new(style) }
+    }
 }
 
 // --- COMPONENT ---
-
-pub struct Viewport {
-    pub id: String,
-    pub logic: ViewportLogic,
-    pub view: ViewportView,
+/// A semantic component representing a rectangular clipping area or a nested viewport.
+pub struct Viewport<'a> { 
+    pub id: String, 
+    pub logic: ViewportLogic<'a>, 
+    pub view: ViewportView 
 }
 
-impl Viewport {
-    pub fn new(content: Box<dyn Component>) -> Self {
-        Self {
-            id: generate_id(),
-            logic: ViewportLogic {
-                content,
-                offset: Signal::new(Vec2::zero()),
-                zoom: Signal::new(1.0),
-                zoomable: true,
-                pannable: true,
-            },
-            view: ViewportView {
-                style: RefCell::new(Style::default()),
-                node: Cell::new(None),
-                dirty: AtomicBool::new(true),
-            },
+impl<'a> Viewport<'a> {
+    pub fn new() -> Self {
+        Self { 
+            id: generate_id(), 
+            logic: ViewportLogic { child: None }, 
+            view: ViewportView::new() 
         }
     }
-    pub fn id(mut self, id: impl Into<String>) -> Self { self.id = id.into(); self }
-    pub fn zoomable(mut self, enabled: bool) -> Self { self.logic.zoomable = enabled; self }
-    pub fn pannable(mut self, enabled: bool) -> Self { self.logic.pannable = enabled; self }
-}
-
-impl Stylable for Viewport {
-    fn get_style_mut(&self) -> RefMut<'_, Style> {
-        self.view.style.borrow_mut()
+    pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self { 
+        self.logic.child = Some(child); 
+        self.view.core.mark_dirty(); 
+        self 
     }
 }
 
-impl Component for Viewport {
-    fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![self.logic.content.as_ref()] }
-    fn get_node(&self) -> Option<NodeId> { self.view.node.get() }
-    fn set_node(&self, node: NodeId) { self.view.node.set(Some(node)); }
-    fn is_dirty(&self) -> bool { self.view.dirty.load(Ordering::Relaxed) }
-    fn mark_dirty(&self) { self.view.dirty.store(true, Ordering::Relaxed); }
-    fn clear_dirty(&self) { self.view.dirty.store(false, Ordering::Relaxed); }
+impl<'a> Stylable for Viewport<'a> { 
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.get_style_mut() } 
+}
 
-    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
-        let node = if let Some(existing) = self.get_node() {
-            if self.is_dirty() { taffy.set_style(existing, self.view.style.borrow().to_taffy()).unwrap(); }
-            existing
+impl<'a> Component for Viewport<'a> {
+    fn id(&self) -> &str { &self.id }
+    fn children(&self) -> Vec<&dyn Component> { 
+        self.logic.child.as_ref().map(|c| c.as_ref() as &dyn Component).into_iter().collect() 
+    }
+    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
+    fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
+    fn mark_dirty(&self) { self.view.core.mark_dirty(); }
+    fn clear_dirty(&self) { self.view.core.clear_dirty(); }
+
+    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
+        let node = if let Some(existing) = self.view.core.get_node() {
+            if self.view.core.is_dirty() { 
+                taffy.set_style(existing.raw(), self.view.core.get_style_mut().to_taffy()).unwrap(); 
+            }
+            existing.raw()
         } else {
-            let new_node = taffy.new_with_children(self.view.style.borrow().to_taffy(), &[]).unwrap();
-            self.set_node(new_node);
+            let new_node = taffy.new_with_children(self.view.core.get_style_mut().to_taffy(), &[]).unwrap(); 
+            self.view.core.set_node(SceneNode::from(new_node)); 
             new_node
         };
 
-        if let Some(p) = parent {
-            let current_children = taffy.children(p).unwrap_or_default();
-            if !current_children.contains(&node) { taffy.add_child(p, node).unwrap(); }
+        let mut child_nodes = Vec::new();
+        if let Some(ref child) = self.logic.child {
+            child_nodes.push(child.layout(taffy, measurer, Some(node)));
         }
-
-        self.logic.content.layout(taffy, Some(node));
-        self.clear_dirty();
+        taffy.set_children(node, &child_nodes).unwrap();
+        
+        self.view.core.clear_dirty(); 
         node
     }
 
-    fn paint(&self, renderer: &mut Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, render_pass: &mut wgpu::RenderPass<'_>, global_pos: Vec2) {
-        let old_offset = renderer.camera_offset; 
-        let old_zoom = renderer.camera_zoom;
+    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
+        let layout = taffy.layout(node).unwrap(); 
+        let style_ref = self.view.core.style.read().unwrap();
         
-        renderer.camera_offset = self.logic.offset.get(); 
-        renderer.camera_zoom = self.logic.zoom.get();
-        
-        let children = taffy.children(node).unwrap();
-        if let Some(content_node) = children.get(0) { 
-            self.logic.content.paint(renderer, taffy, *content_node, is_group_hovered, render_pass, global_pos); 
+        if let Some(color) = style_ref.background.color.clone() { 
+            renderer.draw_rect(global_pos.x, global_pos.y, layout.size.width, layout.size.height, color.to_rgba(), style_ref.rounding.nw); 
         }
-        
-        renderer.camera_offset = old_offset; 
-        renderer.camera_zoom = old_zoom;
-    }
 
-    fn on_click(&self, event: &mut UIEvent) { self.logic.content.on_click(event); }
-    fn on_scroll(&self, _event: &mut UIEvent, delta: f32) { 
-        if self.logic.zoomable { 
-            self.logic.zoom.update(|z| { *z += delta * 0.001; *z = z.clamp(0.1, 10.0); }); 
-        } 
-    }
-    fn on_drag(&self, _event: &mut UIEvent, delta: Vec2) { 
-        if self.logic.pannable { 
-            let zoom = self.logic.zoom.get();
-            self.logic.offset.update(|o| { o.x += delta.x / zoom; o.y += delta.y / zoom; }); 
-        } 
+        if let Some(ref child) = self.logic.child {
+            child.paint(renderer, taffy, node, is_group_hovered || style_ref.is_group, global_pos);
+        }
     }
 }

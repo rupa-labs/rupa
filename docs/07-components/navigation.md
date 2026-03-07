@@ -1,60 +1,32 @@
-# Semantic Layout Components
+# Components: Navigation 🧭
 
-Rupaui provides high-level semantic components for structuring your interface. These components ensure that your layout code is declarative, readable, and highly performant.
-
-## 🤸 Flexbox Component (`Flex`)
-
-The `Flex` component is a dedicated container for one-dimensional layouts. It defaults to `display: flex`.
-
-```rust
-use rupaui::elements::Flex;
-use rupaui::utils::{row, gap, items};
-
-Flex::new()
-    .style((row(), gap(12.0), items(AlignItems::Center)))
-    .child(Box::new(Text::new("Item 1")))
-    .child(Box::new(Text::new("Item 2")));
-```
+Navigation components provide the high-level spatial landmarks of a Rupaui application. They are designed to manage large-scale UI transitions and branding zones.
 
 ---
 
-## 🏁 Grid Component (`Grid`)
+## 🧠 Internal Anatomy
 
-The `Grid` component is a dedicated container for two-dimensional layouts. It defaults to `display: grid`.
+### 1. The Zoning Logic
+Navigation elements often divide space into "Zones" (`start`, `center`, `end`). The logic handles which components belong to which zone and manages their collective accessibility roles.
 
-```rust
-use rupaui::elements::Grid;
-use rupaui::utils::{grid_cols, gap};
-
-Grid::new()
-    .style((
-        grid_cols(vec!["1fr", "2fr"]),
-        gap(20.0)
-    ))
-    .child(Box::new(Div::new().text("Sidebar")))
-    .child(Box::new(Div::new().text("Main Content")));
-```
+### 2. The Switcher View
+For components like `Tabs`, the View is responsible for **Conditional Layout**. It only requests a Taffy node for the active child, saving resources by not calculating or painting hidden tabs.
 
 ---
 
-## 📦 Container, Row & Col
+## 🗝️ Standard Components
 
-For traditional grid-based layouts (similar to Bootstrap), Rupaui provides these standard structural units:
+### `struct Navbar`
+- **Anatomy:** Logic manages three list of children. View arranges them horizontally.
+- **API:** `.start()`, `.center()`, `.end()`.
 
-- **`Container`**: Centers and constraints content width.
-- **`Row`**: A horizontal wrapper for columns (Flex-based).
-- **`Col`**: A grid cell with a specific span (1-12).
+### `struct Tabs`
+- **Anatomy:** Logic tracks a `Signal<usize>`. View reacts by rendering only the indexed content.
+- **API:** Takes a `Vec<Tab>` and a `Signal`.
 
-```rust
-Container::new()
-    .child(Box::new(
-        Row::new()
-            .child(Box::new(Col::new(6).text("50% Width")))
-            .child(Box::new(Col::new(6).text("50% Width")))
-    ))
-```
+---
 
-## 🗝 Practical Guidance
-- Use **`Flex`** or **`Grid`** for specialized, custom layouts.
-- Use **`Container/Row/Col`** for standard page or form layouts.
-- Every layout component is **Theme-Aware** and inherits global DNA defaults.
+## 🎨 Common Utilities
+Navigation components are typically styled with global layout modifiers:
+- `.style(flex())`
+- `.style(gap(16.0))`

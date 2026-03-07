@@ -1,40 +1,44 @@
-# Module: Platform Orchestrator (`mod.rs`) 🏛️
+# HAL: Platform Orchestrator 🏛️
 
-This is the entry point of Layer 1. It acts as the grand conductor that decides which hardware abstraction (GUI or TUI) to boot based on the environment and compilation flags.
-
----
-
-## 🏗️ Core Responsibilities
-
-1.  **App Struct:** The primary builder used by end-users to bootstrap their application.
-2.  **PlatformCore Struct:** The shared internal heart of all platforms, managing root components, layout calculations, and cursor state.
-3.  **Bootstrap Logic:** Orchestrates the injection of plugins and the initial theme setup before the platform runner takes over.
-4.  **Cross-Platform Redraw:** Provides the global `request_redraw()` function which communicates with the active backend proxy.
-5.  **Platform Abstraction:** Defines the `PlatformRunner` trait that all backends must implement to ensure a uniform lifecycle.
+The Platform Orchestrator (Layer 1) is the foundation of every Rupaui application. It manages the hardware-specific execution environment and provides a unified "agnostic bridge" for the higher layers of the framework.
 
 ---
 
-## 🗝️ Key API Elements
+## 🏗️ Architecture
 
-### `struct App`
-The user-facing API for defining the application name and root component.
-- `.new(name)`: Creates a new instance.
-- `.root(component)`: Attaches the top-level UI element.
-- `.run()`: Starts the GUI backend (Default).
-- `.run_tui()`: Starts the Terminal backend.
+The Orchestrator follows a **composition-based architecture** to eliminate redundancy across different target platforms.
 
-### `struct PlatformCore`
-The internal core used via **Composition** in every platform runner.
-- `compute_layout(w, h)`: Common logic to update the Taffy tree.
+### Core Components
 
-### `trait PlatformRunner`
-The internal contract for backends:
-- `initialize()`: Hardware handshake.
-- `run()`: Starts the event loop.
-- `request_redraw()`: Signals the need for a new frame.
+#### 1. Platform Core (`context.rs`)
+The shared state shared across all platforms. It holds the `AppMetadata`, the `Root Component`, the `Scene Graph`, and the `Input Dispatcher`.
+- [**Technical Reference: Platform Core**](./platform-orchestrator.md)
+
+#### 2. Platform Runners (`desktop/`, `terminal/`, `web/`, `mobile/`)
+Platform-specific "shells" that implement the execution loop (Event Loop).
+- [**Desktop Runner (Desktop)**](./desktop-runner.md)
+- [**Terminal Runner (CLI/TUI)**](./terminal-runner.md)
+- [**Web Runner (WASM/Browser)**](./web-runner.md)
+- [**Mobile Runner (Android/iOS)**](./mobile-runner.md)
 
 ---
 
-## 🔄 Interaction
-- **L1 -> L8:** Orchestrates the high-level application flow.
-- **L1 -> L9:** Injects Design System defaults during bootstrap.
+## 🔄 Execution Pipeline
+
+The lifecycle of a Rupaui application is standardized across all targets:
+
+1.  **Bootstrap**: The `App` struct initializes global state (Theme, Plugins) and selects the appropriate `PlatformRunner`.
+2.  **Environment Setup**: The Runner initializes the hardware abstraction (WGPU, Crossterm, or Canvas) and creates the visual surface (Window or Character Grid).
+3.  **The Agnostic Bridge**: The Runner enters its event loop and begins mapping native events into Rupaui's `InputEvent`.
+4.  **Render Loop**: Higher layers (`SceneCore` and `Renderer`) are invoked to resolve layout and paint the UI tree onto the surface.
+5.  **Shutdown**: The Orchestrator ensures all hardware resources are safely released (restoring terminal state or destroying GPU surfaces).
+
+---
+
+## 🛡️ Dependency Inversion (HAL-DI)
+
+To ensure long-term sustainability, Layer 1 strictly follows Dependency Inversion. Every third-party library is isolated behind an "Infra" wrapper:
+- **`DesktopInfra`**: Isolates Winit windowing.
+- **`TerminalInterface`**: Isolates Crossterm terminal commands.
+- **`WebInfra`**: Isolates Web-Sys/JS DOM manipulation.
+- **`MobileInfra`**: Isolates native mobile glue logic (JNI/UIKit).

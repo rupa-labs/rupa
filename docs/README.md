@@ -7,67 +7,84 @@ Welcome to the **Rupaui Open Blueprint**. This documentation is structured to mi
 ## 🏁 Getting Started
 - [Project Overview](./overview.md) - Vision, key features, and tech stack.
 - [Philosophy](./philosophy.md) - Design principles and the 5 Artisan Pillars.
-- [Engineering Standards](./engineering-standards.md) - Coding conventions and architectural mandates.
+- [Engineering Standards](./engineering-standards.md) - Coding conventions and mandates.
 - [Architecture Overview](./architecture.md) - Conceptual map of the 9-layer stack.
+- [Platform References](./platform-references.md) - **Entry-Points for Desktop, Web, Terminal, and Mobile.**
 
 ---
 
 ## 🏗️ The 9-Layer Blueprint
 
 ### [01] Hardware Abstraction (HAL)
-- [Platform Orchestrator](./01-hal/platform-orchestrator.md) - `mod.rs` (App entry & bootstrap)
+- [Platform Orchestrator](./01-hal/platform-orchestrator.md) - `mod.rs` (App lifecycle)
 - [Input Events](./01-hal/input-events.md) - `events.rs` (Universal schema)
-- [Input Dispatcher](./01-hal/input-dispatcher.md) - `dispatcher.rs` (Hit-testing & propagation)
-- [GUI Runner](./01-hal/gui-runner.md) - `gui/mod.rs` (Winit & frame loop)
-- [GUI Window](./01-hal/gui-window.md) - `gui/window.rs` (OS window management)
-- [TUI Runner](./01-hal/tui-runner.md) - `tui/mod.rs` (Crossterm & terminal loop)
+- [Input Dispatcher](./01-hal/input-dispatcher.md) - `dispatcher.rs` (Normalization)
+- [Desktop Runner](./01-hal/desktop-runner.md) - `desktop/runner.rs` (Winit shell)
+- [Desktop Window](./01-hal/desktop-window.md) - `desktop/infra.rs` (Winit wrapper)
+- [Terminal Runner](./01-hal/terminal-runner.md) - `terminal/runner.rs` (Terminal shell)
+- [Terminal Interface](./01-hal/terminal-interface.md) - `terminal/terminal.rs` (Crossterm wrapper)
+- [Web Runner](./01-hal/web-runner.md) - `web/runner.rs` (WASM / Canvas shell)
+- [Mobile Runner](./01-hal/mobile-runner.md) - `mobile/runner.rs` (Android / iOS shell)
 
 ### [02] Rendering Engine
-- [Renderer Interface](./02-rendering/renderer-interface.md) - `mod.rs` (Unified contract)
+- [Renderer Interface](./02-rendering/renderer-interface.md) - `mod.rs` (Universal contract)
 - [GUI Backend](./02-rendering/gui-backend.md) - `gui/mod.rs` (Aggregation)
-- [GUI Renderer](./02-rendering/gui-renderer.md) - `gui/renderer.rs` (WGPU Orchestrator)
-- [GUI Batcher](./02-rendering/gui-batcher.md) - `gui/batcher.rs` (Buffer management)
+- [GUI Renderer](./02-rendering/gui-renderer.md) - `gui/renderer.rs` (WGPU orchestration)
+- [GUI Batcher](./02-rendering/gui-batcher.md) - `gui/batcher.rs` (Buffer optimization)
 - [GUI Pipeline](./02-rendering/gui-pipeline.md) - `gui/pipeline.rs` (WGPU state)
-- [GUI Text Renderer](./02-rendering/gui-text-renderer.md) - `gui/text_renderer.rs` (Glyphon)
+- [GUI Text Renderer](./02-rendering/gui-text-renderer.md) - `gui/text_renderer.rs` (Typography)
 - [GUI Texture](./02-rendering/gui-texture.md) - `gui/texture.rs` (VRAM assets)
 - [TUI Renderer](./02-rendering/tui-renderer.md) - `tui/mod.rs` (ANSI painter)
 
 ### [03] Geometric Scene Layer
-- [Scene Core](./03-layout/scene-core.md) - `mod.rs` (Tree SSOT)
-- [Layout Engine](./03-layout/layout-engine.md) - `layout.rs` (Taffy integration)
-- [Spatial Awareness](./03-layout/spatial-awareness.md) - Hit-testing & Coordinates
+- [Scene Core](./03-layout/scene-core.md) - `mod.rs` (Spacial SSOT)
+- [Layout Engine](./03-layout/layout-engine.md) - `layout.rs` (Taffy brain)
+- [Scene Node](./03-layout/scene-node.md) - `node.rs` (Agnostic handle)
+- [Spatial Awareness](./03-layout/spatial-awareness.md) - Hit-testing logic
 
 ### [04] Reactivity Layer
-- [Reactivity System](./04-reactivity/reactivity.md) - Signals, Memos, and change propagation.
+- [Signals & Memos](./04-reactivity/signals.md) - `state.rs` (Reactive nucleus)
+- [Change Propagation](./04-reactivity/change-propagation.md) - Execution pipeline
+- [Fine-Grained Updates](./04-reactivity/fine-grained-updates.md) - Optimization strategy
 
 ### [05] Component Architecture
-- [Attributes](./05-architecture/attributes.md) - Component metadata and metadata handling.
-- [Logic & View Pattern](./architecture.md#layer-5-component-architecture-layer-logic--view) - The core SOC standard.
+- [Component Trait](./05-architecture/component-trait.md) - `component.rs` (The Contract)
+- [View Core](./05-architecture/view-core.md) - `view.rs` (Anatomical standard)
+- [Element Tree](./05-architecture/element-tree.md) - `element_tree.rs` (Traversal)
+- [Plugin System](./05-architecture/plugin-system.md) - `plugin.rs` (Extensions)
+- [Logic & View Pattern](./05-architecture/logic-and-view.md) - Conceptual SOC standard
+- [Module Standard](./05-architecture/module-standard.md) - Directory conventions
 
 ### [06] UI Primitives
-- [Div](./06-primitives/div.md) - The atomic layout block.
+- [Primitive Design](./06-primitives/primitive-design.md) - Standard for L6
+- [Div](./06-primitives/div.md) - Basic block primitive
+- [Flex](./06-primitives/flex.md) - 1D layout primitive
+- [Grid](./06-primitives/grid.md) - 2D layout primitive
+- [Overlay](./06-primitives/overlay.md) - Absolute positioning
 
 ### [07] Semantic Components
-- [Elements Library](./07-components/elements.md) - Standard UI kit (Buttons, Badge, etc).
-- [Forms & Input](./07-components/forms.md) - Reactive user input controls.
-- [Navigation](./07-components/navigation.md) - Navbar, Tabs, and Breadcrumbs.
-- [Content & Layout](./07-components/layout.md) - Sections and semantic grouping.
-- [Data Tables](./07-components/content.md) - Structured data displays.
-- [Vector Graphics](./07-components/svg.md) - SVG paths and icons.
-- [Theme Switcher](./07-components/theme-switcher.md) - Dynamic mode toggling.
-- [Identity](./07-components/brand.md) - Branding and logos.
+- [Artisan Design](./07-components/component-design.md) - Standard for L7
+- [Button](./07-components/button.md) - Triggers
+- [Form Controls](./07-components/forms.md) - Input
+- [Feedback](./07-components/feedback.md) - Status
+- [Navigation](./07-components/navigation.md) - Landmarks
+- [Content & Disclosure](./07-components/content.md) - Data grouping
+- [Overlays](./07-components/overlay.md) - Modals
+- [Layout Scaffolding](./07-components/layout.md) - Structural containers
+- [VStack](./07-components/vstack.md) - Vertical Stacks
+- [HStack](./07-components/hstack.md) - Horizontal Stacks
+- [Graphics](./07-components/svg.md) - Vector & Icons
+- [Identity](./07-components/brand.md) - Brand
+- [Theme Control](./07-components/theme-switcher.md) - Modes
 
 ### [08] Composition Layer
-- [Control Flow](./08-composition/control-flow.md) - Conditional rendering and loops.
-- [Viewports](./08-composition/viewports.md) - Infinite canvas, zoom, and pan.
+- [App Bootstrap](./08-composition/app-bootstrap.md) - Orchestration logic
+- [Control Flow](./08-composition/control-flow.md) - `control_flow.rs` (Logic components)
+- [Viewports](./08-composition/viewports.md) - `viewport.rs` (Cameras)
 
 ### [09] Ecosystem & Design System
-- [Styling API](./09-ecosystem/styling-api.md) - Functional, utility-first styling.
-- [Theme Engine](./09-ecosystem/theme-engine.md) - DNA Visual and global themes.
-- [Artisan Scale](./09-ecosystem/scale-system.md) - The 10-step unified scale.
-- [Modular Styling](./09-ecosystem/modular-styling.md) - Style composition with tuples.
-- [Interactivity](./09-ecosystem/interactivity.md) - Events, hover, and active states.
-- [Plugins](./09-ecosystem/plugins.md) - Extending the framework.
-- [Extending](./09-ecosystem/extending.md) - Guide for library developers.
-- [Helpers](./09-ecosystem/helpers.md) - Design system utility helpers.
-- [Variants](./09-ecosystem/variants.md) - Semantic variant system (Primary, Danger, etc).
+- [Styling API](./09-ecosystem/styling-api.md) - Functional utilities
+- [Theme Engine](./09-ecosystem/theme-engine.md) - DNA Visual
+- [Color Math](./09-ecosystem/color-math.md) - OKLCH Standards
+- [Scale System](./09-ecosystem/scale-system.md) - 10-step scaling
+- [Plugin System](./09-ecosystem/plugins.md) - `plugin.rs` (Extensibility)

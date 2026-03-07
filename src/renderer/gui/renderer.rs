@@ -1,9 +1,8 @@
 use std::sync::Arc;
-use winit::window::Window as WinitWindow;
 use wgpu::*;
 use wgpu::util::StagingBelt;
-use crate::utils::vector::Vec2;
-use crate::utils::typography::TextAlign;
+use crate::support::vector::Vec2;
+use crate::style::utilities::typography::TextAlign;
 use crate::renderer::{Renderer as BaseRenderer, RenderCore};
 use super::batcher::{Batcher, Vertex};
 use super::texture::Texture;
@@ -21,7 +20,6 @@ pub struct Renderer {
     pub device: Device,
     pub queue: Queue,
     pub config: SurfaceConfiguration,
-    pub window: Arc<WinitWindow>,
     
     pub render_pipeline: RenderPipeline,
     pub batcher: Batcher,
@@ -36,16 +34,18 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub async fn new(window: Arc<WinitWindow>) -> Self {
-        let size = window.inner_size();
+    pub async fn new<W>(window: Arc<W>, width: u32, height: u32, scale_factor: f32) -> Self 
+    where
+        W: raw_window_handle::HasWindowHandle + raw_window_handle::HasDisplayHandle + Send + Sync + 'static
+    {
         let instance = Instance::new(&InstanceDescriptor { backends: Backends::all(), ..Default::default() });
-        let surface = instance.create_surface(window.clone()).expect("Failed to create surface");
+        let surface = instance.create_surface(window).expect("Failed to create surface");
         let adapter = instance.request_adapter(&RequestAdapterOptions { power_preference: PowerPreference::HighPerformance, compatible_surface: Some(&surface), force_fallback_adapter: false }).await.unwrap();
         let (device, queue) = adapter.request_device(&DeviceDescriptor { label: Some("Rupaui Device"), ..Default::default() }).await.unwrap();
         
         let surface_caps = surface.get_capabilities(&adapter);
         let surface_format = surface_caps.formats.iter().copied().find(|f| f.is_srgb()).unwrap_or(surface_caps.formats[0]);
-        let config = SurfaceConfiguration { usage: TextureUsages::RENDER_ATTACHMENT, format: surface_format, width: size.width, height: size.height, present_mode: surface_caps.present_modes[0], alpha_mode: surface_caps.alpha_modes[0], view_formats: vec![], desired_maximum_frame_latency: 2 };
+        let config = SurfaceConfiguration { usage: TextureUsages::RENDER_ATTACHMENT, format: surface_format, width, height, present_mode: surface_caps.present_modes[0], alpha_mode: surface_caps.alpha_modes[0], view_formats: vec![], desired_maximum_frame_latency: 2 };
         surface.configure(&device, &config);
 
         let texture_bind_group_layout = device.create_bind_group_layout(&BindGroupLayoutDescriptor { 
@@ -74,19 +74,20 @@ impl Renderer {
         let staging_belt = StagingBelt::new(device.clone(), 1024);
 
         Self { 
-            core: RenderCore::new(size.width as f32, size.height as f32),
-            window, surface, device, queue, config, 
+            core: RenderCore::new(width as f32, height as f32, scale_factor),
+            surface, device, queue, config, 
             render_pipeline, batcher, default_texture, text_renderer, staging_belt,
             text_entries: Vec::new(),
             current_encoder: None, current_view: None, current_output: None,
         }
     }
 
-    pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) { 
-        if new_size.width > 0 && new_size.height > 0 { 
-            self.core.logical_size = Vec2::new(new_size.width as f32, new_size.height as f32);
-            self.config.width = new_size.width; 
-            self.config.height = new_size.height; 
+    pub fn resize(&mut self, width: u32, height: u32, scale_factor: f32) { 
+        if width > 0 && height > 0 { 
+            self.core.logical_size = Vec2::new(width as f32, height as f32);
+            self.core.scale_factor = scale_factor;
+            self.config.width = width; 
+            self.config.height = height; 
             self.surface.configure(&self.device, &self.config); 
         } 
     }
@@ -107,17 +108,19 @@ impl Renderer {
 impl crate::renderer::TextMeasurer for Renderer {
     fn measure(&self, text: &str, size: f32) -> Vec2 {
         let mut font_system = glyphon::FontSystem::new(); // Ideally reuse this
-        let mut buffer = glyphon::Buffer::new(&mut font_system, glyphon::Metrics::new(size, size));
+        let tsize = size * self.core.scale_factor;
+        let mut buffer = glyphon::Buffer::new(&mut font_system, glyphon::Metrics::new(tsize, tsize));
         buffer.set_text(&mut font_system, text, &glyphon::Attrs::new().family(glyphon::Family::SansSerif), glyphon::Shaping::Advanced, None);
         buffer.shape_until_scroll(&mut font_system, false);
         
-        let mut width = 0.0;
-        let mut height = 0.0;
+        let mut width: f32 = 0.0;
+        let mut height: f32 = 0.0;
         for run in buffer.layout_runs() {
             width = width.max(run.line_w);
             height += run.line_height;
         }
-        Vec2::new(width, height)
+        // Return logical size back to Layer 3
+        Vec2::new(width / self.core.scale_factor, height / self.core.scale_factor)
     }
 }
 
@@ -126,10 +129,11 @@ impl BaseRenderer for Renderer {
     fn core_mut(&mut self) -> &mut RenderCore { &mut self.core }
 
     fn draw_rect(&mut self, x: f32, y: f32, w: f32, h: f32, color: [f32; 4], radius: f32) {
-        let tx = (x + self.core.camera_offset.x) * self.core.camera_zoom; 
-        let ty = (y + self.core.camera_offset.y) * self.core.camera_zoom;
-        let tw = w * self.core.camera_zoom; 
-        let th = h * self.core.camera_zoom;
+        let scale = self.core.scale_factor;
+        let tx = (x + self.core.camera_offset.x) * self.core.camera_zoom * scale; 
+        let ty = (y + self.core.camera_offset.y) * self.core.camera_zoom * scale;
+        let tw = w * self.core.camera_zoom * scale; 
+        let th = h * self.core.camera_zoom * scale;
         
         let x_norm = (tx / self.core.logical_size.x) * 2.0 - 1.0; 
         let y_norm = 1.0 - (ty / self.core.logical_size.y) * 2.0;
@@ -137,7 +141,7 @@ impl BaseRenderer for Renderer {
         let h_norm = (th / self.core.logical_size.y) * 2.0;
         
         let size = [tw, th];
-        let radius = radius * self.core.camera_zoom;
+        let radius = radius * self.core.camera_zoom * scale;
 
         self.batcher.add_rect([
             Vertex { position: [x_norm, y_norm], color, tex_coords: [0.0, 0.0], rect_size: size, radius, mode: 0 },
@@ -147,17 +151,44 @@ impl BaseRenderer for Renderer {
         ]);
     }
 
-    fn draw_text(&mut self, content: &str, x: f32, y: f32, size: f32, color: [f32; 4], _align: TextAlign) {
-        let tx = (x + self.core.camera_offset.x) * self.core.camera_zoom; 
-        let ty = (y + self.core.camera_offset.y) * self.core.camera_zoom;
-        let tsize = size * self.core.camera_zoom;
+    fn draw_text(&mut self, content: &str, x: f32, y: f32, width: f32, size: f32, color: [f32; 4], _align: TextAlign) {
+        let scale = self.core.scale_factor;
+        let tx = (x + self.core.camera_offset.x) * self.core.camera_zoom * scale; 
+        let ty = (y + self.core.camera_offset.y) * self.core.camera_zoom * scale;
+        let tsize = size * self.core.camera_zoom * scale;
+        let twidth = width * self.core.camera_zoom * scale;
 
         let mut buffer = glyphon::Buffer::new(&mut self.text_renderer.font_system, glyphon::Metrics::new(tsize, tsize));
-        buffer.set_size(&mut self.text_renderer.font_system, Some(self.core.logical_size.x), Some(self.core.logical_size.y));
+        // Set available width for wrapping. Use logical window size as height limit for now.
+        buffer.set_size(&mut self.text_renderer.font_system, Some(twidth), Some(self.core.logical_size.y * scale));
         buffer.set_text(&mut self.text_renderer.font_system, content, &glyphon::Attrs::new().family(glyphon::Family::SansSerif), glyphon::Shaping::Advanced, None);
         buffer.shape_until_scroll(&mut self.text_renderer.font_system, false);
 
         self.text_entries.push(StoredText { buffer, pos: Vec2::new(tx, ty), color });
+    }
+
+    fn draw_outline(&mut self, x: f32, y: f32, w: f32, h: f32, color: [f32; 4]) {
+        let scale = self.core.scale_factor;
+        let tx = (x + self.core.camera_offset.x) * self.core.camera_zoom * scale; 
+        let ty = (y + self.core.camera_offset.y) * self.core.camera_zoom * scale;
+        let tw = w * self.core.camera_zoom * scale; 
+        let th = h * self.core.camera_zoom * scale;
+        
+        let x_norm = (tx / self.core.logical_size.x) * 2.0 - 1.0; 
+        let y_norm = 1.0 - (ty / self.core.logical_size.y) * 2.0;
+        let w_norm = (tw / self.core.logical_size.x) * 2.0; 
+        let h_norm = (th / self.core.logical_size.y) * 2.0;
+        
+        // Outline mode (implemented in shader or by drawing 4 thin lines)
+        // For now, let's draw it as a rect with a special flag if the shader supports it, 
+        // or just a very thin rect for simplicity in this step.
+        let size = [tw, th];
+        self.batcher.add_rect([
+            Vertex { position: [x_norm, y_norm], color, tex_coords: [0.0, 0.0], rect_size: size, radius: 0.0, mode: 1 }, // Mode 1 for Outline
+            Vertex { position: [x_norm + w_norm, y_norm], color, tex_coords: [1.0, 0.0], rect_size: size, radius: 0.0, mode: 1 },
+            Vertex { position: [x_norm + w_norm, y_norm - h_norm], color, tex_coords: [1.0, 1.0], rect_size: size, radius: 0.0, mode: 1 },
+            Vertex { position: [x_norm, y_norm - h_norm], color, tex_coords: [0.0, 1.0], rect_size: size, radius: 0.0, mode: 1 },
+        ]);
     }
 
     fn push_clip(&mut self, _x: f32, _y: f32, _w: f32, _h: f32) {}
@@ -173,11 +204,16 @@ impl BaseRenderer for Renderer {
                 label: Some("Rupaui Main Pass"),
                 color_attachments: &[Some(RenderPassColorAttachment {
                     view: &view, resolve_target: None, depth_slice: None,
-                    ops: Operations { load: LoadOp::Clear(wgpu::Color::BLACK), store: StoreOp::Store },
+                    ops: Operations {
+                        load: LoadOp::Clear(wgpu::Color::BLACK),
+                        store: StoreOp::Store,
+                    },
                 })],
-                depth_stencil_attachment: None, timestamp_writes: None, occlusion_query_set: None, multiview_mask: None,
+                depth_stencil_attachment: None,
+                timestamp_writes: None, 
+                occlusion_query_set: None,
+                multiview_mask: None,
             });
-
             pass.set_pipeline(&self.render_pipeline); 
             pass.set_bind_group(0, &self.default_texture.bind_group, &[]); 
             self.batcher.flush(&self.queue, &mut pass);

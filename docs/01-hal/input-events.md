@@ -1,32 +1,28 @@
 # Module: Input Events (`events.rs`) ⌨️🖱️
 
-This module defines the "Universal Language" of input for the Rupaui framework. It abstracts away raw OS or terminal sequences into platform-agnostic data structures.
+This module defines the "Universal Language" of input. It acts as the semantic filter that cleans raw hardware signals into structured, typed data.
 
 ---
 
-## 🏗️ Core Responsibilities
+## 🧠 Internal Anatomy
 
-1.  **Unified Input Schema:** Provides a single source of truth for what an "interaction" looks like in Rupaui.
-2.  **Platform Decoupling:** Ensures that higher layers (L3-L9) never have to import platform-specific types like `winit::event::WindowEvent` or `crossterm::event::Event`.
+### 1. The Normalization Schema
+Input events are represented by the `InputEvent` enum. It uses `f32` coordinates (logical units) and standardized `KeyCode` variants to eliminate differences between OS keyboard layouts and mouse drivers.
 
----
-
-## 🗝️ Key API Elements
-
-### `enum InputEvent`
-The central enum containing all standardized signals:
-- `PointerMove`: Normalized cursor or touch coordinates.
-- `PointerButton`: Primary, Secondary, or Auxiliary button states.
-- `PointerScroll`: Scroll deltas (Vector-based).
-- `Key`: Standardized KeyCodes (Enter, Esc, Chars, etc).
-- `Resize`: Window or Terminal size changes.
-- `Quit`: Application termination signal.
-
-### `struct Modifiers`
-A bit-flag-like structure tracking the state of `Shift`, `Ctrl`, `Alt`, and `Logo` keys across all platforms.
+### 2. Physical to Logical Mapping
+The HAL runners (GUI/TUI) are responsible for the conversion:
+- **GUI:** `Physical Pos / Scale Factor = Logical Pos`.
+- **TUI:** `Terminal Column/Row = Logical Integer Grid`.
 
 ---
 
-## 🔄 Interaction
-- **L1 (Backend) -> L1 (Events):** Backends translate their native bytes into ini format.
-- **L1 (Events) -> L1 (Dispatcher):** Normalized events are fed into the dispatcher for tree propagation.
+## 🗝️ API Anatomy: `enum InputEvent`
+
+- **Pointer Events:** `PointerMove`, `PointerButton`, `PointerScroll`.
+- **Keyboard Events:** `Key { key, state, modifiers }`.
+- **System Events:** `Resize`, `Focus`, `Quit`.
+
+---
+
+## 🛡️ Reactive Design
+Input events are non-blocking. They are captured by Layer 1 and pushed into the **InputDispatcher**, which then routes them into the reactive component tree.

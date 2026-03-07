@@ -1,4 +1,6 @@
-use crate::utils::vector::Vec2;
+use crate::support::vector::Vec2;
+use std::sync::Arc;
+use crate::platform::dispatcher::UIEvent;
 
 /// Standardized input events that are platform-agnostic.
 /// Layer 1 (HAL) is responsible for converting native events into these types.
@@ -11,6 +13,7 @@ pub enum InputEvent {
     
     // Keyboard Events
     Key { key: KeyCode, state: ButtonState, modifiers: Modifiers },
+    Ime(String), // Input Method Editor for international/complex text input
     
     // System Events
     Resize { size: Vec2, scale_factor: f64 },
@@ -52,4 +55,15 @@ pub enum KeyCode {
     Delete, Insert,
     F(u8),
     Unknown,
+}
+
+/// A container for common event callbacks used by components.
+#[derive(Default)]
+pub struct EventListeners {
+    pub on_click: Option<Arc<dyn Fn(&mut UIEvent) + Send + Sync>>,
+    pub on_release: Option<Arc<dyn Fn(&mut UIEvent) + Send + Sync>>,
+    pub on_scroll: Option<Arc<dyn Fn(&mut UIEvent, f32) + Send + Sync>>,
+    pub on_drag: Option<Arc<dyn Fn(&mut UIEvent, Vec2) + Send + Sync>>,
+    pub on_key: Option<Arc<dyn Fn(&mut UIEvent, KeyCode) + Send + Sync>>,
+    pub on_text: Option<Arc<dyn Fn(&mut UIEvent, &str) + Send + Sync>>,
 }
