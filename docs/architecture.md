@@ -13,13 +13,14 @@ These are independent, low-level crates that handle a single responsibility. The
 *   **`rupa-signals`**: The fine-grained reactivity engine.
 *   **`rupa-vnode`**: The universal UI representation and Style models.
 *   **`rupa-motion`**: Animation engine and spring physics.
+*   **`rupa-md`**: Markdown & MDX parsing engine.
 *   **`rupa-support`**: Math, ID generation, and common types.
 
 ### 2. Tier 2: Composite Assemblies (The Kernel) 🛠️
 These crates orchestrate materials into functional systems without being tied to specific hardware.
-*   **`rupa-core`**: The reconciliation engine (Diff/Patch) and event definitions.
-*   **`rupa-engine`**: The **Agnostic Kernel**. Manages the global `App` lifecycle, plugin orchestration, and state coordination. It is 100% platform-agnostic.
-*   **`rupa-ui`**: The high-level **UI System** containing semantic components like Buttons and Forms.
+*   **`rupa-core`**: The reconciliation engine (Diff/Patch), event definitions, and **Artisan Action Bus**.
+*   **`rupa-engine`**: The **Agnostic Kernel**. Manages the global `App` lifecycle, plugin orchestration, and action dispatching.
+*   **`rupa-ui`**: The high-level **UI System**.
 
 ### 3. Tier 3: Artisan Showrooms (The Implementation) 🏪
 Platform-specific shells that provide the "physical body" for your application.

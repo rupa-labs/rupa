@@ -1,4 +1,4 @@
-use rupa_core::{Vec2, Error, Renderer};
+use rupa_core::{Vec2, Error, Renderer, vnode::VNode};
 use rupa_core::events::InputEvent;
 use rupa_core::events::dispatcher::InputDispatcher;
 use crate::TerminalRenderer;
@@ -10,6 +10,7 @@ use crossterm::{
     ExecutableCommand,
 };
 use std::time::Duration;
+use taffy::prelude::*;
 
 pub struct TerminalRunner {
     pub core: SharedPlatformCore,
@@ -34,32 +35,56 @@ impl TerminalRunner {
         if let Some(root) = core.root.take() {
             let (w, h) = size().unwrap_or((80, 24));
             
-            // 1. Build & Diff (Simplified for TUI MVP)
-            let new_vnode = root.render();
-            let old_vnode = root.get_prev_vnode();
-            let _patches = rupa_core::reconciler::reconcile(&old_vnode, &new_vnode, None, 0);
+            // 1. Build VNode Tree (The reactive source of truth)
+            let vnode = root.render();
 
-            // 2. Compute layout
-            let scene_node = core.scene.layout_engine.compute(
-                root.as_ref(),
-                &self.renderer,
-                w as f32, 
-                h as f32
-            );
+            // 2. Build Taffy Tree from VNode
+            core.scene.layout_engine.taffy.clear();
+            let layout_root = self.build_taffy_from_vnode(&vnode, &mut core.scene.layout_engine.taffy);
+            
+            // 3. Compute Layout
+            core.scene.layout_engine.taffy.compute_layout(
+                layout_root, 
+                Size { width: AvailableSpace::Definite(w as f32), height: AvailableSpace::Definite(h as f32) }
+            ).unwrap();
 
-            // 3. Paint
+            // 4. Paint the VNode tree
             self.renderer.clear_screen();
-            root.paint(
-                &mut self.renderer,
-                &core.scene.layout_engine.taffy,
-                scene_node.raw(),
-                false, 
-                Vec2::zero(),
-            );
+            self.renderer.paint_vnode(&vnode, &core.scene.layout_engine.taffy, layout_root, Vec2::zero());
             self.renderer.present();
 
-            root.set_prev_vnode(new_vnode);
             core.root = Some(root);
+        }
+    }
+
+    fn build_taffy_from_vnode(&self, node: &VNode, taffy: &mut TaffyTree<()>) -> NodeId {
+        match node {
+            VNode::Element(el) => {
+                let mut style = el.style.to_taffy();
+                // Ensure TUI elements take up space properly
+                if style.size.width == Dimension::Auto { style.size.width = Dimension::Percent(1.0); }
+                
+                let children: Vec<NodeId> = el.children.iter()
+                    .map(|c| self.build_taffy_from_vnode(c, taffy))
+                    .collect();
+                
+                taffy.new_with_children(style, &children).unwrap()
+            }
+            VNode::Text(text) => {
+                let mut style = taffy::prelude::Style::default();
+                style.size.width = Dimension::Length(text.len() as f32);
+                style.size.height = Dimension::Length(1.0);
+                taffy.new_leaf(style).unwrap()
+            }
+            VNode::Fragment(children) => {
+                let mut style = taffy::prelude::Style::default();
+                style.display = Display::Flex;
+                let children: Vec<NodeId> = children.iter()
+                    .map(|c| self.build_taffy_from_vnode(c, taffy))
+                    .collect();
+                taffy.new_with_children(style, &children).unwrap()
+            }
+            _ => taffy.new_leaf(taffy::prelude::Style::default()).unwrap(),
         }
     }
 
@@ -114,15 +139,9 @@ impl PlatformRunner for TerminalRunner {
         register_redraw_proxy(Box::new(|| {}));
 
         loop {
-            // 1. Tick animation
-            if rupa_motion::GLOBAL_TIMELINE.tick() {
-                // Animation running
-            }
-
-            // 2. Handle redraw
+            if rupa_motion::GLOBAL_TIMELINE.tick() { }
             self.handle_redraw();
 
-            // 3. Handle Input
             if event::poll(Duration::from_millis(16)).unwrap_or(false) {
                 match event::read().unwrap() {
                     Event::Key(key) => {

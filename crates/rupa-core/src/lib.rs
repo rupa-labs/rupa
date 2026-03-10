@@ -4,6 +4,7 @@ pub mod renderer;
 pub mod scene;
 pub mod view;
 pub mod reconciler;
+pub mod action;
 
 // Re-export Atomic Pieces
 pub use rupa_support as support;

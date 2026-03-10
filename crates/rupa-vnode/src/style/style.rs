@@ -49,6 +49,10 @@ impl Style {
         Self::default()
     }
 
+    pub fn is_default(&self) -> bool {
+        *self == Self::default()
+    }
+
     pub fn p(mut self, val: f32) -> Self { self.padding = Spacing::all(val); self }
     pub fn px(mut self, val: f32) -> Self { self.padding.left = val; self.padding.right = val; self }
     pub fn py(mut self, val: f32) -> Self { self.padding.top = val; self.padding.bottom = val; self }

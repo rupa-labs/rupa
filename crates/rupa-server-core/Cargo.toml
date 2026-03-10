@@ -8,6 +8,7 @@ license.workspace = true
 [dependencies]
 rupa-core.workspace = true
 rupa-ui.workspace = true
+rupa-vnode.workspace = true
 axum.workspace = true
 tokio.workspace = true
 serde.workspace = true

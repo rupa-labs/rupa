@@ -21,6 +21,8 @@ rupa-engine.workspace = true
 rupa-ui.workspace = true
 rupa-core.workspace = true
 rupa-signals.workspace = true
+rupa-md.workspace = true
+rupa-server-core.workspace = true
 clap = { version = "4.4", features = ["derive"] }
 tokio = { version = "1.0", features = ["rt-multi-thread", "macros", "process"] }
 serde.workspace = true

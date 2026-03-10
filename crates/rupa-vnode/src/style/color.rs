@@ -71,6 +71,24 @@ impl Color {
     pub fn slate(weight: u32) -> Self { Color::Semantic(format!("slate-{}", weight), None) }
     pub fn emerald(weight: u32) -> Self { Color::Semantic(format!("emerald-{}", weight), None) }
     pub fn red(weight: u32) -> Self { Color::Semantic(format!("red-{}", weight), None) }
+
+    pub fn to_hex(&self) -> String {
+        match self {
+            Color::Rgba(r, g, b, _) => {
+                format!("#{:02x}{:02x}{:02x}", 
+                    (r * 255.0) as u8, 
+                    (g * 255.0) as u8, 
+                    (b * 255.0) as u8
+                )
+            },
+            Color::Oklch(l, c, h, a) => {
+                let rgba = Self::oklch_to_rgba(*l, *c, *h);
+                Color::Rgba(rgba.0, rgba.1, rgba.2, *a).to_hex()
+            },
+            Color::Semantic(name, _) => format!("var(--rupa-{})", name),
+            Color::Transparent => "transparent".to_string(),
+        }
+    }
 }
 
 #[cfg(test)]

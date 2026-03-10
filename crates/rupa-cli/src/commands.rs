@@ -24,6 +24,16 @@ enum Commands {
         /// Name of the project
         name: Option<String>,
     },
+    /// Build the project for production (Static Site Generation).
+    Build,
+    /// Run a custom project action (Artisan Action).
+    Run {
+        /// The name of the action to run.
+        action: String,
+        /// The JSON payload for the action.
+        #[arg(long)]
+        payload: Option<String>,
+    },
     /// Update the Rupa CLI to the latest version.
     Update {
         /// Update to the absolute latest version from the main Git repository.
@@ -182,15 +192,74 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
-        Some(Commands::Create { name: _ }) => {
+        Some(Commands::Create { name }) => {
+            // ... (logika create)
             println!("🎨 Initializing Artisan Wizard...");
-            let wizard = CreateWizard::new();
+            let mut wizard = CreateWizard::new();
+            
+            if let Some(project_name) = name {
+                wizard.project_name.set(project_name);
+                wizard.stage.set(WizardStage::TemplateSelection);
+            }
+
             let app = App::new("create-rupa-app")
                 .root(wizard);
             
             let runner = TerminalRunner::new(app.core.clone());
             if let Err(e) = runner.run() {
                 eprintln!("❌ Wizard inisialization failed: {}", e);
+            }
+        }
+        Some(Commands::Build) => {
+            println!("🏗️  Building your Artisan Site...");
+            
+            let pages_dir = std::path::Path::new("src/pages");
+            let dist_dir = std::path::Path::new("dist");
+
+            if !pages_dir.exists() {
+                eprintln!("❌ Error: 'src/pages' directory not found. Is this a Rupa project?");
+                return Ok(());
+            }
+
+            std::fs::create_dir_all(dist_dir).unwrap();
+
+            let entries = std::fs::read_dir(pages_dir).unwrap();
+            for entry in entries {
+                let entry = entry.unwrap();
+                let path = entry.path();
+                
+                if path.extension().map_or(false, |ext| ext == "md") {
+                    let name = path.file_stem().unwrap().to_str().unwrap();
+                    println!("📄 Processing {}...", name);
+
+                    let content = std::fs::read_to_string(&path).unwrap();
+                    let vnode = rupa_md::MarkdownEngine::parse(&content);
+                    let html = rupa_server_core::HtmlRenderer::render_vnode(&vnode);
+
+                    let output_path = dist_dir.join(format!("{}.html", name));
+                    std::fs::write(output_path, html).unwrap();
+                }
+            }
+
+            println!("✨ Build complete! Your site is ready in 'dist/'.");
+        }
+        Some(Commands::Run { action, payload }) => {
+            println!("🚌 Dispatching Artisan Action: {}...", action);
+            
+            let mut cmd = std::process::Command::new("cargo");
+            cmd.arg("run");
+            cmd.arg("--");
+            cmd.arg("--rupa-action");
+            cmd.arg(action);
+            
+            if let Some(data) = payload {
+                cmd.arg("--rupa-payload");
+                cmd.arg(data);
+            }
+
+            let status = cmd.status();
+            if let Err(e) = status {
+                eprintln!("❌ Failed to execute action: {}", e);
             }
         }
         Some(Commands::Update { canary, to }) => {

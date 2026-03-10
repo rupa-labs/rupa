@@ -86,10 +86,24 @@ Rupa uses **Fine-Grained Reactivity**. Instead of re-rendering the entire tree, 
 Your code describes **intent** via VNodes. The same `VStack` can be rendered as a GPU primitive, an HTML `div`, or a terminal block depending on which showroom you run it in.
 
 ---
-
 ## 🚀 Next Steps
 
+### Generate a Static Site
+If you have markdown files in `src/pages`, generate your HTML output:
+```bash
+rupa build
+```
+
+### Run Custom Actions
+Execute internal application logic without the UI:
+```bash
+rupa run my:action
+```
+
+### Learn More
 - Explore the [**Component References**](./component-references.md) to see available building blocks.
+... (rest of the file) ...
+
 - Learn about [**Motion & Animations**](./ecosystems/motion-engine.md) to make your UI feel alive.
 - Check out the [**Engineering Standards**](./engineering-standards.md) to contribute back to the ecosystem.
 

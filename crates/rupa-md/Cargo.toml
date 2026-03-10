@@ -1,0 +1,17 @@
+[package]
+name = "rupa-md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Markdown and MDX parsing engine for the Rupa Framework."
+repository.workspace = true
+readme = "README.md"
+
+[dependencies]
+rupa-vnode.workspace = true
+rupa-signals.workspace = true
+rupa-support.workspace = true
+pulldown-cmark = "0.10"
+serde.workspace = true
+serde_yaml = "0.9"
