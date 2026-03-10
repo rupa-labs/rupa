@@ -18,16 +18,17 @@ rupa-auth.workspace = true
 rupa-i18n.workspace = true
 rupa-motion.workspace = true
 rupa-assets.workspace = true
-rupa-server-core = { workspace = true, optional = true }
-rupa-web-core = { workspace = true, optional = true }
-rupa-mobile-core = { workspace = true, optional = true }
 log.workspace = true
-env_logger = "0.11"
+
+# Showrooms
+rupa-desktop = { workspace = true, optional = true }
+rupa-tui = { workspace = true, optional = true }
+rupa-web-core = { workspace = true, optional = true }
+rupa-server-core = { workspace = true, optional = true }
 
 [features]
 default = ["desktop"]
-desktop = ["rupa-engine/desktop"]
-tui = ["rupa-engine/terminal"]
+desktop = ["rupa-desktop"]
+tui = ["rupa-tui"]
 ssr = ["rupa-server-core"]
 web = ["rupa-web-core"]
-mobile = ["rupa-mobile-core"]

@@ -4,9 +4,11 @@ use rupa_support::Error;
 
 /// Defines the project templates available for scaffolding.
 pub enum TemplateType {
-    Showroom,
-    Composite,
-    Atomic,
+    ZeroBloat,
+    Desktop,
+    Web,
+    Tui,
+    Library,
 }
 
 pub struct Scaffolder;
@@ -25,15 +27,18 @@ impl Scaffolder {
         
         // 2. Generate Cargo.toml
         let cargo_toml = match template {
-            TemplateType::Showroom => Self::showroom_cargo(project_name),
-            _ => Self::base_cargo(project_name),
+            TemplateType::ZeroBloat => Self::showroom_cargo(project_name, &["desktop"]),
+            TemplateType::Desktop => Self::showroom_cargo(project_name, &["desktop"]),
+            TemplateType::Web => Self::showroom_cargo(project_name, &["web", "ssr"]),
+            TemplateType::Tui => Self::showroom_cargo(project_name, &["tui"]),
+            TemplateType::Library => Self::base_cargo(project_name),
         };
         fs::write(root.join("Cargo.toml"), cargo_toml).map_err(|e| Error::Platform(e.to_string()))?;
 
         // 3. Generate main.rs
         let main_rs = match template {
-            TemplateType::Showroom => Self::showroom_main(),
-            _ => Self::base_main(),
+            TemplateType::Library => Self::base_main(),
+            _ => Self::showroom_main(&template),
         };
         fs::write(root.join("src/main.rs"), main_rs).map_err(|e| Error::Platform(e.to_string()))?;
 
@@ -43,15 +48,20 @@ impl Scaffolder {
         Ok(())
     }
 
-    fn showroom_cargo(name: &str) -> String {
+    fn showroom_cargo(name: &str, features: &[&str]) -> String {
+        let features_str = features.iter()
+            .map(|f| format!("\"{}\"", f))
+            .collect::<Vec<_>>()
+            .join(", ");
+
         format!(r#"[package]
 name = "{}"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rupa = {{ git = "https://github.com/rupa-labs/rupa" }}
-"# , name)
+rupa = {{ git = "https://github.com/rupa-labs/rupa", features = [{}] }}
+"# , name, features_str)
     }
 
     fn base_cargo(name: &str) -> String {
@@ -65,26 +75,46 @@ rupa-core = {{ git = "https://github.com/rupa-labs/rupa" }}
 "# , name)
     }
 
-    fn showroom_main() -> String {
-        r#"use rupa::prelude::*;
+    fn showroom_main(template: &TemplateType) -> String {
+        let run_method = match template {
+            TemplateType::Tui => "run_terminal()",
+            _ => "run()",
+        };
 
-fn main() {
-    let mut app = App::new(Box::new(MyComponent::new()));
-    app.run().unwrap();
-}
+        format!(r#"use rupa::prelude::*;
 
-struct MyComponent { id: String }
-impl MyComponent { fn new() -> Self { Self { id: generate_id() } } }
-impl Component for MyComponent {
-    fn id(&self) -> &str { &self.id }
-    fn render(&self) -> VNode {
-        VNode::text("Welcome to Rupa!")
-    }
-}
-"#.to_string()
+fn main() {{
+    App::new("Artisan Project")
+        .root(MyComponent::new())
+        .{}
+        .expect("Failed to run application");
+}}
+
+struct MyComponent {{ id: String }}
+impl MyComponent {{ fn new() -> Self {{ Self {{ id: generate_id() }} }} }}
+impl Component for MyComponent {{
+    fn id(&self) -> &str {{ &self.id }}
+    fn render(&self) -> VNode {{
+        VNode::element("div")
+            .with_style(Style::default().p(40.0).items_center())
+            .with_child(VNode::text("Crafted with Rupa 🎨"))
+    }}
+
+    // Bridge methods for native rendering
+    fn get_node(&self) -> Option<SceneNode> {{ None }}
+    fn set_node(&self, _node: SceneNode) {{}}
+    fn is_dirty(&self) -> bool {{ false }}
+    fn mark_dirty(&self) {{}}
+    fn clear_dirty(&self) {{}}
+    fn layout(&self, taffy: &mut taffy::prelude::TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<taffy::prelude::NodeId>) -> taffy::prelude::NodeId {{
+        taffy.new_leaf(taffy::prelude::Style::default()).unwrap()
+    }}
+    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &taffy::prelude::TaffyTree<()>, _node: taffy::prelude::NodeId, _is_group_hovered: bool, _global_pos: rupa_support::Vec2) {{}}
+}}
+"# , run_method)
     }
 
     fn base_main() -> String {
-        "fn main() { println!(\"Rupa project initialized.\"); }".to_string()
+        "fn main() { println!(\"Rupa library initialized.\"); }".to_string()
     }
 }

@@ -8,7 +8,16 @@ license.workspace = true
 [dependencies]
 rupa-core.workspace = true
 rupa-ui.workspace = true
-rupa-engine = { workspace = true, features = ["gui", "desktop"] }
+rupa-engine.workspace = true
 rupa-assets.workspace = true
 rupa-motion.workspace = true
 rupa-signals.workspace = true
+rupa-support.workspace = true
+wgpu.workspace = true
+winit.workspace = true
+glyphon.workspace = true
+bytemuck.workspace = true
+image.workspace = true
+pollster.workspace = true
+raw-window-handle.workspace = true
+log.workspace = true

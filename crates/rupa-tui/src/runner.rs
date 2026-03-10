@@ -1,8 +1,8 @@
-use rupa_core::{Component, Vec2, Error, Renderer};
+use rupa_core::{Vec2, Error, Renderer};
 use rupa_core::events::InputEvent;
 use rupa_core::events::dispatcher::InputDispatcher;
-use rupa_tui::TerminalRenderer;
-use crate::platform::{SharedPlatformCore, runner::*, register_redraw_proxy, AppMetadata};
+use crate::TerminalRenderer;
+use rupa_engine::platform::{SharedPlatformCore, runner::*, register_redraw_proxy, AppMetadata};
 use crossterm::{
     event::{self, Event, KeyCode, MouseEventKind, KeyModifiers},
     terminal::{disable_raw_mode, enable_raw_mode, size},

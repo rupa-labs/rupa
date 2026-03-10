@@ -1,82 +1,49 @@
 # Rupa Framework Architecture 🏛️
 
-This document outlines the **Atomic Materials & Composite Assemblies** architecture of the Rupa Framework. It is designed with a high-performance modular philosophy, allowing developers to either use pre-assembled solutions or build their own custom framework from individual atomic pieces.
+This document outlines the **Atomic Materials, Agnostic Kernel, & Artisan Showrooms** architecture of the Rupa Framework. It is designed with a high-performance modular philosophy, allowing developers to either use pre-assembled solutions or build their own custom framework from individual atomic pieces.
 
 ---
 
-## 🏗️ The Layered Blueprint: Atomic Materials to Artisan Showrooms
+## 🏗️ The Layered Blueprint: DNA to Showroom
 
-Rupa Framework is organized into three distinct tiers within a monorepo workspace. For a deeper understanding of this design pattern, see the **[Artisan Workshop Standard Deep Dive](./architectures/workshop-tiers.md)**.
+Rupa Framework follows a "Take what you want" philosophy, organized into three distinct tiers:
 
-### 1. Tier 1: Atomic Materials 🧱
+### 1. Tier 1: Atomic Materials (The DNA) 🧱
 These are independent, low-level crates that handle a single responsibility. They are the agnostic building blocks of the framework.
-*   **`rupa-support`**: Math (Vec2), ID generation, and common Errors.
 *   **`rupa-signals`**: The fine-grained reactivity engine.
-*   **`rupa-vnode`**: The "Universal Language & DNA" (Virtual Tree + Style Data).
-*   **`rupa-store`**: Persistent storage abstraction (SQLite, FileSystem).
-*   **`rupa-net`**: Reactive network I/O and async data fetching.
+*   **`rupa-vnode`**: The universal UI representation and Style models.
 *   **`rupa-motion`**: Animation engine and spring physics.
-*   **`rupa-router`**: Agnostic navigation and view transitions.
-*   **`rupa-i18n`**: Multi-language dictionary and formatting.
-*   **`rupa-assets`**: Resource loading and caching pipeline.
-*   **`rupa-a11y`**: OS accessibility bridge.
-*   **`rupa-auth`**: Identity, RBAC, and Team management.
-*   **`rupa-forms`**: Reactive validation and form state tracking.
-*   **`rupa-context`**: Tree-scoped dependency injection.
-*   **`rupa-canvas`**: Low-level hardware-accelerated drawing.
+*   **`rupa-support`**: Math, ID generation, and common types.
 
-### 2. Tier 2: Composite Assemblies 🛠️
-These crates assemble multiple atomic materials into functional, high-level systems.
-*   **`rupa-core`**: The primary foundation. Integrates VNodes and handles diffing/patching reconciliation.
-*   **`rupa-ui`**: The **UI System**. It houses the **UI Component System** (Semantic elements) and the **UI Utilities System** (Styling API).
-*   **`rupa-engine`**: The Native Runtime. Handles hardware-accelerated rendering for **Desktop and Mobile (GPU)** and Terminal (TUI).
-*   **`rupa-server-core`**: The Backend & SSR Engine. Handles HTML generation and Axum integration.
-*   **`rupa-web-core`**: The Web Frontend Engine. Handles DOM manipulation and WASM Hydration.
-*   **`rupa-mobile-core`**: The Mobile Integration bridge. Handles native platform interop (JNI for Android, C-FFI for iOS).
-*   **`rupa-macros`**: Procedural stencils for reducing boilerplate across all layers.
+### 2. Tier 2: Composite Assemblies (The Kernel) 🛠️
+These crates orchestrate materials into functional systems without being tied to specific hardware.
+*   **`rupa-core`**: The reconciliation engine (Diff/Patch) and event definitions.
+*   **`rupa-engine`**: The **Agnostic Kernel**. Manages the global `App` lifecycle, plugin orchestration, and state coordination. It is 100% platform-agnostic.
+*   **`rupa-ui`**: The high-level **UI System** containing semantic components like Buttons and Forms.
 
-### 3. Tier 3: Artisan Showrooms 🏪
-Specialized entry points pre-assembled for specific business use cases.
-*   **`rupa`**: The universal showroom (All features).
-*   **`rupa-desktop`**: Pre-assembled for Native GUI apps.
-*   **`rupa-web`**: Optimized for WASM and modern frontend development.
-*   **`rupa-server`**: Built for SSR and Backend services.
-*   **`rupa-tui`**: Specialized for interactive terminal tools (TUI).
+### 3. Tier 3: Artisan Showrooms (The Implementation) 🏪
+Platform-specific shells that provide the "physical body" for your application.
+*   **`rupa-desktop`**: High-performance GPU rendering via **WGPU & Winit**.
+*   **`rupa-tui`**: Aesthetic terminal rendering via **Crossterm**.
+*   **`rupa-web`**: Browser-based rendering via **WASM & DOM**.
 *   **`rupa-mobile`**: Targeted at native mobile experiences.
-*   **`rupa-headless`**: Logic-only entry point for automation.
-*   **`rupa-hybrid`**: Bridge facade for Rust-JS/TS interop.
+*   **`rupa-headless`**: Logic-only entry point for automation and testing.
 
 ---
 
-## 📱 The Mobile Strategy (Touch & Gesture)
+## 🎨 Philosophy: Take What You Want
 
-Mobile platforms require specialized handling beyond standard GPU rendering:
--   **Touch-First Interaction:** `rupa-core` and `rupa-engine` are designed to support complex gestures (Long Press, Swipe, Pinch) via a specialized touch-mapping layer.
--   **Native Shells:** Mobile apps run within a native shell (Activity on Android, UIViewController on iOS) while the UI is rendered via WGPU.
--   **Platform Bridge:** `rupa-mobile-core` provides access to native mobile APIs (Camera, GPS, Notifications) through a unified Rust interface.
+By decoupling the **Kernel** (`rupa-engine`) from the **Showroom**, Rupa ensures maximum efficiency:
 
----
-
-## 🛠️ The Modular Choice
-
-Because of our **Zero-Cost Abstraction** and modular design, you can mix and match atomic materials to create a custom runtime.
-
-| Target Application | Required Components (Atomic Materials & Composite Assemblies) |
-| :--- | :--- |
-| **Native Desktop** | `rupa-ui` + `rupa-engine` (WGPU) |
-| **Native Mobile** | `rupa-ui` + `rupa-engine` (WGPU) + `rupa-mobile-core` |
-| **Native Terminal** | `rupa-ui` + `rupa-engine` (TUI) |
-| **Full-Stack Web** | `rupa-ui` + `rupa-server-core` + `rupa-web-core` |
-| **Frontend (WASM)** | `rupa-ui` + `rupa-web-core` |
-| **Backend (SSR/API)** | `rupa-server-core` + `rupa-core` |
-| **Embedded/Headless**| `rupa-signals` + `rupa-vnode` |
-| **JS/TS Hybrid** | `rupa-core` + `rupa-web-core` (WASM) |
+1.  **Lightweight CLI**: Tools like `rupa-cli` only pull the Kernel and TUI materials (~50 dependencies total).
+2.  **Zero-Overhead Headless**: Background services can use the full power of Rupa's reactivity without any rendering libraries.
+3.  **Opt-in Heavyweight**: Large dependencies like WGPU are only compiled when building a Desktop application.
 
 ---
 
 ## 🔄 Architectural Principles
 
-1.  **Atomic Independence:** Atomic Materials must never depend on Composite Assemblies.
-2.  **Headless-First:** Every Atomic Material and UI component must be testable without a display or OS environment.
-3.  **Industry-Standard Naming:** We use clear, industry-standard names for crates while maintaining an artisan spirit.
-4.  **Serialization DNA:** All data moving between atomic materials and composite assemblies is serializable via **Serde**.
+1.  **Strict Agnosticism**: The Kernel (`rupa-engine`) and Core must never import platform-specific crates like `wgpu` or `crossterm`.
+2.  **Platform Runners**: Each Showroom provides a `PlatformRunner` that implements how the Agnostic Kernel's commands are executed on that hardware.
+3.  **Headless-First**: Every UI component must be renderable to a VNode and testable without an OS environment.
+4.  **Serialization DNA**: All data moving between layers must be serializable via **Serde** to support the Polyglot vision.

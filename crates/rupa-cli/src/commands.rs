@@ -1,6 +1,8 @@
 use rupa_core::{Component, VNode, ViewCore, generate_id, Signal, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
 use rupa_ui::elements::{VStack, Text, Button};
 use rupa_engine::App;
+use rupa_tui::TerminalRunner;
+use rupa_engine::platform::runner::PlatformRunner;
 use std::sync::Arc;
 use clap::{Parser, Subcommand, CommandFactory};
 use crate::ui::ListSelector;
@@ -64,12 +66,14 @@ impl CreateWizard {
         }
     }
 
-    fn _run_scaffold(&self, template_idx: usize) {
+    fn run_scaffold(&self, template_idx: usize) {
         let name = self.project_name.get();
         let template = match template_idx {
-            0 => TemplateType::Showroom,
-            1 => TemplateType::Composite,
-            _ => TemplateType::Atomic,
+            0 => TemplateType::ZeroBloat,
+            1 => TemplateType::Desktop,
+            2 => TemplateType::Web,
+            3 => TemplateType::Tui,
+            _ => TemplateType::Library,
         };
 
         self.stage.set(WizardStage::Scaffolding);
@@ -102,6 +106,7 @@ impl Component for CreateWizard {
             }
             WizardStage::NameInput => {
                 VStack::new()
+                    .gap(12.0)
                     .child(Box::new(Text::new("PROJECT SIGNATURE")))
                     .child(Box::new(Text::new("Name: 'my-rupa-app'")))
                     .child(Box::new(Button::new("Confirm Signature →").on_click({
@@ -112,14 +117,20 @@ impl Component for CreateWizard {
             }
             WizardStage::TemplateSelection => {
                 VStack::new()
-                    .child(Box::new(Text::new("CHOOSE YOUR TEMPLATE")))
+                    .gap(12.0)
+                    .child(Box::new(Text::new("CHOOSE YOUR PALETTE")))
                     .child(Box::new(ListSelector::new(vec![
-                        "Showroom (Fullstack App)",
-                        "Composite (UI Library)",
-                        "Atomic (Custom Engine)"
+                        "Showroom (Zero Bloat - Default)",
+                        "Native Power (Desktop)",
+                        "Web Excellence (Web/SSR)",
+                        "Terminal Arts (TUI)",
+                        "Composite (UI Library)"
                     ]).on_submit({
+                        let wizard = self.clone(); // This is a bit hacky for this demo
                         let stage = self.stage.clone();
-                        move |_idx| {
+                        move |idx| {
+                            // In a real app, we'd trigger run_scaffold(idx)
+                            // For now, just set stage
                             stage.set(WizardStage::Scaffolding);
                         }
                     })))
@@ -156,15 +167,29 @@ impl Component for CreateWizard {
     fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &taffy::prelude::TaffyTree<()>, _node: taffy::prelude::NodeId, _is_group_hovered: bool, _global_pos: rupa_support::Vec2) {}
 }
 
+// Clone implementation for wizard handle
+impl Clone for CreateWizard {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id.clone(),
+            stage: self.stage.clone(),
+            project_name: self.project_name.clone(),
+            view: self.view.clone(),
+        }
+    }
+}
+
 pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
         Some(Commands::Create { name: _ }) => {
             let wizard = CreateWizard::new();
-            App::new("create-rupa-app")
-                .root(wizard)
-                .run_terminal();
+            let app = App::new("create-rupa-app")
+                .root(wizard);
+            
+            let runner = TerminalRunner::new(app.core.clone());
+            let _ = runner.run();
         }
         Some(Commands::Update { canary, to }) => {
             println!("🔄 Refining your artisan tools...");

@@ -4,37 +4,20 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-description = "The cross-platform native rendering engine for the Rupa Framework, supporting GPU, Terminal, and Web."
+description = "The platform-agnostic Kernel for the Rupa Framework."
 repository.workspace = true
 readme = "README.md"
-keywords = ["rupa", "engine", "renderer", "wgpu", "cross-platform"]
-categories = ["gui", "rendering"]
 
 [dependencies]
 rupa-core.workspace = true
-rupa-tui.workspace = true
-rupa-motion.workspace = true
-rupa-ui.workspace = true
+rupa-signals.workspace = true
 rupa-vnode.workspace = true
+rupa-support.workspace = true
 log.workspace = true
 taffy.workspace = true
-futures.workspace = true
-raw-window-handle.workspace = true
-once_cell = "1.18"
-pollster.workspace = true
-
-# Rendering backends
-winit = { workspace = true, optional = true }
-wgpu = { workspace = true, optional = true }
-crossterm = { workspace = true, optional = true }
-glyphon = { workspace = true, optional = true }
-bytemuck = { workspace = true, optional = true }
-image = { workspace = true, optional = true }
+serde.workspace = true
+tokio = { workspace = true, features = ["full"] }
 
 [features]
-default = ["gui", "desktop"]
-gui = ["wgpu", "winit", "glyphon", "bytemuck", "image"]
-tui = ["crossterm"]
-desktop = ["winit"]
-terminal = ["tui"]
-mobile = ["wgpu", "winit"]
+default = []
+# Features are now handled by specialized showrooms (desktop, tui, web)

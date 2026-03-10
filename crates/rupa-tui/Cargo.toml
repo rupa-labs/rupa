@@ -12,6 +12,9 @@ categories = ["command-line-interface", "gui"]
 
 [dependencies]
 rupa-core.workspace = true
+rupa-engine.workspace = true
+rupa-motion.workspace = true
 rupa-signals.workspace = true
 rupa-telemetry.workspace = true
 rupa-support.workspace = true
+crossterm.workspace = true
