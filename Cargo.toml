@@ -106,7 +106,7 @@ web-sys = { version = "0.3" }
 js-sys = "0.3"
 wasm-bindgen = "0.2"
 axum = "0.7"
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.0" }
 ndk = "0.8"
 ndk-context = "0.1"
 jni = "0.21"

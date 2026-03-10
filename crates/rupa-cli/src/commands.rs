@@ -34,8 +34,6 @@ enum Commands {
     },
     /// Display version information about Rupa CLI and Engine.
     Version,
-    /// Print help information.
-    Help,
 }
 
 #[derive(Clone, PartialEq, Default)]
@@ -225,13 +223,8 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
             
             if cli.command.is_none() {
                 println!("\nUsage: rupa <COMMAND>");
-                println!("Run 'rupa help' for more information.");
+                println!("Run 'rupa --help' for more information.");
             }
-        }
-        Some(Commands::Help) => {
-            let mut cmd = Cli::command();
-            cmd.print_help().unwrap();
-            println!();
         }
     }
 

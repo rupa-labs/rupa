@@ -16,7 +16,7 @@ rupa-support.workspace = true
 log.workspace = true
 taffy.workspace = true
 serde.workspace = true
-tokio = { workspace = true, features = ["full"] }
+tokio = { version = "1.0", features = ["rt-multi-thread", "sync"] }
 
 [features]
 default = []

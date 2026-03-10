@@ -44,6 +44,13 @@ Developer Experience (DX) is as important as performance.
 *   **Diagnostic Center:** Failures in rendering, layout, or event propagation must report clear, actionable errors with source context.
 *   **Fail-Safe Philosophy:** Use typed errors (`thiserror`) and avoid silent failures or placeholders.
 
+### 2.4 Dependency Minimalism (Thin Crates)
+To maintain the "Atomic Materials" philosophy and ensure fast compilation times, all crates MUST adhere to strict dependency discipline:
+- **Feature Gating**: Heavy dependencies (e.g., graphics, networking, complex parsers) MUST be optional and hidden behind feature flags.
+- **Kernel Purity**: The Agnostic Kernel (`rupa-engine`) and Core materials MUST NOT depend on platform-specific libraries.
+- **Granular Third-Party Features**: When using third-party crates (like `tokio` or `clap`), always prefer granular features over "full" bundles to avoid unnecessary bloat.
+- **Transitive Audit**: Regularly audit dependencies to ensure Tier 1 materials remain "thin" and do not accidentally pull heavyweight Composite Assemblies.
+
 ---
 
 ## 3. Development Lifecycle

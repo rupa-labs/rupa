@@ -22,7 +22,7 @@ rupa-ui.workspace = true
 rupa-core.workspace = true
 rupa-signals.workspace = true
 clap = { version = "4.4", features = ["derive"] }
-tokio = { workspace = true, features = ["full"] }
+tokio = { version = "1.0", features = ["rt-multi-thread", "macros", "process"] }
 serde.workspace = true
 serde_json.workspace = true
 toml = "0.8"
