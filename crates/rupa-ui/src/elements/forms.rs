@@ -35,6 +35,7 @@ impl Label {
 impl Component for Label {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
@@ -121,6 +122,7 @@ impl Input {
 impl Component for Input {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
@@ -213,6 +215,7 @@ impl Checkbox {
 impl Component for Checkbox {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
@@ -304,6 +307,7 @@ impl Switch {
 impl Component for Switch {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
@@ -395,6 +399,7 @@ impl Radio {
 impl Component for Radio {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
@@ -490,6 +495,7 @@ impl Select {
 impl Component for Select {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {

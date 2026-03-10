@@ -1,0 +1,11 @@
+[package]
+name = "rupa-a11y"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rupa-core.workspace = true
+rupa-vnode.workspace = true
+log.workspace = true

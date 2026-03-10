@@ -8,7 +8,7 @@ The **VNode (Virtual Node)** is the universal language of the Rupa Framework. it
 
 In a multi-platform framework, components should not be tied to a specific rendering technology (like WGPU for pixels or `web-sys` for the DOM). Instead, components describe **what** the UI should look like by producing a tree of VNodes.
 
-The rendering engines (`rupa-engine`, `rupa-client`, `rupa-server`) then consume this tree and translate it into platform-specific instructions.
+The rendering engines (`rupa-engine`, `rupa-web-core`, `rupa-server-core`) then consume this tree and translate it into platform-specific instructions.
 
 ### Benefits:
 *   **Headless Testing:** Components can be tested by asserting the produced VNode tree without needing a window or GPU.
@@ -59,10 +59,10 @@ The Rupa Framework follows a reactive lifecycle driven by the VNode tree.
 
 ## 4. Implementation Strategy
 
-To maintain the **Atoms & Composites** standard, the VNode implementation is split:
+To maintain the **Atomic Materials & Composite Assemblies** standard, the VNode implementation is split:
 
-*   **`rupa-vnode` (Atom):** Contains the core `VNode` enum, `VElement` structs, **and the foundational Style data models** (Color, Spacing, Layout). It is 100% agnostic and serializable.
-*   **`rupa-core` (Composite):** Integrates VNodes into the `Component` trait and provides the reconciliation (Diff/Patch) engine.
+*   **`rupa-vnode` (Atomic Material):** Contains the core `VNode` enum, `VElement` structs, **and the foundational Style data models** (Color, Spacing, Layout). It is 100% agnostic and serializable.
+*   **`rupa-core` (Composite Assembly):** Integrates VNodes into the `Component` trait and provides the reconciliation (Diff/Patch) engine.
 
 ---
 

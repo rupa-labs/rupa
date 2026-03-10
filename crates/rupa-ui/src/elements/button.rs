@@ -145,7 +145,13 @@ impl Stylable for Button {
 impl Component for Button {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
-    fn render(&self) -> VNode { VNode::Empty }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
+    fn render(&self) -> VNode {
+        VNode::element("button")
+            .with_key(self.id.clone())
+            .with_style(self.view.core.style.read().unwrap().clone())
+            .with_child(VNode::text(self.logic.label.clone()))
+    }
 
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
@@ -178,9 +184,15 @@ impl CloseButton {
 }
 impl Stylable for CloseButton { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.style() } }
 impl Component for CloseButton {
-    fn render(&self) -> VNode { VNode::Empty }
+    fn render(&self) -> VNode {
+        VNode::element("button")
+            .with_key(self.id.clone())
+            .with_style(self.view.core.style.read().unwrap().clone())
+            .with_child(VNode::text("×"))
+    }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
     fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
@@ -203,9 +215,19 @@ impl<'a> ButtonGroup<'a> {
 }
 impl<'a> Stylable for ButtonGroup<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() } }
 impl<'a> Component for ButtonGroup<'a> {
-    fn render(&self) -> VNode { VNode::Empty }
+    fn render(&self) -> VNode {
+        let mut el = VNode::element("button-group")
+            .with_key(self.id.clone())
+            .with_style(self.view.style.read().unwrap().clone());
+        
+        for child in self.children.render_all() {
+            el = el.with_child(child);
+        }
+        el
+    }
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.children.as_refs() }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
     fn is_dirty(&self) -> bool { self.view.is_dirty() }

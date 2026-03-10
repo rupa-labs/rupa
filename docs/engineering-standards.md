@@ -62,11 +62,11 @@ Developer Experience (DX) is as important as performance.
 
 ### 4.1 Naming & Semantics
 *   **Intent over Implementation:** Names describe *why* an object exists (e.g., `ArtisanButton`), not how it works (e.g., `WgpuClickableRect`).
-*   **Standard Suffixes:**
-    *   `Core`: Internal shared state or universal trait definitions.
-    *   `Component`: High-level UI element implementing `render()`.
-    *   `Runner`: Platform-specific execution shell (Desktop, Web, Mobile).
-    *   `Infra`: Low-level platform glue (JNI, Winit, Web-Sys).
+*   **Crate Naming Convention (The Workshop Standard):**
+    *   **Atomic Materials (Tier 1):** `rupa-<concept>`. Single noun describing a pure agnostic domain (e.g., `rupa-store`, `rupa-signals`).
+    *   **Composite Assembly Assemblies (Tier 2):** `rupa-<domain>-core`. Orchestrates multiple atomic materials for a specific technical domain (e.g., `rupa-server-core`, `rupa-web-core`).
+    *   **Artisan Showrooms (Tier 3):** `rupa-<target>`. Clean, business-oriented names for final entry points (e.g., `rupa-desktop`, `rupa-server`, `rupa-mobile`).
+    *   **Developer Tooling:** `rupa-<tool>`. Supporting ecosystem for DX (e.g., `rupa-cli`, `rupa-test`).
 
 ### 4.2 Module Hygiene
 *   **Clean Indices:** `mod.rs` files must only contain declarations (`pub mod`) and re-exports (`pub use`). Implementation logic is prohibited in index files.

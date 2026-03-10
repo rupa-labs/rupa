@@ -2,7 +2,7 @@
 
 **Rupa Framework** is a **modular meta-framework, cross-platform and multi-purpose**, engineered for Rust artisans. It is designed for those who demand the perfect balance between **Semantic Structure**, **Utility-First Flexibility**, and **Low-Level Control**.
 
-As a **meta-framework**, Rupa is not just a UI library; it's a foundational ecosystem of independent **Atoms** and functional **Composites** that can be assembled to build anything from hardware-accelerated GUIs and SSH-based CLIs to high-performance SSR web applications.
+As a **meta-framework**, Rupa is not just a UI library; it's a foundational ecosystem of independent **Atomic Materials** and functional **Composite Assembly Assemblies** that can be assembled to build anything from hardware-accelerated GUIs and SSH-based CLIs to high-performance SSR web applications.
 
 ---
 
@@ -10,9 +10,24 @@ As a **meta-framework**, Rupa is not just a UI library; it's a foundational ecos
 
 - **Utility-First, Semantic-Support**: Compose complex visual identities using a functional API while maintaining a clean, meaningful component hierarchy.
 - **VNode Rendering Architecture**: A universal virtual tree structure that decouples components from the platform, enabling multi-target rendering (WGPU, TUI, WASM, SSR).
-- **Atoms & Composites Workspace**: A highly modular codebase organized into specialized crates, ensuring zero-cost abstractions and independent scalability.
+- **Atomic Materials & Composite Assembly Assemblies Workspace**: A highly modular codebase organized into specialized crates, ensuring zero-cost abstractions and independent scalability.
 - **Signal-Based Reactivity**: Fine-grained state management using `Signal` and `Memo` for zero-overhead UI updates, automatically triggering hardware-accelerated redraws.
+- **Enterprise Infrastructure**: Native sub-systems for **Reactive Persistence** (`rupa-store`), **Async Networking** (`rupa-net`), **Multi-language Support** (`rupa-i18n`), and **Authentication** (`rupa-auth`).
+- **Motion & Custom Graphics**: High-performance **Spring Physics** and transitions (`rupa-motion`) coupled with low-level **WGPU Canvas** access (`rupa-canvas`).
 - **Hardware-Accelerated Rendering**: Built on **WGPU** with a specialized **2D Batch Renderer** for high-performance primitives (rects, shapes).
+
+---
+
+## 🏪 The Showroom Artisan Showrooms
+
+Rupa provides specialized, zero-boilerplate entry points for specific business needs:
+
+- **Rupa Desktop**: Pre-assembled for native GPU applications.
+- **Rupa Web**: Optimized for WASM and modern frontend development.
+- **Rupa Server**: Built for high-performance SSR and Backend services.
+- **Rupa CLI App**: Specialized for interactive terminal tools (TUI).
+- **Rupa Mobile**: Targeted at native Android and iOS experiences.
+- **Rupa Full-Stack**: The comprehensive all-in-one universal bundle.
 - **Industrial Layout Engine**: Powered by **Taffy**, providing full support for Flexbox and CSS Grid layouts.
 - **Interactive Event System**: Full support for **Hit-Testing** and event dispatching (Click, Hover, Drag, Scroll, Touch) linked directly to the layout engine.
 - **Artisan Color System**: Native support for **OKLCH** color space for perceptually uniform aesthetics and precise theme control.

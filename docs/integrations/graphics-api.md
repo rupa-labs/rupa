@@ -1,6 +1,6 @@
 # Graphics API (WGPU Infrastructure) 🎮
 
-The hardware acceleration composite of the Rupa Framework utilizes **WGPU**, a cross-platform, safe, and modern graphics API for Rust. It acts as the bridge between the framework and the physical GPU, abstracting away the differences between Vulkan, Metal, DX12, and WebGPU.
+The hardware acceleration composite assembly of the Rupa Framework utilizes **WGPU**, a cross-platform, safe, and modern graphics API for Rust. It acts as the bridge between the framework and the physical GPU, abstracting away the differences between Vulkan, Metal, DX12, and WebGPU.
 
 ---
 

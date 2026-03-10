@@ -22,12 +22,12 @@ The primary orchestrator for bootstrapping and running your application.
 ## 🛠️ Target Platform Matrix
 Technical requirements and internal infrastructure for each supported target.
 
-| Platform | Feature | Internal Runner | Graphics Engine |
+| Platform | Showroom Artisan Showroom | Internal Runner | Graphics Engine |
 | :--- | :--- | :--- | :--- |
-| **Desktop** | `desktop` | `DesktopRunner` | GUI (WGPU) |
-| **Terminal**| `terminal`| `TerminalRunner`| TUI (Crossterm) |
-| **Web** | `web` | `WebRunner` | GUI (Canvas/WGPU) |
-| **Mobile** | `mobile` | `MobileRunner` | GUI (WGPU) |
+| **Desktop** | `rupa-desktop` | `DesktopRunner` | GUI (WGPU) |
+| **Terminal**| `rupa-tui` | `TerminalRunner`| TUI (Crossterm) |
+| **Web** | `rupa-web` | `WebRunner` | GUI (Canvas/WGPU) |
+| **Mobile** | `rupa-mobile-core` | `MobileRunner` | GUI (WGPU) |
 
 ---
 
@@ -52,9 +52,9 @@ App::new("Demo")
 
 ---
 
-## 🏗️ Platform Runners (Composites)
+## 🏗️ Platform Runners (Composite Assembly Assemblies)
 
-Platform Runners are the high-level shells (provided by `rupa-engine` and `rupa-mobile`) responsible for hardware abstraction and event mapping.
+Platform Runners are the high-level shells (provided by `rupa-engine` and `rupa-mobile-core`) responsible for hardware abstraction and event mapping.
 
 ### `trait PlatformRunner`
 The common contract implemented by all target execution shells.
@@ -91,4 +91,4 @@ Utilizes **Crossterm** for character grid management. Requires the `terminal` fe
 Compiles to **WebAssembly** and targets the browser's Canvas API via WebGPU or WebGL. Uses `wasm-bindgen` and `web-sys` for DOM interaction.
 
 ### Mobile (Android, iOS)
-Managed by the `rupa-mobile` composite. Handles the complex **Suspend/Resume** lifecycle and touch gestures. Reclaims GPU resources automatically when the application is backgrounded.
+Managed by the `rupa-mobile-core` composite assembly. Handles the complex **Suspend/Resume** lifecycle and touch gestures. Reclaims GPU resources automatically when the application is backgrounded.

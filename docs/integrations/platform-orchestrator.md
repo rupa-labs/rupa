@@ -1,6 +1,6 @@
 # Platform Integration: Platform Orchestrator 🏛️
 
-The Platform Orchestrator (provided by `rupa-engine` and `rupa-mobile`) is the foundation of every Rupa Framework application. It manages the hardware-specific execution environment and provides a unified "agnostic bridge" for the framework's higher-level reactive logic.
+The Platform Orchestrator (provided by `rupa-engine` and `rupa-mobile-core`) is the foundation of every Rupa Framework application. It manages the hardware-specific execution environment and provides a unified "agnostic bridge" for the framework's higher-level reactive logic.
 
 ---
 

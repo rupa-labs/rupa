@@ -1,0 +1,13 @@
+[package]
+name = "rupa-tui"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rupa-core.workspace = true
+rupa-engine = { workspace = true, features = ["tui", "terminal"] }
+rupa-signals.workspace = true
+rupa-telemetry.workspace = true
+rupa-support.workspace = true

@@ -48,6 +48,7 @@ impl<'a> Stylable for Overlay<'a> {
 impl<'a> Component for Overlay<'a> {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.as_refs() }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {

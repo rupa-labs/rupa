@@ -5,7 +5,7 @@ Rupa Framework is a **modular meta-framework, cross-platform and multi-purpose**
 ---
 
 ## 1. Modular Meta-Framework (The Blueprint)
-Rupa is designed as a **meta-framework**. Instead of a monolithic library, it provides an ecosystem of independent, low-level **Atoms** and functional **Composites**. This allows it to serve multiple purposes—from UI components to low-level reactivity engines—across any platform.
+Rupa is designed as a **meta-framework**. Instead of a monolithic library, it provides an ecosystem of independent, low-level **Atomic Materials** and functional **Composite Assembly Assemblies**. This allows it to serve multiple purposes—from UI components to low-level reactivity engines—across any platform.
 
 ## 2. Utility-First, Semantic-Support
 We believe functional utilities are unmatched for development speed, while semantic structures are essential for long-term scalability.

@@ -1,0 +1,14 @@
+[package]
+name = "rupa-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rupa-support.workspace = true
+clap = { version = "4.4", features = ["derive"] }
+tokio = { workspace = true, features = ["full"] }
+serde.workspace = true
+serde_json.workspace = true
+toml = "0.8"

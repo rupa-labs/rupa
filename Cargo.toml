@@ -7,12 +7,34 @@ members = [
     "crates/rupa-engine",
     "crates/rupa-macros",
     "crates/rupa",
+    "crates/rupa-desktop",
+    "crates/rupa-web",
     "crates/rupa-server",
-    "crates/rupa-client",
+    "crates/rupa-tui",
+    "crates/rupa-mobile",
+    "crates/rupa-fullstack",
+    "crates/rupa-headless",
+    "crates/rupa-hybrid",
+    "crates/rupa-server-core",
+    "crates/rupa-web-core",
+    "crates/rupa-mobile-core",
     "crates/rupa-docs",
     "crates/rupa-signals",
     "crates/rupa-vnode",
-    "crates/rupa-mobile",
+    "crates/rupa-store",
+    "crates/rupa-net",
+    "crates/rupa-motion",
+    "crates/rupa-router",
+    "crates/rupa-i18n",
+    "crates/rupa-assets",
+    "crates/rupa-a11y",
+    "crates/rupa-auth",
+    "crates/rupa-forms",
+    "crates/rupa-context",
+    "crates/rupa-telemetry",
+    "crates/rupa-canvas",
+    "crates/rupa-cli",
+    "crates/rupa-test",
     "crates/rupa-support",
 ]
 
@@ -20,25 +42,52 @@ members = [
 version = "0.1.0"
 edition = "2021"
 authors = ["Reas Vyn <reasvyn@gmail.com>"]
-description = "A modular meta-framework, cross-platform and multi-purpose for Rust artisans. Built with an Atoms & Composites modular architecture."
+description = "A modular meta-framework, cross-platform and multi-purpose for Rust artisans. Built with an Atomic Materials & Composite Assemblies architecture."
 license = "MIT"
 repository = "https://github.com/rupa-labs/rupa"
 
 [workspace.dependencies]
-# Internal crates (Atoms)
+# Atomic Materials (Tier 1)
 rupa-support = { path = "crates/rupa-support" }
 rupa-signals = { path = "crates/rupa-signals" }
 rupa-vnode = { path = "crates/rupa-vnode" }
+rupa-store = { path = "crates/rupa-store" }
+rupa-net = { path = "crates/rupa-net" }
+rupa-motion = { path = "crates/rupa-motion" }
+rupa-router = { path = "crates/rupa-router" }
+rupa-i18n = { path = "crates/rupa-i18n" }
+rupa-assets = { path = "crates/rupa-assets" }
+rupa-a11y = { path = "crates/rupa-a11y" }
+rupa-auth = { path = "crates/rupa-auth" }
+rupa-forms = { path = "crates/rupa-forms" }
+rupa-context = { path = "crates/rupa-context" }
+rupa-telemetry = { path = "crates/rupa-telemetry" }
+rupa-canvas = { path = "crates/rupa-canvas" }
 
-# Internal crates (Composites)
+# Composite Assemblies (Tier 2)
 rupa-core = { path = "crates/rupa-core" }
 rupa-ui = { path = "crates/rupa-ui" }
 rupa-engine = { path = "crates/rupa-engine" }
+rupa-server-core = { path = "crates/rupa-server-core" }
+rupa-web-core = { path = "crates/rupa-web-core" }
+rupa-mobile-core = { path = "crates/rupa-mobile-core" }
 rupa-macros = { path = "crates/rupa-macros" }
-rupa-server = { path = "crates/rupa-server" }
-rupa-client = { path = "crates/rupa-client" }
-rupa-mobile = { path = "crates/rupa-mobile" }
 rupa-docs = { path = "crates/rupa-docs" }
+
+# Artisan Showrooms (Tier 3)
+rupa = { path = "crates/rupa" }
+rupa-desktop = { path = "crates/rupa-desktop" }
+rupa-web = { path = "crates/rupa-web" }
+rupa-server = { path = "crates/rupa-server" }
+rupa-tui = { path = "crates/rupa-tui" }
+rupa-mobile = { path = "crates/rupa-mobile" }
+rupa-fullstack = { path = "crates/rupa-fullstack" }
+rupa-headless = { path = "crates/rupa-headless" }
+rupa-hybrid = { path = "crates/rupa-hybrid" }
+
+# Developer Tooling
+rupa-cli = { path = "crates/rupa-cli" }
+rupa-test = { path = "crates/rupa-test" }
 
 # Third party (Centralized for maintenance)
 log = "0.4"

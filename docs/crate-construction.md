@@ -4,22 +4,28 @@ This document defines the mandatory standards for creating, splitting, and maint
 
 ---
 
-## 1. The Atomic vs. Composite Philosophy
+## 1. The Artisan Workshop Tiers
 
-We categorize crates into two distinct types to ensure strict boundaries and prevent "God Crate" bloat.
+We categorize crates into three distinct tiers to ensure strict boundaries and prevent "God Crate" bloat.
 
-### 1.1 Atomic Crates (The Atoms)
-Atoms are the smallest functional units of the framework.
-*   **Responsibility:** Single, specialized domain (e.g., Reactivity, Color Math, ID generation).
-*   **Dependencies:** Must only depend on other Atoms or minimal 3rd-party crates.
-*   **Platform:** Must be 100% platform-agnostic (`no_std` compatible where possible).
-*   **Testing:** Must be fully testable in a headless environment.
+### 1.1 Atomic Materials (Tier 1)
+Atomic Materials are the smallest functional units of the framework.
+*   **Format:** `rupa-<noun>` (e.g., `rupa-signals`, `rupa-store`).
+*   **Responsibility:** Single, specialized domain.
+*   **Dependencies:** Must only depend on other Atomic Materials or minimal 3rd-party crates.
+*   **Platform:** Must be 100% platform-agnostic.
 
-### 1.2 Composite Crates (The Assemblies)
-Composites assemble multiple Atoms into high-level functional modules.
-*   **Responsibility:** Providing a "ready-to-use" feature set (e.g., UI library, Rendering Engine, SSR).
-*   **Dependencies:** Orchestrate multiple Atoms. Can depend on platform-specific crates (e.g., `wgpu`, `axum`).
-*   **Boundary:** Should not leak internal Atom APIs unless necessary for advanced customization.
+### 1.2 Composite Assembly Assemblies (Tier 2)
+Composite Assembly Assemblies assemble multiple Atomic Materials into high-level functional modules.
+*   **Format:** `rupa-<domain>-core` (e.g., `rupa-server-core`, `rupa-web-core`).
+*   **Responsibility:** Technical systems that bridge atomic materials to platform-specific needs.
+*   **Boundary:** Should not leak internal Atomic Material APIs unless necessary.
+
+### 1.3 Artisan Showrooms (Tier 3)
+Artisan Showrooms pre-assembled for specific business use cases.
+*   **Format:** `rupa-<target>` (e.g., `rupa-desktop`, `rupa-server`).
+*   **Responsibility:** Zero-boilerplate entry points for final users.
+*   **Dependencies:** Combines specific composite assembly assemblies and atomic materials.
 
 ---
 
@@ -27,9 +33,9 @@ Composites assemble multiple Atoms into high-level functional modules.
 
 Splitting a crate is a strategic decision. A new crate should be created if any of the following conditions are met:
 
-1.  **Circular Dependency:** If two modules within a crate need to refer to each other in a way that creates a loop, they should be split into independent atoms.
+1.  **Circular Dependency:** If two modules within a crate need to refer to each other in a way that creates a loop, they should be split into independent atomic materials.
 2.  **Dependency Weight:** If a feature introduces a heavy 3rd-party dependency (e.g., `wgpu` or `taffy`) that isn't needed by all users, it must be isolated.
-3.  **Independent Utility:** If a module is useful outside of the UI framework (e.g., using `rupa-signals` for a CLI tool), it should be an Atom.
+3.  **Independent Utility:** If a module is useful outside of the UI framework (e.g., using `rupa-signals` for a CLI tool), it should be an Atomic Material.
 4.  **Target Divergence:** Code that is specific to one environment (e.g., Web DOM vs. Native GPU) must be separated.
 
 ---
@@ -38,10 +44,10 @@ Splitting a crate is a strategic decision. A new crate should be created if any 
 
 To maintain high maintainability, we enforce a strict directional flow of dependencies:
 
-1.  **Atoms** → Can only depend on **Atoms**.
-2.  **Composites** → Can depend on **Atoms** and other **Composites**.
-3.  **The Facade (`rupa`)** → Re-exports **Composites** and provides the unified API.
-4.  **Downstream (User Apps)** → Should primarily depend on the **Facade**, but can opt-into specific **Atoms** for specialized builds.
+1.  **Atomic Materials (Tier 1)** → Can only depend on other **Atomic Materials**.
+2.  **Composite Assembly Assemblies (Tier 2)** → Can depend on **Atomic Materials** and other **Composite Assembly Assemblies**.
+3.  **Artisan Showrooms (Tier 3)** → Re-exports **Assemblies** and provides the unified business-ready API.
+4.  **Downstream (User Apps)** → Should primarily depend on a **Showroom**, but can opt-into specific **Materials** for specialized builds.
 
 ---
 

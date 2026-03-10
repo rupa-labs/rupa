@@ -6,10 +6,13 @@ use crate::events::{UIEvent, KeyCode};
 use crate::scene::SceneNode;
 use rupa_vnode::AccessibilityNode;
 
+use crate::view::ViewCore;
+
 /// The core trait for all UI elements in Rupa.
 pub trait Component: Send + Sync {
     fn id(&self) -> &str;
     fn children(&self) -> Vec<&dyn Component>;
+    fn view_core(&self) -> Arc<ViewCore>;
 
     /// Produces a Virtual Node representation of this component.
     /// This is the "Universal Language" used for SSR, DOM, and GPU rendering.

@@ -1,5 +1,6 @@
 use rupa_support::Vec2;
 use crate::types::TextAlign;
+use crate::reconciler::Patch;
 
 /// Shared internal state for all renderers.
 pub struct RenderCore {
@@ -26,10 +27,13 @@ pub trait TextMeasurer: Send + Sync {
 }
 
 /// The base contract for all Rupa rendering backends.
-/// Provides a unified API for drawing primitives like rectangles and text.
+/// Provides a unified API for drawing primitives and executing structural patches.
 pub trait Renderer: TextMeasurer {
     fn core(&self) -> &RenderCore;
     fn core_mut(&mut self) -> &mut RenderCore;
+
+    /// Executes a structural UI instruction identified during reconciliation.
+    fn render_patch(&mut self, patch: Patch);
 
     fn draw_rect(&mut self, x: f32, y: f32, width: f32, height: f32, color: [f32; 4], radius: f32);
     fn draw_text(&mut self, text: &str, x: f32, y: f32, width: f32, size: f32, color: [f32; 4], align: TextAlign);

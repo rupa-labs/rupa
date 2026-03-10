@@ -1,0 +1,11 @@
+[package]
+name = "rupa-telemetry"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rupa-core.workspace = true
+log.workspace = true
+serde.workspace = true

@@ -7,7 +7,7 @@ The central hub for all hardware-accelerated graphical rendering. It organizes t
 ## 🏗️ Core Responsibilities
 
 1.  **Module Aggregation:** Exposes sub-modules like `batcher`, `renderer`, `text_renderer`, and `texture` to the rest of the framework.
-2.  **Public API Smoothing:** Provides clean re-exports of common types so that higher layers of `rupa-engine` and `rupa-mobile` can communicate efficiently with the GPU.
+2.  **Public API Smoothing:** Provides clean re-exports of common types so that higher layers of `rupa-engine` and `rupa-mobile-core` can communicate efficiently with the GPU.
 
 ---
 

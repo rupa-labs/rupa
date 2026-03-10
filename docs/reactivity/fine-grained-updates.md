@@ -1,29 +1,69 @@
-# Reactivity: Fine-Grained Updates ⚡
+# Fine-Grained Reactivity & Updates ⚡
 
-Rupa Framework avoids the common pitfall of "Re-rendering Everything." By using fine-grained reactivity, we ensure that the GPU and CPU only work on what has actually changed.
-
----
-
-## 🧐 The Reactive Graph
-
-Reactivity in the Rupa Framework is powered by `rupa-signals`.
-
-1.  **Subscription:** When a component calls its `render()` method, any `Signal` accessed during that call registers the component as a dependency.
-2.  **Invalidation:** When a `Signal`'s value is mutated, it notifies the framework that specific components are out-of-date.
-3.  **Surgical Re-render:** Only the affected components re-execute their `render()` methods to produce new VNode sub-trees.
-4.  **Patch Efficiency:** The diffing engine compares only the modified sub-trees against the previous state, generating minimal layout and paint patches.
+Rupa Framework uses a **Push-Pull Reactive Graph** to ensure maximum performance. The goal is simple: **If state doesn't change, the CPU shouldn't work.**
 
 ---
 
-## 🏛️ Integration with VNode Architecture
+## 1. The Reactive Core (Signals)
 
-The **VNode Architecture** is the perfect vehicle for fine-grained updates:
-- **State (Logic):** Mutates data wrapped in Signals.
-- **Render (VNode):** Produces a declarative snapshot of the component's intent.
-- **Reconciliation:** Translates VNode differences into precise hardware redraw requests.
+The system is built on three primitives in `rupa-signals`:
+*   **Signal<T>**: The source of truth (Atomic State).
+*   **Memo<T>**: Derived state that only re-calculates if its dependencies change.
+*   **Effect**: A side-effect that runs automatically when dependencies change.
 
-## 🚀 Performance Benefits
+---
 
-- **Sub-millisecond Updates:** Even in deep UI trees, updating a single label is instantaneous.
-- **Low Power Consumption:** Applications idle at nearly 0% CPU/GPU usage when no state changes occur.
-- **Scalability:** The framework's performance scales linearly with the number of *changing* elements, not the total number of elements.
+## 2. Component-Level Tracking
+
+To achieve selective re-rendering, Rupa connects the **Reactive Graph** to the **Component Tree**:
+
+1.  **Subscription**: When a component's `render()` method is called, the framework tracks which `Signals` are accessed (read).
+2.  **Dirty Marking**: When a `Signal` is updated, it notifies all "subscriber" components by setting their `ViewCore::is_dirty` flag to `true`.
+3.  **Scheduled Redraw**: The framework signals the OS (via `request_redraw`) that a change has occurred.
+
+---
+
+## 3. Selective Reconciliation (The "Skip" Logic)
+
+During the next frame, the `Reconciler` performs a smart traversal:
+
+*   **If Component is CLEAN (`is_dirty == false`)**:
+    *   The engine **skips** the `render()` call entirely.
+    *   It reuses the `prev_vnode` snapshot from `ViewCore`.
+    *   It continues to check children (in case a child component is dirty).
+*   **If Component is DIRTY (`is_dirty == true`)**:
+    *   The engine executes `render()` to get a new `VNode` tree.
+    *   It diffs the new tree against `prev_vnode`.
+    *   It generates patches and clears the dirty flag.
+
+---
+
+## 4. Implementation Strategy
+
+### A. Global Tracking Context
+We will implement a thread-local `RUNTIME` in `rupa-signals` that keeps track of the "Currently Rendering Component ID".
+
+### B. Signal Integration
+Every time `signal.get()` is called:
+*   It checks the `RUNTIME` context.
+*   If a component ID is present, the signal adds that component to its `subscribers` list.
+
+### C. The Dispatcher
+When `signal.set()` is called:
+*   The signal iterates through its `subscribers`.
+*   It calls `component.mark_dirty()`.
+*   It triggers a global `request_redraw()`.
+
+---
+
+## 5. Visualizing the Update Flow
+
+```mermaid
+graph TD
+    S[Signal Updated] -->|Notify| C[Component A Marked Dirty]
+    C -->|Trigger| R[request_redraw]
+    R -->|Frame Start| Rec[Reconciler]
+    Rec -->|Check| CA{Component A Dirty?}
+    CA -- Yes --> Execute[Run render + Diff + Patch]
+    CA -- No --> Skip[Use prev_vnode + Skip Logic]
+```

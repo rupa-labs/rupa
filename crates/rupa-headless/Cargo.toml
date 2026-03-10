@@ -1,0 +1,13 @@
+[package]
+name = "rupa-headless"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rupa-core.workspace = true
+rupa-signals.workspace = true
+rupa-vnode.workspace = true
+rupa-store.workspace = true
+rupa-net.workspace = true

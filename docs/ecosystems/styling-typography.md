@@ -4,7 +4,7 @@ The Rupa Framework provides a rich, type-safe system for managing typography via
 
 ---
 
-## 🔡 Font Properties (Atoms)
+## 🔡 Font Properties (Atomic Materials)
 The foundational building blocks for text appearance.
 
 - `.font(String)`: Set the font family.

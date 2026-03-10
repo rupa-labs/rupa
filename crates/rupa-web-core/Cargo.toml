@@ -1,5 +1,5 @@
 [package]
-name = "rupa-client"
+name = "rupa-web-core"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

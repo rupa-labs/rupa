@@ -1,6 +1,6 @@
 # Module & Workspace Standards 📂
 
-To maintain a scalable and sustainable codebase, Rupa Framework strictly maps its architectural tiers to specific crates within the workspace. All new modules must follow this placement guide based on the **Atoms & Composites** model.
+To maintain a scalable and sustainable codebase, Rupa Framework strictly maps its architectural tiers to specific crates within the workspace. All new modules must follow this placement guide based on the **Atomic Materials & Composite Assemblies** model.
 
 ---
 
@@ -8,15 +8,10 @@ To maintain a scalable and sustainable codebase, Rupa Framework strictly maps it
 
 | Tier | Workspace Crate | Responsibility |
 | :--- | :--- | :--- |
-| **Atom: Styling (Data)** | `rupa-vnode` | Passive Style Data (Design system tokens, OKLCH math, Scales). |
-| **Atom: Reactivity** | `rupa-signals` | Signal, Memo, and the fine-grained Reactive Graph. |
-| **Atom: VNode** | `rupa-vnode` | Agnostic Virtual Tree structure and serialization logic. |
-| **Atom: Support** | `rupa-support` | Math (Vec2), ID generation, and common Errors. |
-| **Composite: Architecture** | `rupa-core` | Trait definitions (Component), universal data structures, and VNode reconciliation. |
-| **Composite: UI System** | `rupa-ui` | **UI Component System** (semantic elements) and **UI Utilities System** (Styling API). |
-| **Composite: Engine** | `rupa-engine` | Native runtime, WGPU/TUI rendering, and Taffy layout integration. |
-| **Composite: Mobile** | `rupa-mobile` | Mobile runner, lifecycle management, and touch events. |
-| **Composite: Platform** | `rupa-server` / `rupa-client` | SSR and Web frontend engines. |
+| **Tier 1: Atomic Materials** | Foundational & Infrastructure | Virtual Tree, Reactivity, Math, Auth, Data, Net, etc. |
+| **Tier 2: Composite Assemblies** | Technical Systems | Architecture, Engines (Native/Web/Mobile), UI System. |
+| **Tier 3: Artisan Showrooms** | Target Facades | Desktop, Web, Server, TUI, Full-Stack, etc. |
+| **Tooling** | Developer Tools | CLI and Testing utilities. |
 
 ---
 

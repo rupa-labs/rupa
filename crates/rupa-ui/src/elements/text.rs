@@ -53,6 +53,7 @@ impl Text {
 impl Component for Text {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     fn render(&self) -> VNode { VNode::text(self.logic.content.get()) }
 
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }

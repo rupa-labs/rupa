@@ -10,7 +10,7 @@ thread_local! {
 }
 
 /// A subscriber that can be notified when a dependency changes.
-trait Subscriber: Send + Sync {
+pub trait Subscriber: Send + Sync {
     fn notify(&self);
 }
 
@@ -31,6 +31,28 @@ impl Runtime {
     fn current_context(&self) -> Option<Arc<dyn Subscriber>> {
         self.stack.last().and_then(|w| w.upgrade())
     }
+}
+
+/// Run a closure in the context of a subscriber.
+pub fn with_context<F, R>(sub: Arc<dyn Subscriber>, f: F) -> R
+where F: FnOnce() -> R {
+    RUNTIME.with(|rt| {
+        rt.borrow_mut().push_context(Arc::downgrade(&sub));
+        let res = f();
+        rt.borrow_mut().pop_context();
+        res
+    })
+}
+
+/// Run a closure without any reactive tracking.
+pub fn untrack<F, R>(f: F) -> R
+where F: FnOnce() -> R {
+    RUNTIME.with(|rt| {
+        let prev = rt.borrow_mut().stack.split_off(0);
+        let res = f();
+        rt.borrow_mut().stack = prev;
+        res
+    })
 }
 
 // --- SIGNAL ---

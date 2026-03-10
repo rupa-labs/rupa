@@ -1,13 +1,13 @@
 # Platform Integration: Mobile Runner 📱
 
-The **Mobile Runner** (provided by `rupa-mobile`) is the high-level composite crate that manages the execution of Rupa Framework applications on **Android** and **iOS**. It bridges native mobile lifecycles and touch interactions into the Rupa core.
+The **Mobile Runner** (provided by `rupa-mobile-core`) is the high-level composite assembly crate that manages the execution of Rupa Framework applications on **Android** and **iOS**. It bridges native mobile lifecycles and touch interactions into the Rupa core.
 
 ---
 
 ## 🏗️ Architecture
 
 The mobile implementation is divided into two layers:
-1.  **The Shell (`rupa-mobile`):** Manages the native `Activity` (Android) or `UIViewController` (iOS).
+1.  **The Shell (`rupa-mobile-core`):** Manages the native `Activity` (Android) or `UIViewController` (iOS).
 2.  **The Runtime (`rupa-engine`):** Handles WGPU-based rendering inside the shell provided by the mobile runner.
 
 ### Key Responsibilities
@@ -30,7 +30,7 @@ Mobile apps have a "Volatile Surface" policy. Unlike Desktop, the GPU surface ca
 
 ## 🛠️ Mobile-Specific Input
 
-`rupa-mobile` extends the base `InputDispatcher` with touch-specific logic:
+`rupa-mobile-core` extends the base `InputDispatcher` with touch-specific logic:
 - **TouchStart/Move/End**: Mapped to Pointer events.
 - **Multi-Touch**: Future support for pinch-to-zoom and rotation gestures.
 - **Soft Keyboard**: Logic for resizing the viewport when the virtual keyboard appears.
@@ -39,4 +39,4 @@ Mobile apps have a "Volatile Surface" policy. Unlike Desktop, the GPU surface ca
 
 ## 🤝 Platform Bridge
 
-All platform-specific code (JNI for Android, Swift/Obj-C bridge for iOS) is isolated within `rupa-mobile`'s internal `infra` module, ensuring that `rupa-core` and `rupa-ui` remain 100% platform-agnostic.
+All platform-specific code (JNI for Android, Swift/Obj-C bridge for iOS) is isolated within `rupa-mobile-core`'s internal `infra` module, ensuring that `rupa-core` and `rupa-ui` remain 100% platform-agnostic.

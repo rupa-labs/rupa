@@ -50,7 +50,14 @@ impl DesktopRunner {
         };
 
         if let Some(root) = core.root.take() {
-            // Compute layout
+            // 1. Build: Get new VNode tree
+            let new_vnode = root.render();
+            let old_vnode = root.get_prev_vnode();
+
+            // 2. Diff: identify changes
+            let patches = rupa_core::reconciler::reconcile(&old_vnode, &new_vnode, None, 0);
+
+            // 3. Patch & Layout
             let scene_node = core.scene.layout_engine.compute(
                 root.as_ref(),
                 renderer,
@@ -59,6 +66,12 @@ impl DesktopRunner {
             );
 
             if let Ok(()) = renderer.begin_frame() {
+                // Execute patches
+                for patch in patches {
+                    renderer.render_patch(patch);
+                }
+
+                // Temporary: Fallback paint until render_patch is fully comprehensive
                 root.paint(
                     renderer,
                     &core.scene.layout_engine.taffy,
@@ -68,6 +81,8 @@ impl DesktopRunner {
                 );
                 renderer.present();
             }
+
+            root.set_prev_vnode(new_vnode);
             core.root = Some(root);
         }
     }

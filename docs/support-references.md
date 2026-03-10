@@ -45,6 +45,34 @@ A thread-safe reactive primitive that notifies the framework to redraw when its 
 
 ---
 
+## 💾 Persistence (Store)
+Bridge between the reactive graph and permanent storage.
+- **Internal Reference:** `crates/rupa-store/src/signal.rs`
+
+### `struct PersistentSignal<T>`
+A specialized signal that automatically syncs its value to a storage backend.
+
+| Method | Description | Example |
+| :--- | :--- | :--- |
+| `PersistentSignal::new(key, val)` | Creates a signal linked to a storage key. | `let theme = PersistentSignal::new("theme", Mode::Dark);` |
+
+---
+
+## 🌐 Network (IO)
+Reactive primitives for asynchronous I/O operations.
+- **Internal Reference:** `crates/rupa-net/src/resource.rs`
+
+### `struct Resource<T>`
+A reactive state container for managing the lifecycle of an async network request.
+
+| State | Description |
+| :--- | :--- |
+| `Loading` | The request is currently in flight. |
+| `Ready(T)` | Data has been successfully fetched and parsed. |
+| `Error(E)` | The request failed with a network or parsing error. |
+
+---
+
 ## 🛡️ Debugging & Error Handling
 Robust systems for framework diagnostics and graceful failure recovery.
 - **Internal Reference:** `crates/rupa-support/src/error.rs`

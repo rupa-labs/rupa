@@ -1,5 +1,5 @@
 [package]
-name = "rupa-mobile"
+name = "rupa-mobile-core-facade"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -7,13 +7,8 @@ license.workspace = true
 
 [dependencies]
 rupa-core.workspace = true
-rupa-engine.workspace = true
-log.workspace = true
-winit.workspace = true
-serde.workspace = true
-
-# Android specific
-[target.'cfg(target_os = "android")'.dependencies]
-ndk.workspace = true
-ndk-context.workspace = true
-jni.workspace = true
+rupa-ui.workspace = true
+rupa-engine = { workspace = true, features = ["gui", "mobile"] }
+rupa-mobile-core.workspace = true
+rupa-assets.workspace = true
+rupa-signals.workspace = true

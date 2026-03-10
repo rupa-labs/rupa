@@ -16,53 +16,46 @@ Every architectural decision in Rupa MUST be defensible under these three pillar
 
 ## 2. Tiered Sub-System Architecture (The Macro View)
 
-Rupa is organized into logical **Sub-Systems** that interact across three tiers based on the **[Atoms & Composites](./architectures/atoms-and-composites.md)** design pattern.
+Rupa is organized into logical **Sub-Systems** that interact across three tiers based on the **[Artisan Workshop Standard](./architectures/workshop-tiers.md)** design pattern.
 
 ```mermaid
 graph TD
-    subgraph Tier_3 [Tier 3: The Facade]
-        rupa[rupa Facade]
+    subgraph Tier_3 [Tier 3: Artisan Showrooms]
+        facade[rupa Facade]
+        desktop[rupa-desktop]
+        web[rupa-web]
+        server[rupa-server]
+        tui[rupa-tui]
+        mobile[rupa-mobile]
+        fullstack[rupa-fullstack]
     end
 
-    subgraph Tier_2 [Tier 2: Composites - High-Level Systems]
+    subgraph Tier_2 [Tier 2: Composite Assemblies]
         direction TB
         ui_sys[UI System - rupa-ui]
         eng_sys[Execution System - rupa-engine]
-        srv_sys[Server System - rupa-server]
-        cli_sys[Client System - rupa-client]
-        mob_sys[Mobile System - rupa-mobile]
-        
-        subgraph Infra_Systems [Infrastructure & IO]
-            net_sys[Network System - rupa-net *]
-            fs_sys[File System - rupa-fs *]
-            persist_sys[Persistence System - rupa-data *]
-        end
+        srv_sys[Server Core - rupa-server-core]
+        web_sys[Web Core - rupa-web-core]
+        mob_sys[Mobile Core - rupa-mobile-core]
+        tool_sys[Tooling System - rupa-cli / rupa-test]
     end
 
-    subgraph Tier_1 [Tier 1: Atoms - Low-Level Systems]
+    subgraph Tier_1 [Tier 1: Atomic Materials]
         direction LR
         core_sys[Core System - rupa-core]
         react_sys[Reactive System - rupa-signals]
-        vnode_sys[VNode System - rupa-vnode + Style Data]
-        math_sys[Foundation System - rupa-support]
+        vnode_sys[VNode & DNA - rupa-vnode]
+        infra_sys[Infra: auth / store / net / i18n / assets / motion / context / forms / canvas]
     end
 
-    %% Legend: * = Strategic/Planned
-    
     %% Relationships
-    rupa --> Tier_2
+    facade --> Tier_2
     Tier_2 --> core_sys
     core_sys --> Tier_1
-    
-    %% System Internal Dependencies
-    ui_sys --> vnode_sys
-    eng_sys --> vnode_sys
-    eng_sys --> core_sys
     
     style Tier_3 fill:#f9f,stroke:#333,stroke-width:2px
     style Tier_2 fill:#bbf,stroke:#333,stroke-width:2px
     style Tier_1 fill:#dfd,stroke:#333,stroke-width:2px
-    style Infra_Systems fill:#fff3e0,stroke:#ffb74d,stroke-width:2px,stroke-dasharray: 5 5
 ```
 
 ---
@@ -70,25 +63,25 @@ graph TD
 ## 3. Sub-System Definitions & Responsibilities
 
 ### 3.1 Core & Reactive Systems (The Brain)
-*   **Reactive System (`rupa-signals`)**: The "Nervous System". Handles fine-grained state tracking via `Signal` and `Memo`. It is the source of all UI updates.
-*   **VNode System (`rupa-vnode`)**: The "Universal Language & DNA". Provides the agnostic virtual tree structure **and the core Style data models** for cross-platform rendering.
-*   **Core System (`rupa-core`)**: The "Orchestrator". Manages component lifecycles, VNode reconciliation (Diff/Patch), and universal event dispatching.
+*   **Reactive System (`rupa-signals`)**: The "Nervous System". Handles **[Fine-Grained Updates](./reactivity/fine-grained-updates.md)** via `Signal` and `Memo`.
+*   **VNode & DNA (`rupa-vnode`)**: The "Universal Language". Agnostic virtual tree structure and core style data models.
+*   **Core System (`rupa-core`)**: The "Orchestrator". Manages component lifecycles and **[VNode Reconciliation](./architectures/reconciliation.md)**.
 
-### 3.2 UI System (The Body)
-*   **UI System (`rupa-ui`)**: The "Artisan Library & Styling API". It is divided into two major sub-systems:
-    *   **Component System**: High-level semantic components (VStack, Button, Modal, Forms) built on top of layout primitives.
-    *   **Utilities System**: The utility-first Styling API (`px`, `my`, `bg`, `rounded`) providing a fluent interface for building visual identities.
+### 3.2 UI & Visual Systems (The Body)
+*   **UI System (`rupa-ui`)**: Houses the **UI Component System** (Semantic elements) and **UI Utilities System** (Styling API).
+*   **Motion Engine (`rupa-motion`)**: High-performance VNode interpolation and spring physics.
+*   **Canvas System (`rupa-canvas`)**: Low-level hardware-accelerated drawing and custom shaders.
 
 ### 3.3 Platform & Execution Systems (The Muscles)
-*   **GUI System (`rupa-engine::gui`)**: Hardware-accelerated rendering via **WGPU**. Handles vertex batching and SDF shaders.
-*   **TUI System (`rupa-engine::tui`)**: Optimized terminal rendering via **Crossterm**. Handles ANSI diffing and double-buffering.
-*   **Server System (`rupa-server`)**: SSR Engine. Handles HTML serialization and backend integration (Axum/Tokio).
-*   **Client System (`rupa-client`)**: Web Runtime. Handles WASM hydration and direct DOM manipulation.
+*   **Native Engines**: `rupa-engine` (GPU/TUI), `rupa-mobile-core`.
+*   **Web Engines**: `rupa-server-core` (SSR), `rupa-web-core` (WASM).
+*   **Tooling**: `rupa-cli` (DevOps), `rupa-test` (QA).
 
-### 3.4 Infrastructure Sub-Systems (Strategic Foundations)
-*   **Persistence System (`rupa-data`*)**: The "Memory". Strategic ORM/Database bridge for local (SQLite/IndexedDB) and remote data persistence.
-*   **Network System (`rupa-net`*)**: The "Bridge". Strategic IO system for HTTP/gRPC/WebSockets, integrated directly into the reactive engine.
-*   **File System (`rupa-fs`*)**: The "Asset Manager". Handles localized resource loading (images, fonts, configs) across Desktop and Mobile.
+### 3.4 Enterprise Infrastructure Systems (The Foundation)
+*   **Identity (`rupa-auth`)**: Reactive authentication, RBAC, and Team management.
+*   **Persistence (`rupa-store`)**: "Storage as a Signal" bridge for SQLite, FS, and WebStorage.
+*   **Connectivity**: `rupa-net` (Async I/O), `rupa-router` (Navigation), `rupa-i18n` (Voice).
+*   **Management**: `rupa-assets` (Warehouse), `rupa-context` (DI), `rupa-telemetry` (Observability).
 
 ---
 
@@ -96,11 +89,20 @@ graph TD
 
 | Sub-System | Primary Modules | Key Exports |
 | :--- | :--- | :--- |
-| **Core** | `component`, `renderer`, `view`, `events`, `scene` | `Component`, `Renderer`, `ViewCore`, `UIEvent` |
-| **UI** | `primitives`, `elements`, `style`, `body` | `Div`, `Button`, `VStack`, `Style (Builder)` |
-| **Engine** | `platform`, `renderer`, `scene`, `shaders` | `App`, `GuiRenderer`, `TuiRenderer`, `LayoutEngine` |
-| **VNode** | `vnode`, `style/*` | `VNode`, `Style (Data)`, `Color` |
-| **Signals** | `signal`, `memo`, `effect`, `runtime` | `Signal`, `Memo`, `Effect` |
+| **Core** | `component`, `renderer`, `view`, `events` | `Component`, `Renderer`, `ViewCore` |
+| **UI** | `elements`, `primitives`, `style` | `Button`, `Div`, `Theme` |
+| **Signals** | `signal`, `memo`, `effect` | `Signal`, `Memo`, `Effect` |
+| **VNode** | `vnode`, `style/*` | `VNode`, `Style`, `Color` |
+| **Auth** | `identity`, `session`, `rbac`, `teams` | `User`, `Session`, `Role` |
+| **Store** | `store`, `signal`, `backends` | `Store`, `PersistentSignal` |
+| **Net** | `client`, `resource` | `Client`, `Resource`, `fetch` |
+| **Motion** | `spring`, `transition`, `timeline` | `Spring`, `Transition` |
+| **Router** | `router`, `route`, `history` | `Router`, `Route`, `use_route` |
+| **i18n** | `provider`, `dictionary`, `locale` | `I18nProvider`, `t!`, `Locale` |
+| **Assets** | `manager`, `loader`, `cache` | `AssetManager`, `use_asset` |
+| **A11y** | `bridge`, `translate` | `A11yBridge` |
+| **Context** | `provider`, `consumer` | `Provider`, `use_context` |
+| **Telemetry**| `metrics`, `profiler`, `logger` | `Metrics`, `Profiler` |
 
 ---
 
@@ -128,9 +130,56 @@ sequenceDiagram
 
 ---
 
-## 6. Architectural Constraints & Standards
+## 6. Modular Pipeline Workflows (The Modular Choice)
 
-1.  **Strict Layering**: Tier 1 (Atoms) must never import from Tier 2 (Composites).
-2.  **Agnostic Purity**: Core and UI systems must remain 100% free of OS-specific or hardware-specific code.
+Rupa Framework adapts its execution pipeline based on the target application. Below are the visual representations of how Atomic Materials and Composite Assemblies are assembled for different purposes.
+
+### 6.1 Native Pipeline (Desktop & Mobile)
+Focused on high-performance GPU/TUI rendering with direct hardware access.
+
+```mermaid
+graph LR
+    subgraph Atoms [Atomic Materials]
+        S[Signals]
+        VN[VNode]
+    end
+    
+    subgraph Composites [Composite Assemblies]
+        UI[rupa-ui]
+        Core[rupa-core]
+        Eng[rupa-engine]
+    end
+    
+    S --> UI
+    UI --> VN
+    VN --> Core
+    Core -->|Patches| Eng
+    Eng -->|WGPU/TUI| Hardware[GPU / Terminal]
+```
+
+### 6.2 Full-Stack Web Pipeline (SSR + Hydration)
+Focused on SEO-friendly initial delivery and reactive client-side interactivity.
+
+```mermaid
+graph TD
+    subgraph Server_Side [Server Core - rupa-server-core]
+        S_UI[rupa-ui] -->|render| S_VN[VNode]
+        S_VN -->|serialize| HTML[HTML String]
+    end
+    
+    subgraph Client_Side [Web Core - rupa-web-core]
+        C_UI[rupa-ui] -->|hydrate| C_VN[VNode]
+        C_VN -->|diff/patch| DOM[Browser DOM]
+    end
+    
+    HTML -.->|Delivery| Client_Side
+```
+
+---
+
+## 7. Architectural Constraints & Standards
+
+1.  **Strict Layering**: Atomic Materials (Tier 1) must never import from Composite Assemblies (Tier 2).
+2.  **Agnostic Purity**: Foundational Atomic Materials must remain 100% free of OS-specific or hardware-specific code.
 3.  **Serializability**: All data crossing system boundaries (VNodes, Styles, Events) MUST implement `serde`.
 4.  **TDD Driven**: Every sub-system must be independently testable in a headless environment.

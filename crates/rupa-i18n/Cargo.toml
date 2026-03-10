@@ -1,0 +1,14 @@
+[package]
+name = "rupa-i18n"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rupa-core.workspace = true
+rupa-signals.workspace = true
+rupa-support.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+log.workspace = true

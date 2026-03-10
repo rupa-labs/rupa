@@ -1,7 +1,8 @@
 use std::sync::Arc;
+use std::collections::HashMap;
 use wgpu::*;
 use wgpu::util::StagingBelt;
-use rupa_core::Vec2;
+use rupa_core::{Vec2, Patch, UpdateType};
 use rupa_vnode::TextAlign;
 use crate::renderer::{Renderer as BaseRenderer, RenderCore};
 use super::batcher::{Batcher, Vertex};
@@ -27,6 +28,7 @@ pub struct Renderer {
     pub text_renderer: TextRenderer,
     pub staging_belt: StagingBelt,
     
+    pub nodes: HashMap<String, rupa_core::scene::SceneNode>,
     text_entries: Vec<StoredText>,
     current_encoder: Option<CommandEncoder>,
     current_view: Option<TextureView>,
@@ -77,6 +79,7 @@ impl Renderer {
             core: RenderCore::new(width as f32, height as f32, scale_factor),
             surface, device, queue, config, 
             render_pipeline, batcher, default_texture, text_renderer, staging_belt,
+            nodes: HashMap::new(),
             text_entries: Vec::new(),
             current_encoder: None, current_view: None, current_output: None,
         }
@@ -126,6 +129,39 @@ impl crate::renderer::TextMeasurer for Renderer {
 impl BaseRenderer for Renderer {
     fn core(&self) -> &RenderCore { &self.core }
     fn core_mut(&mut self) -> &mut RenderCore { &mut self.core }
+
+    fn render_patch(&mut self, patch: Patch) {
+        match patch {
+            Patch::Create { node, .. } => {
+                // For simplicity in this artisan implementation, we track by key if available
+                if let rupa_core::VNode::Element(ref el) = node {
+                    if let Some(ref key) = el.key {
+                        // In a real engine, this would allocate Taffy nodes and GPU resources
+                        // self.nodes.insert(key.clone(), SceneNode::new(...));
+                    }
+                }
+            }
+            Patch::Update { id, changes } => {
+                if let Some(_node) = self.nodes.get(&id) {
+                    for change in changes {
+                        match change {
+                            UpdateType::Style(_style) => {
+                                // Update layout engine style
+                            }
+                            UpdateType::Text(_text) => {
+                                // Update stored text buffer
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+            }
+            Patch::Delete { id } => {
+                self.nodes.remove(&id);
+            }
+            _ => {}
+        }
+    }
 
     fn draw_rect(&mut self, x: f32, y: f32, w: f32, h: f32, color: [f32; 4], radius: f32) {
         let scale = self.core.scale_factor;

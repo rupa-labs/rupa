@@ -1,6 +1,6 @@
 # Reactivity: Signals, Memos, and Effects 🧪
 
-Rupa Framework uses a **Fine-Grained Reactivity** system powered by the `rupa-signals` atom. This system ensures that UI updates are surgical and only occur when the underlying data actually changes.
+Rupa Framework uses a **Fine-Grained Reactivity** system powered by the `rupa-signals` atomic material. This system ensures that UI updates are surgical and only occur when the underlying data actually changes.
 
 ---
 

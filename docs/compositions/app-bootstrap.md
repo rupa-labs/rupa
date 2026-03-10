@@ -14,7 +14,7 @@ The Composition Layer is where the developer takes command of the Rupa Framework
 When `.run()`, `.run_tui()`, or `.run_mobile()` is called, the `App` performs a **Handover**:
 1. Executes `bootstrap()` to sync global themes.
 2. Builds all registered plugins.
-3. Transfers ownership of the `Root Component` to the **Platform Runner** in `rupa-engine` or `rupa-mobile`.
+3. Transfers ownership of the `Root Component` to the **Platform Runner** in `rupa-engine` or `rupa-mobile-core`.
 
 ---
 

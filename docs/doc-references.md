@@ -17,6 +17,23 @@ Foundational documents for understanding Rupa Framework's purpose and standards.
 
 ---
 
+## 🏪 Artisan Showrooms (Tier 3)
+Specialized entry points pre-assembled for specific business use cases.
+
+| Document | Description |
+| :--- | :--- |
+| **[Showroom Overview](./facades/overview.md)** | The philosophy of specialized bundles. |
+| **[Rupa Desktop](./facades/desktop.md)** | Pre-composed bundle for Native GUI apps. |
+| **[Rupa Web](./facades/web.md)** | Pre-composed bundle for WASM/SPA frontend apps. |
+| **[Rupa Server](./facades/server.md)** | Pre-composed bundle for SSR and Backend services. |
+| **[Rupa TUI](./facades/tui.md)** | Pre-composed bundle for terminal tools. |
+| **[Rupa Mobile](./facades/mobile.md)** | Pre-composed bundle for Native Mobile (Android/iOS). |
+| **[Rupa Full-Stack](./facades/fullstack.md)** | The comprehensive all-in-one Rupa bundle. |
+| **[Rupa Headless](./facades/headless.md)** | Pre-composed bundle for logic-only services. |
+| **[Rupa Hybrid](./facades/hybrid.md)** | Bridge artisan showroom for JS/TS interoperability. |
+
+---
+
 ## 🏗️ Technical References
 Comprehensive indices for components, utilities, and infrastructure.
 
@@ -88,6 +105,70 @@ Detailed technical specifications for every internal framework module.
 | **[App Bootstrap](./compositions/app-bootstrap.md)** | Orchestration logic from App::new() to Runner::run(). |
 | **[Control Flow](./compositions/control-flow.md)** | Logic components for conditional and list rendering. |
 | **[Routing](./compositions/routing.md)** | Universal navigation and URL synchronization system. |
+
+### Persistent Data System
+| Module | Description |
+| :--- | :--- |
+| **[Persistent Overview](./ecosystems/persistent-data/overview.md)** | Core concepts of "Storage as a Signal". |
+| **[Persistent Signals](./ecosystems/persistent-data/signal.md)** | Reactive wrapper for automatic data syncing. |
+| **[Store Interface](./ecosystems/persistent-data/store.md)** | Agnostic contract for storage backends. |
+| **[Storage Backends](./ecosystems/persistent-data/backends.md)** | Implementations for SQLite, WebStorage, and FS. |
+
+### Network & Assets
+| Module | Description |
+| :--- | :--- |
+| **[Network IO](./integrations/network-io.md)** | Reactive network requests and client config. |
+| **[Network Resource](./integrations/network-io/resource.md)** | Async state container for fetching data. |
+| **[Asset Management](./integrations/asset-management.md)** | Unified pipeline for fonts, images, and binary data. |
+| **[Resource Loader](./integrations/asset-management/loader.md)** | Asynchronous fetching and decoding pipeline. |
+
+### Motion & Animation
+| Module | Description |
+| :--- | :--- |
+| **[Motion Engine](./ecosystems/motion-engine.md)** | High-performance VNode interpolation. |
+| **[Spring Physics](./ecosystems/motion-engine/spring.md)** | Momentum-based reactive animations. |
+| **[Transitions](./ecosystems/motion-engine/transition.md)** | Declarative property animations. |
+
+### Accessibility & i18n
+| Module | Description |
+| :--- | :--- |
+| **[A11y Bridge](./integrations/accessibility/bridge.md)** | Integration with OS accessibility services. |
+| **[Node Translator](./integrations/accessibility/translate.md)** | Mapping VNodes to semantic OS roles. |
+| **[i18n System](./ecosystems/i18n.md)** | Multi-language management and reactive translation. |
+| **[Locale System](./ecosystems/i18n/locale.md)** | Regional settings and cultural formatting. |
+
+### Identity & Auth
+| Module | Description |
+| :--- | :--- |
+| **[Auth Overview](./ecosystems/auth.md)** | Reactive identity and session management. |
+| **[User Identity](./ecosystems/auth/identity.md)** | Core data structures for authenticated users. |
+| **[Session Lifecycle](./ecosystems/auth/session.md)** | Token management and auth state signals. |
+| **[Access Control](./ecosystems/auth/rbac.md)** | Role-based permissions and guards. |
+| **[Team Management](./ecosystems/auth/teams.md)** | Support for organizations and multi-tenancy. |
+
+### Forms & Context
+| Module | Description |
+| :--- | :--- |
+| **[Form Engine](./ecosystems/forms.md)** | High-level state management for UI inputs. |
+| **[Reactive Validation](./ecosystems/forms/validation.md)** | Rules and logic for data verification. |
+| **[Global Context](./ecosystems/context.md)** | Dependency injection for the VNode tree. |
+| **[Context Provider](./ecosystems/context/provider.md)** | Injecting data into sub-trees. |
+
+### Graphics & Telemetry
+| Module | Description |
+| :--- | :--- |
+| **[Canvas System](./renderings/canvas.md)** | Low-level GPU drawing and meshes. |
+| **[Graphics API](./renderings/canvas/api.md)** | Fluent interface for 2D/3D primitives. |
+| **[Telemetry System](./integrations/telemetry.md)** | Observability and performance monitoring. |
+| **[Performance Metrics](./integrations/telemetry/metrics.md)** | FPS, render times, and signal counts. |
+
+### Developer Tooling
+| Module | Description |
+| :--- | :--- |
+| **[Rupa CLI](./tooling/cli.md)** | Automated scaffolding and build pipelines. |
+| **[CLI Commands](./tooling/cli/commands.md)** | Subcommands for the artisan workflow. |
+| **[Testing Engine](./tooling/testing.md)** | QA utilities for headless verification. |
+| **[Snapshot Testing](./tooling/testing/snapshot.md)** | Structural regression detection. |
 
 ### Ecosystems & Visual DNA
 | Module | Description |

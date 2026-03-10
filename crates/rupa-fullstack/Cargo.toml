@@ -1,0 +1,18 @@
+[package]
+name = "rupa-fullstack"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rupa-core.workspace = true
+rupa-ui.workspace = true
+rupa-server.workspace = true
+rupa-web-core.workspace = true
+rupa-router.workspace = true
+rupa-store.workspace = true
+rupa-auth.workspace = true
+rupa-signals.workspace = true
+rupa-net.workspace = true
+rupa-i18n.workspace = true

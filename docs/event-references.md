@@ -57,5 +57,5 @@ Keyboard and text input events are sent directly to the component that has reque
 
 Rupa Framework Runners (Desktop, Web, Mobile) perform automated translation:
 - **Winit (Desktop)**: Mouse movements and clicks are mapped to `PointerMove` and `PointerButton`.
-- **Mobile (Touch)**: Single and multi-touch events are normalized into `Pointer` events by the `rupa-mobile` composite.
+- **Mobile (Touch)**: Single and multi-touch events are normalized into `Pointer` events by the `rupa-mobile-core` composite assembly.
 - **Web (JS)**: DOM events (PointerEvent, KeyboardEvent) are serialized and bridged into the WASM runner.
