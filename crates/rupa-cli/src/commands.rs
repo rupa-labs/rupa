@@ -262,9 +262,9 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
                 eprintln!("❌ Failed to execute action: {}", e);
             }
         }
-        Some(Commands::Update { canary, to }) => {
+        Commands::Update { canary, to } => {
             println!("🔄 Refining your artisan tools...");
-            
+
             let mut cmd = std::process::Command::new("cargo");
             cmd.arg("install");
 
@@ -275,17 +275,34 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
                 println!("📍 Switching to version: {}...", version);
                 cmd.args(["rupa-cli", "--version", &version]);
             } else {
-                println!("📦 Fetching the latest stable release...");
+                println!("📦 Fetching the latest stable release from registry...");
                 cmd.arg("rupa-cli");
             }
 
             let status = cmd.status();
 
             match status {
-                Ok(s) if s.success() => println!("✨ Rupa CLI has been successfully refined."),
-                _ => eprintln!("❌ Refinement failed. Please ensure Cargo is installed and you have network access."),
+                Ok(s) if s.success() => {
+                    println!("✨ Rupa CLI has been successfully refined.");
+                }
+                _ => {
+                    if !canary && to.is_none() {
+                        println!("💡 Stable release not found in registry. Redirecting to artisan repository...");
+                        let git_status = std::process::Command::new("cargo")
+                            .args(["install", "--git", "https://github.com/rupa-labs/rupa", "rupa-cli"])
+                            .status();
+
+                        match git_status {
+                            Ok(s) if s.success() => println!("✨ Rupa CLI has been successfully refined from repository."),
+                            _ => eprintln!("❌ Refinement failed. Please ensure Cargo is installed and you have network access."),
+                        }
+                    } else {
+                        eprintln!("❌ Refinement failed. Please ensure Cargo is installed and you have network access.");
+                    }
+                }
             }
         }
+
         Some(Commands::Version) | None => {
             println!("🎨 RUPA FRAMEWORK");
             println!("------------------");
