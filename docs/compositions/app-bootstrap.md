@@ -32,4 +32,4 @@ When `.run()`, `.run_tui()`, or `.run_mobile()` is called, the `App` performs a 
 ## 🔄 Interaction Flow
 - **App Builder -> Platform Runner:** Triggers the platform-specific execution loop.
 - **App Builder -> Plugin System:** Invokes plugin build hooks.
-- **App Builder -> Theme Engine:** Initializes the `rupa-styling` DNA Visual theme engine.
+- **App Builder -> Theme Engine:** Initializes the `rupa-ui` Theme Engine using `rupa-vnode` data models.

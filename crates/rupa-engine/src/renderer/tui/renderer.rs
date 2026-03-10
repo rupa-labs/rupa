@@ -1,5 +1,5 @@
 use rupa_core::Vec2;
-use rupa_styling::TextAlign;
+use rupa_vnode::TextAlign;
 use crate::renderer::{Renderer, RenderCore};
 use std::io::{Write, stdout};
 

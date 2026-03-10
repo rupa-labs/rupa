@@ -4,7 +4,7 @@ use rupa_support::{Vec2, Error};
 use crate::renderer::{Renderer, TextMeasurer};
 use crate::events::{UIEvent, KeyCode};
 use crate::scene::SceneNode;
-use rupa_styling::AccessibilityNode;
+use rupa_vnode::AccessibilityNode;
 
 /// The core trait for all UI elements in Rupa.
 pub trait Component: Send + Sync {

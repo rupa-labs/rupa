@@ -1,4 +1,4 @@
-use rupa_styling::{Style, Color, Rounding, FontWeight};
+use rupa_vnode::{Style, Color, Rounding, FontWeight};
 use super::base::{StyleModifier, Stylable};
 
 // --- Functional API ---

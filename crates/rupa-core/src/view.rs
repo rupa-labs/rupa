@@ -1,6 +1,6 @@
 use std::sync::{RwLock, RwLockWriteGuard};
 use std::sync::atomic::{AtomicBool, Ordering};
-use rupa_styling::Style;
+use rupa_vnode::Style;
 use crate::scene::SceneNode;
 
 /// The standardized infrastructure for any Component View.

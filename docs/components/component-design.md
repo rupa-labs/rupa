@@ -41,4 +41,4 @@ To build a new Artisan component in the Rupa Framework:
 
 - **Components -> Primitives:** Artisan components are built by composing Primitives like `Div` and `Flex`.
 - **Components -> Reactivity:** They are the primary consumers of the `rupa-signals` reactivity engine.
-- **Components -> Styling:** They utilize design tokens from `rupa-styling` to ensure aesthetic consistency.
+- **Components -> Styling:** They utilize design tokens from `rupa-vnode` to ensure aesthetic consistency.

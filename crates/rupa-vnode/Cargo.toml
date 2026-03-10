@@ -7,6 +7,7 @@ license.workspace = true
 
 [dependencies]
 rupa-signals.workspace = true
-rupa-styling.workspace = true
+rupa-support.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+taffy.workspace = true

@@ -1,4 +1,4 @@
-use rupa_styling::Style;
+use rupa_vnode::Style;
 use rupa_core::Component;
 use std::sync::RwLockWriteGuard;
 

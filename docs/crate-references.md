@@ -12,9 +12,7 @@ These crates handle single responsibilities and are the foundations of the frame
 | :--- | :--- | :--- | :--- |
 | **`rupa-support`** | Atom | The absolute foundation. Contains math (Vec2), ID generation, and common Errors. | `serde`, `thiserror` |
 | **`rupa-signals`** | Atom | The fine-grained reactivity engine. | `rupa-support`, `serde` |
-| **`rupa-styling`** | Atom | The visual DNA, OKLCH color math, and unified design tokens. | `rupa-signals`, `taffy`, `once_cell` |
-| **`rupa-vnode`** | Atom | The agnostic Virtual Tree structure used as a universal interface. | `rupa-styling`, `serde`, `serde_json` |
-
+| **`rupa-vnode`** | Atom | The universal language. Contains the agnostic Virtual Tree structure **and core Style data models** (Color, OKLCH, Spacing). | `rupa-signals`, `taffy`, `serde` |
 ---
 
 ## 🧩 2. The Composites (High-Level Assemblies)
@@ -23,8 +21,8 @@ These crates assemble multiple atoms into functional, ready-to-use engines.
 
 | Crate Name | Tier | Purpose | Key Dependencies |
 | :--- | :--- | :--- | :--- |
-| **`rupa-core`** | Composite | The primary foundation. Integrates VNodes and base traits. | `rupa-signals`, `rupa-styling`, `rupa-vnode`, `taffy` |
-| **`rupa-ui`** | Composite | The Artisan Component Library. Contains `Button`, `Text`, `VStack`. | `rupa-core` |
+| **`rupa-core`** | Composite | The primary foundation. Integrates VNodes and base traits. | `rupa-signals`, `rupa-vnode`, `taffy` |
+| **`rupa-ui`** | Composite | **The UI System.** Contains the **UI Component System** (elements) and **UI Utilities System** (Styling API). | `rupa-core`, `rupa-vnode` |
 | **`rupa-engine`** | Composite | The Native Runtime. Handles hardware-accelerated rendering for Desktop and Terminal. | `rupa-core`, `wgpu`, `winit`, `crossterm` |
 | **`rupa-server`** | Composite | The Backend & SSR Engine. Generates HTML/CSS. | `rupa-core`, `rupa-ui`, `axum`, `tokio` |
 | **`rupa-client`** | Composite | The Web Frontend Engine. Handles DOM and WASM Hydration. | `rupa-core`, `rupa-ui`, `wasm-bindgen`, `web-sys` |

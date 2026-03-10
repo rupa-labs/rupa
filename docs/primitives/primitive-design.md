@@ -8,7 +8,7 @@ Primitives are the foundational building blocks of the Rupa Framework ecosystem.
 
 1.  **No Semantic Meaning:** Unlike a `Button` or `Navbar`, a `Div` has no inherent purpose other than to hold other elements.
 2.  **Logic-Light:** Primitives focus on **Children Management**. They should never contain business logic or complex internal state.
-3.  **Layout-Centric:** Their primary responsibility is to translate styling properties (from `rupa-styling`) into the geometric scene nodes consumed by the rendering engine.
+3.  **Layout-Centric:** Their primary responsibility is to translate styling properties (from `rupa-vnode`) into the geometric scene nodes consumed by the rendering engine.
 4.  **VNode Mapping:** Every primitive renders as a `VNode::Element` with specific layout-oriented styles.
 
 ---

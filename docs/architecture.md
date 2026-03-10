@@ -6,19 +6,18 @@ This document outlines the **Atoms & Composites** architecture of the Rupa Frame
 
 ## 🏗️ The Layered Blueprint: Atoms to Facade
 
-Rupa Framework is organized into three distinct tiers within a monorepo workspace.
+Rupa Framework is organized into three distinct tiers within a monorepo workspace. For a deeper understanding of this design pattern, see the **[Atoms & Composites Deep Dive](./architectures/atoms-and-composites.md)**.
 
 ### 1. The Atoms (Low-Level Units - The Materials)
 These are independent, low-level crates that handle a single responsibility. They are the "screws and wood" of the framework.
 *   **`rupa-support`**: The absolute foundation. Contains math (Vec2), ID generation, and common Errors.
 *   **`rupa-signals`**: The fine-grained reactivity engine (Signal, Memo, Effect).
-*   **`rupa-styling`**: The visual DNA, OKLCH color math, and unified design tokens.
-*   **`rupa-vnode`**: The agnostic Virtual Tree structure used as a universal interface.
+*   **`rupa-vnode`**: The "Universal Language & DNA". Agnostic Virtual Tree structure **and the core Style data models** (Color, Layout, Spacing).
 
 ### 2. The Composites (High-Level Assemblies - The Furniture)
 These crates assemble multiple atoms into functional, high-level modules. They are pre-built solutions for standard use cases.
 *   **`rupa-core`**: The primary foundation. Integrates VNodes and handles diffing/patching reconciliation.
-*   **`rupa-ui`**: The Artisan Component Library (`Button`, `Text`, `VStack`, etc.).
+*   **`rupa-ui`**: The **UI System**. It houses the **UI Component System** (pre-built elements like Button, Text, VStack) and the **UI Utilities System** (the Styling API with modifiers like `.px()`, `.bg()`).
 *   **`rupa-engine`**: The Native Runtime. Handles hardware-accelerated rendering for **Desktop and Mobile (GPU)** and Terminal (TUI).
 *   **`rupa-server`**: The Backend & SSR Engine. Handles HTML generation and Axum integration.
 *   **`rupa-client`**: The Web Frontend Engine. Handles DOM manipulation and WASM Hydration.

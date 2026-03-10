@@ -1,5 +1,5 @@
 use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
 use taffy::prelude::*;
@@ -18,7 +18,7 @@ pub struct OverlayView {
 impl OverlayView {
     pub fn new() -> Self {
         let view = ViewCore::new();
-        view.style().layout.position = rupa_styling::Position::Absolute;
+        view.style().layout.position = rupa_vnode::Position::Absolute;
         Self { core: view }
     }
 }

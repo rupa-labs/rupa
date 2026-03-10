@@ -1,5 +1,5 @@
 use std::time::Duration;
-use rupa_styling::{Style, Transition, Easing};
+use rupa_vnode::{Style, Transition, Easing};
 use super::base::{StyleModifier, Stylable};
 
 // --- Functional API ---

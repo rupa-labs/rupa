@@ -1,6 +1,5 @@
 // --- Atoms ---
 pub use rupa_signals as signals;
-pub use rupa_styling as styling;
 pub use rupa_vnode as vnode;
 
 // --- Composites ---
@@ -17,4 +16,5 @@ pub mod prelude;
 pub use rupa_engine::App;
 pub use rupa_ui::Body;
 pub use rupa_signals::{Signal, Memo, Effect, Readable};
-pub use rupa_styling::{Style, Color, Theme, Variant, ColorMode};
+pub use rupa_vnode::{Style, Color};
+pub use rupa_ui::style::{Theme, Variant, ColorMode};

@@ -1,4 +1,4 @@
-use rupa_styling::{Style, Display, Position, FlexDirection, AlignItems, JustifyContent};
+use rupa_vnode::{Style, Display, Position, FlexDirection, AlignItems, JustifyContent};
 use super::base::{StyleModifier, Stylable};
 
 // --- Functional API ---
@@ -14,14 +14,14 @@ pub fn grid() -> impl StyleModifier {
 pub fn flex_row() -> impl StyleModifier {
     move |s: &mut Style| {
         s.layout.display = Display::Flex;
-        s.flex.flex_direction = rupa_styling::FlexDirection::Row;
+        s.flex.flex_direction = rupa_vnode::FlexDirection::Row;
     }
 }
 
 pub fn flex_col() -> impl StyleModifier {
     move |s: &mut Style| {
         s.layout.display = Display::Flex;
-        s.flex.flex_direction = rupa_styling::FlexDirection::Col;
+        s.flex.flex_direction = rupa_vnode::FlexDirection::Col;
     }
 }
 
@@ -38,7 +38,7 @@ pub fn justify_between() -> impl StyleModifier {
 }
 
 pub fn absolute() -> impl StyleModifier {
-    move |s: &mut Style| s.layout.position = rupa_styling::Position::Absolute
+    move |s: &mut Style| s.layout.position = rupa_vnode::Position::Absolute
 }
 
 pub fn relative() -> impl StyleModifier {

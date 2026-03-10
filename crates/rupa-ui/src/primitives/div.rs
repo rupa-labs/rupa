@@ -1,5 +1,5 @@
 use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
 use taffy::prelude::*;
@@ -22,7 +22,7 @@ pub struct Div<'a> {
 impl<'a> Div<'a> {
     pub fn new() -> Self {
         let view = DivView { core: ViewCore::new() };
-        view.core.style().flex.flex_direction = rupa_styling::FlexDirection::Col;
+        view.core.style().flex.flex_direction = rupa_vnode::FlexDirection::Col;
         Self {
             id: generate_id(),
             logic: DivLogic { children: Children::new() },

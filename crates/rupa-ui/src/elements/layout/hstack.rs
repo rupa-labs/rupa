@@ -1,5 +1,5 @@
 use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_styling::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::primitives::flex::Flex;
 use taffy::prelude::*;
@@ -12,7 +12,7 @@ pub struct HStack<'a> {
 impl<'a> HStack<'a> {
     pub fn new() -> Self {
         let mut inner = Flex::new();
-        inner.view.core.style().flex.flex_direction = rupa_styling::FlexDirection::Row;
+        inner.view.core.style().flex.flex_direction = rupa_vnode::FlexDirection::Row;
         Self { inner }
     }
 

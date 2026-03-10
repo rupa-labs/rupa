@@ -8,12 +8,12 @@ To maintain a scalable and sustainable codebase, Rupa Framework strictly maps it
 
 | Tier | Workspace Crate | Responsibility |
 | :--- | :--- | :--- |
-| **Atom: Styling** | `rupa-styling` | Design system tokens, OKLCH math, and Functional UI Utilities. |
+| **Atom: Styling (Data)** | `rupa-vnode` | Passive Style Data (Design system tokens, OKLCH math, Scales). |
 | **Atom: Reactivity** | `rupa-signals` | Signal, Memo, and the fine-grained Reactive Graph. |
 | **Atom: VNode** | `rupa-vnode` | Agnostic Virtual Tree structure and serialization logic. |
 | **Atom: Support** | `rupa-support` | Math (Vec2), ID generation, and common Errors. |
 | **Composite: Architecture** | `rupa-core` | Trait definitions (Component), universal data structures, and VNode reconciliation. |
-| **Composite: UI Elements** | `rupa-ui` | High-level semantic components and atomic building blocks (Div, Flex, Grid). |
+| **Composite: UI System** | `rupa-ui` | **UI Component System** (semantic elements) and **UI Utilities System** (Styling API). |
 | **Composite: Engine** | `rupa-engine` | Native runtime, WGPU/TUI rendering, and Taffy layout integration. |
 | **Composite: Mobile** | `rupa-mobile` | Mobile runner, lifecycle management, and touch events. |
 | **Composite: Platform** | `rupa-server` / `rupa-client` | SSR and Web frontend engines. |
@@ -42,13 +42,13 @@ impl Component for MyComponent {
 
 ## 🎨 Styling & Utility Standard
 
-The `crates/rupa-styling/src/` directory is divided into distinct areas to ensure **DRY** and **SOC**:
+The `crates/rupa-vnode/src/style/` directory is divided into distinct areas to ensure **DRY** and **SOC**:
 
 ### 1. Passive Data
 Structs and enums that represent design tokens but do not perform actions.
 - `color.rs` (OKLCH implementation)
 - `spacing.rs` (Margin/Padding data)
-- `scale.rs` (The 10-step unified scale)
+- `types.rs` (Breakpoints, Scales, etc.)
 
 ### 2. Active Modifiers
 Found in `crates/rupa-ui/src/style/modifiers/`. These are the functional UI Utilities that users interact with.

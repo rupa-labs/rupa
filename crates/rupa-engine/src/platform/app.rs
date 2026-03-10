@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 use rupa_core::component::Component;
 use crate::plugin::PluginRegistry;
-use rupa_styling::{Style, Theme};
+use rupa_vnode::{Style, Theme};
 use crate::platform::context::PlatformCore;
 use rupa_core::{Signal, Vec2, Error};
 use rupa_core::events::InputEvent;

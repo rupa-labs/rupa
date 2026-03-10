@@ -1,8 +1,8 @@
 # Project Overview 🎨
 
-**Rupa Framework** is a modern, high-performance cross-platform UI framework for Rust. It is engineered for artisans who demand the perfect balance between **Semantic Structure** and **Utility-First Flexibility**.
+**Rupa Framework** is a **modular meta-framework, cross-platform and multi-purpose**, engineered for Rust artisans. It is designed for those who demand the perfect balance between **Semantic Structure**, **Utility-First Flexibility**, and **Low-Level Control**.
 
-Inspired by the ergonomics of TailwindCSS and the reliability of Bootstrap, Rupa Framework provides a type-safe, reactive engine built directly on top of hardware-accelerated primitives.
+As a **meta-framework**, Rupa is not just a UI library; it's a foundational ecosystem of independent **Atoms** and functional **Composites** that can be assembled to build anything from hardware-accelerated GUIs and SSH-based CLIs to high-performance SSR web applications.
 
 ---
 

@@ -1,6 +1,6 @@
 # Styling: Typography & Flow 🔡
 
-The Rupa Framework provides a rich, type-safe system for managing typography via the `rupa-styling` crate. This system allows you to define everything from basic font properties to advanced text decorations and flow control.
+The Rupa Framework provides a rich, type-safe system for managing typography via the `rupa-vnode` crate. This system allows you to define everything from basic font properties to advanced text decorations and flow control.
 
 ---
 

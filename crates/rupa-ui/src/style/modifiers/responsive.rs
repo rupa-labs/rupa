@@ -1,4 +1,4 @@
-use rupa_styling::{Style, Breakpoint};
+use rupa_vnode::{Style, Breakpoint};
 use super::base::{StyleModifier, Stylable};
 
 // --- Functional API ---

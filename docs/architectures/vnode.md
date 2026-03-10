@@ -61,7 +61,7 @@ The Rupa Framework follows a reactive lifecycle driven by the VNode tree.
 
 To maintain the **Atoms & Composites** standard, the VNode implementation is split:
 
-*   **`rupa-vnode` (Atom):** Contains the core `VNode` enum and `VElement` structs. It is 100% agnostic and serializable.
+*   **`rupa-vnode` (Atom):** Contains the core `VNode` enum, `VElement` structs, **and the foundational Style data models** (Color, Spacing, Layout). It is 100% agnostic and serializable.
 *   **`rupa-core` (Composite):** Integrates VNodes into the `Component` trait and provides the reconciliation (Diff/Patch) engine.
 
 ---

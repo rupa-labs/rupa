@@ -11,8 +11,8 @@ pub use rupa_support::{Vec2, Error, generate_id};
 pub use rupa_signals as signals;
 pub use rupa_signals::{Signal, Memo, Effect, Readable, CursorIcon};
 
-pub use rupa_styling as styling;
-pub use rupa_styling::*; // Re-export all styling data types (Style, Color, etc.)
+pub use rupa_vnode as styling;
+pub use rupa_vnode::*; // Re-export all styling data types (Style, Color, etc.)
 
 pub use rupa_vnode as vnode;
 pub use rupa_vnode::{VNode, VElement, VComponent};

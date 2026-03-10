@@ -11,7 +11,6 @@ members = [
     "crates/rupa-client",
     "crates/rupa-docs",
     "crates/rupa-signals",
-    "crates/rupa-styling",
     "crates/rupa-vnode",
     "crates/rupa-mobile",
     "crates/rupa-support",
@@ -21,7 +20,7 @@ members = [
 version = "0.1.0"
 edition = "2021"
 authors = ["Reas Vyn <reasvyn@gmail.com>"]
-description = "A high-performance, full-stack cross-platform UI framework for Rust artisans. Built with an Atoms & Composites modular architecture."
+description = "A modular meta-framework, cross-platform and multi-purpose for Rust artisans. Built with an Atoms & Composites modular architecture."
 license = "MIT"
 repository = "https://github.com/rupa-labs/rupa"
 
@@ -29,7 +28,6 @@ repository = "https://github.com/rupa-labs/rupa"
 # Internal crates (Atoms)
 rupa-support = { path = "crates/rupa-support" }
 rupa-signals = { path = "crates/rupa-signals" }
-rupa-styling = { path = "crates/rupa-styling" }
 rupa-vnode = { path = "crates/rupa-vnode" }
 
 # Internal crates (Composites)

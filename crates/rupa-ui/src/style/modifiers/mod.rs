@@ -7,8 +7,8 @@ pub mod animation;
 pub mod responsive;
 pub mod state;
 
-pub use rupa_styling::theme;
-pub use rupa_styling::theme::*;
+pub use rupa_vnode::theme;
+pub use rupa_vnode::theme::*;
 
 pub use base::*;
 pub use layout::*;

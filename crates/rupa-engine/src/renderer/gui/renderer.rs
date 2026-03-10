@@ -2,7 +2,7 @@ use std::sync::Arc;
 use wgpu::*;
 use wgpu::util::StagingBelt;
 use rupa_core::Vec2;
-use rupa_styling::TextAlign;
+use rupa_vnode::TextAlign;
 use crate::renderer::{Renderer as BaseRenderer, RenderCore};
 use super::batcher::{Batcher, Vertex};
 use super::texture::Texture;

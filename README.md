@@ -1,6 +1,6 @@
 # Rupa Framework 🎨
 
-**Rupa Framework** is a high-performance, full-stack cross-platform UI toolkit for Rust artisans. It is built as a modular ecosystem of **Atoms & Composites**, allowing you to use it as a complete framework or as a collection of standalone tools.
+**Rupa Framework** is a **modular meta-framework, cross-platform and multi-purpose**, engineered for Rust artisans. It is built as a highly decoupled ecosystem of **Atoms & Composites**, allowing you to use it as a complete high-level solution or as a collection of specialized standalone tools for any target.
 
 ---
 
@@ -8,7 +8,7 @@
 
 Rupa Framework is designed for developers who demand the perfect balance between **Semantic Structure**, **Fine-Grained Reactivity**, and **Industry-Standard Modularity**.
 
-- **Atoms:** Independent low-level building blocks like `rupa-signals` (reactivity) and `rupa-styling` (design DNA).
+- **Atoms:** Independent low-level building blocks like `rupa-signals` (reactivity) and `rupa-vnode` (design DNA).
 - **Composites:** Ready-to-use high-level engines for **Native Desktop (GPU)**, **Terminal (TUI)**, and **Full-Stack Web (SSR/DOM)**.
 - **Polyglot Hybrid:** Engineered for **JS/TS interoperability** via WebAssembly and High-Performance SSR native modules.
 

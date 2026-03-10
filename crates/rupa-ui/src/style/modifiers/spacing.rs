@@ -1,4 +1,4 @@
-use rupa_styling::{Style, Spacing, Scale};
+use rupa_vnode::{Style, Spacing, Scale};
 use super::base::{StyleModifier, Stylable};
 
 // --- Functional API ---
