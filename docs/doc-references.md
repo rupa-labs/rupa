@@ -167,6 +167,7 @@ Detailed technical specifications for every internal framework module.
 | :--- | :--- |
 | **[Rupa CLI](./tooling/cli.md)** | Automated scaffolding and build pipelines. |
 | **[CLI Commands](./tooling/cli/commands.md)** | Subcommands for the artisan workflow. |
+| **[Console Reference](./console-references.md)** | Standardized TUI components for CLI output. |
 | **[Testing Engine](./tooling/testing.md)** | QA utilities for headless verification. |
 | **[Snapshot Testing](./tooling/testing/snapshot.md)** | Structural regression detection. |
 
