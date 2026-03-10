@@ -18,8 +18,8 @@ Rupa Framework is designed for developers who demand the perfect balance between
 
 The fastest way to start crafting with Rupa is through our aesthetic installation wizard.
 
-### 1. Install the Rupa CLI
-Ensure you have [Rust](https://www.rust-lang.org/) installed, then run:
+### 1. Install the Rupa CLI (Coming Soon to Crates.io)
+For now, please use the **Git Repository** installation method. Once released, you can run:
 
 ```bash
 cargo install rupa-cli

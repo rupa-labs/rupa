@@ -4,9 +4,9 @@ This guide covers the two primary ways to install the Rupa Framework CLI and int
 
 ---
 
-## 🎨 Option 1: Via Crates.io (Recommended)
+## 🎨 Option 1: Via Crates.io (Coming Soon)
 
-The easiest way to get the Rupa CLI is through the official Rust package registry. This provides you with the `rupa` command globally.
+The official release on the Rust package registry is coming soon. Once released, this will be the easiest way to get the Rupa CLI globally.
 
 ### 1. Install the CLI
 ```bash
