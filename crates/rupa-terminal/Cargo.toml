@@ -4,15 +4,17 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-description = "The flagship Terminal showroom and facade for crafting aesthetic Rupa CLI applications."
+description = "Aesthetic Showroom for Terminal applications. Facade of the Rupa Framework."
 repository.workspace = true
-readme = "README.md"
 
 [dependencies]
-rupa-core.workspace = true
 rupa-engine.workspace = true
+rupa-core.workspace = true
 rupa-console.workspace = true
 rupa-tui.workspace = true
-rupa-ui.workspace = true
 rupa-signals.workspace = true
 rupa-base.workspace = true
+rupa-ui.workspace = true
+rupa-motion.workspace = true
+crossterm.workspace = true
+taffy.workspace = true

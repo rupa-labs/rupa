@@ -11,7 +11,6 @@ keywords = ["rupa", "animation", "motion", "spring", "physics"]
 categories = ["gui", "multimedia"]
 
 [dependencies]
-rupa-core.workspace = true
 rupa-signals.workspace = true
 rupa-vnode.workspace = true
 rupa-base.workspace = true

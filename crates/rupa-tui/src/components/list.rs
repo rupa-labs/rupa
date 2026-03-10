@@ -4,7 +4,7 @@ use taffy::prelude::*;
 use std::sync::Arc;
 
 /// A TUI-optimized selection list.
-pub struct ListSelector {
+pub struct List {
     pub id: String,
     pub options: Vec<String>,
     pub selected_index: Signal<usize>,
@@ -12,7 +12,7 @@ pub struct ListSelector {
     pub on_submit: Option<Arc<dyn Fn(usize) + Send + Sync>>,
 }
 
-impl ListSelector {
+impl List {
     pub fn new(options: Vec<impl Into<String>>) -> Self {
         Self {
             id: generate_id(),
@@ -29,14 +29,14 @@ impl ListSelector {
     }
 }
 
-impl Component for ListSelector {
+impl Component for List {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
 
     fn render(&self) -> VNode {
         let selected = self.selected_index.get();
-        let mut list = VStack::new(); // Simplified for now
+        let mut list = VStack::new();
 
         for (i, opt) in self.options.iter().enumerate() {
             let is_selected = i == selected;

@@ -4,16 +4,13 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-description = "Low-level terminal rendering and runner infrastructure for the Rupa Framework."
+description = "Low-level terminal rendering primitives for the Rupa Framework. Atom Tier."
 repository.workspace = true
 readme = "README.md"
 
 [dependencies]
 rupa-core.workspace = true
-rupa-engine.workspace = true
 rupa-signals.workspace = true
 rupa-base.workspace = true
-rupa-motion.workspace = true
 crossterm.workspace = true
-taffy.workspace = true
 log.workspace = true

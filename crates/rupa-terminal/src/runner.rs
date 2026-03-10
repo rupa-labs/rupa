@@ -1,7 +1,7 @@
 use rupa_core::{Vec2, Error, Renderer, vnode::VNode};
 use rupa_core::events::InputEvent;
 use rupa_core::events::dispatcher::InputDispatcher;
-use crate::TerminalRenderer;
+use rupa_console::TerminalRenderer;
 use rupa_engine::platform::{SharedPlatformCore, runner::*, register_redraw_proxy, AppMetadata};
 use crossterm::{
     event::{self, Event, KeyCode, KeyModifiers},
@@ -50,10 +50,55 @@ impl TerminalRunner {
 
             // 4. Paint the VNode tree
             self.renderer.clear_screen();
-            self.renderer.paint_vnode(&vnode, &core.scene.layout_engine.taffy, layout_root, Vec2::zero());
+            Self::paint_vnode(&mut self.renderer, &vnode, &core.scene.layout_engine.taffy, layout_root, Vec2::zero());
             self.renderer.present();
 
             core.root = Some(root);
+        }
+    }
+
+    fn paint_vnode(
+        renderer: &mut TerminalRenderer,
+        node: &VNode,
+        taffy: &TaffyTree<()>,
+        layout_node: NodeId,
+        global_pos: Vec2,
+    ) {
+        let layout = taffy.layout(layout_node).unwrap();
+        let pos = global_pos + Vec2::new(layout.location.x, layout.location.y);
+
+        match node {
+            VNode::Element(el) => {
+                // 1. Draw Background
+                if let Some(ref color) = el.style.background.color {
+                    let rgba: [f32; 4] = color.to_rgba();
+                    renderer.draw_rect(pos.x, pos.y, layout.size.width, layout.size.height, rgba, 0.0);
+                }
+
+                if el.style.border.width != 0.0 {
+                    renderer.draw_outline(pos.x, pos.y, layout.size.width, layout.size.height, [0.5, 0.5, 0.5, 1.0]);
+                }
+
+                let taffy_children = taffy.children(layout_node).unwrap();
+                for (i, child) in el.children.iter().enumerate() {
+                    if let Some(child_layout_node) = taffy_children.get(i) {
+                        Self::paint_vnode(renderer, child, taffy, *child_layout_node, pos);
+                    }
+                }
+            }
+            VNode::Text(text) => {
+                let color = [1.0, 1.0, 1.0, 1.0]; // Default white for TUI text
+                renderer.draw_text(text, pos.x, pos.y, layout.size.width, 1.0, color, rupa_core::vnode::TextAlign::Left);
+            }
+            VNode::Fragment(children) => {
+                let taffy_children = taffy.children(layout_node).unwrap();
+                for (i, child) in children.iter().enumerate() {
+                    if let Some(child_layout_node) = taffy_children.get(i) {
+                        Self::paint_vnode(renderer, child, taffy, *child_layout_node, pos);
+                    }
+                }
+            }
+            _ => {}
         }
     }
 

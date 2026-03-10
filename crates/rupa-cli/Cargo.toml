@@ -17,6 +17,7 @@ path = "src/main.rs"
 [dependencies]
 rupa-base.workspace = true
 rupa-terminal.workspace = true
+rupa-tui.workspace = true
 rupa-engine.workspace = true
 rupa-ui.workspace = true
 rupa-core.workspace = true

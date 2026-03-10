@@ -1,11 +1,9 @@
 pub mod ui;
-pub mod runner;
 
-use rupa_core::{Renderer, RenderCore, TextMeasurer, vnode::TextAlign, vnode::VNode};
+use rupa_core::{Renderer, RenderCore, TextMeasurer, vnode::TextAlign};
 use rupa_base::Vec2;
 use std::io::{Write, stdout, Stdout};
 
-pub use runner::TerminalRunner;
 pub use ui::Console;
 
 /// A high-performance TUI renderer for the Rupa Framework.
@@ -125,53 +123,5 @@ impl Renderer for TerminalRenderer {
 
     fn present(&mut self) {
         self.flush();
-    }
-}
-
-impl TerminalRenderer {
-    pub fn paint_vnode(
-        &mut self,
-        node: &VNode,
-        taffy: &taffy::prelude::TaffyTree<()>,
-        layout_node: taffy::prelude::NodeId,
-        global_pos: Vec2,
-    ) {
-        let layout = taffy.layout(layout_node).unwrap();
-        let pos = global_pos + Vec2::new(layout.location.x, layout.location.y);
-
-        match node {
-            VNode::Element(el) => {
-                // 1. Draw Background
-                if let Some(ref color) = el.style.background.color {
-                    let rgba: [f32; 4] = color.to_rgba();
-                    self.draw_rect(pos.x, pos.y, layout.size.width, layout.size.height, rgba, 0.0);
-                }
-
-                if el.style.border.width != 0.0 {
-                    self.draw_outline(pos.x, pos.y, layout.size.width, layout.size.height, [0.5, 0.5, 0.5, 1.0]);
-                }
-
-                let taffy_children = taffy.children(layout_node).unwrap();
-                for (i, child) in el.children.iter().enumerate() {
-                    if let Some(child_layout_node) = taffy_children.get(i) {
-                        self.paint_vnode(child, taffy, *child_layout_node, pos);
-                    }
-                }
-                }
-                VNode::Text(text) => {
-                let color = [1.0, 1.0, 1.0, 1.0]; // Default white for TUI text
-                self.draw_text(text, pos.x, pos.y, layout.size.width, 1.0, color, TextAlign::Left);
-                }
-                VNode::Fragment(children) => {
-                let taffy_children = taffy.children(layout_node).unwrap();
-                for (i, child) in children.iter().enumerate() {
-                    if let Some(child_layout_node) = taffy_children.get(i) {
-                        self.paint_vnode(child, taffy, *child_layout_node, pos);
-                    }
-                }
-                }
-
-            _ => {}
-        }
     }
 }

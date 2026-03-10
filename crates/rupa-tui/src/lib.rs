@@ -1,4 +1,3 @@
-pub use rupa_console::{TerminalRenderer, TerminalRunner};
+pub use rupa_console::TerminalRenderer;
 
-// Future: Terminal-specific UI components (Table, List, etc.)
-// pub mod components;
+pub mod components;

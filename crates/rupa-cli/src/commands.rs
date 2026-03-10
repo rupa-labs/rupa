@@ -2,11 +2,11 @@ use rupa_core::{Component, VNode, ViewCore, generate_id, Signal, renderer::{Rend
 use rupa_ui::elements::{VStack, Text, Button};
 use rupa_engine::App;
 use rupa_terminal::{TerminalRunner, Console};
+use rupa_tui::components::List;
 use rupa_engine::platform::runner::PlatformRunner;
 use rupa_signals::Effect;
 use std::sync::Arc;
 use clap::{Parser, Subcommand};
-use crate::ui::ListSelector;
 use crate::templates::{Scaffolder, TemplateType};
 
 #[derive(Parser)]
@@ -148,7 +148,7 @@ impl Component for CreateWizard {
                 VStack::new()
                     .gap(12.0)
                     .child(Box::new(Text::new("CHOOSE YOUR PALETTE")))
-                    .child(Box::new(ListSelector::new(vec![
+                    .child(Box::new(List::new(vec![
                         "Showroom (Zero Bloat - Default)",
                         "Native Power (Desktop)",
                         "Web Excellence (Web/SSR)",

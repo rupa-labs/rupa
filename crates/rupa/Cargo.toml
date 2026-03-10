@@ -25,6 +25,7 @@ rupa-desktop = { workspace = true, optional = true }
 rupa-tui = { workspace = true, optional = true }
 rupa-web = { workspace = true, optional = true }
 rupa-server = { workspace = true, optional = true }
+rupa-mobile = { workspace = true, optional = true }
 
 [features]
 default = ["desktop"]
@@ -32,3 +33,4 @@ desktop = ["rupa-desktop"]
 tui = ["rupa-tui"]
 ssr = ["rupa-server"]
 web = ["rupa-web"]
+mobile = ["rupa-mobile"]

@@ -67,12 +67,12 @@ rupa-telemetry = { path = "crates/rupa-telemetry" }
 rupa-canvas = { path = "crates/rupa-canvas" }
 rupa-md = { path = "crates/rupa-md" }
 rupa-console = { path = "crates/rupa-console" }
-rupa-terminal = { path = "crates/rupa-terminal" }
 
 # Composite Assemblies (Tier 2)
 rupa-core = { path = "crates/rupa-core" }
 rupa-ui = { path = "crates/rupa-ui" }
 rupa-engine = { path = "crates/rupa-engine" }
+rupa-tui = { path = "crates/rupa-tui" }
 rupa-server = { path = "crates/rupa-server" }
 rupa-web = { path = "crates/rupa-web" }
 rupa-mobile = { path = "crates/rupa-mobile" }
@@ -84,7 +84,7 @@ rupa-hybrid = { path = "crates/rupa-hybrid" }
 # Artisan Showrooms (Tier 3)
 rupa = { path = "crates/rupa" }
 rupa-desktop = { path = "crates/rupa-desktop" }
-rupa-tui = { path = "crates/rupa-tui" }
+rupa-terminal = { path = "crates/rupa-terminal" }
 rupa-headless = { path = "crates/rupa-headless" }
 
 # Developer Tooling
