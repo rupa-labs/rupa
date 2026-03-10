@@ -1,7 +1,5 @@
 use wasm_bindgen::prelude::*;
-use rupa_core::component::Component;
-use rupa_core::state::Signal;
-use serde_wasm_bindgen;
+use rupa_signals::Signal;
 
 #[wasm_bindgen]
 pub struct RupaApp {

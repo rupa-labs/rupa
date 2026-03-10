@@ -1,9 +1,9 @@
-use rupa_core::{Component, VNode, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode};
+use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 pub struct BodyLogic<'a> {
     pub children: Children<'a>,
@@ -11,7 +11,7 @@ pub struct BodyLogic<'a> {
 }
 
 pub struct BodyView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Body<'a> {
@@ -28,12 +28,13 @@ impl<'a> Body<'a> {
                 children: Children::new(),
                 overlays: Signal::new(Vec::new()),
             },
-            view: BodyView { core: ViewCore::new() },
+            view: BodyView { core: Arc::new(ViewCore::new()) },
         }
     }
 
     pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self {
         self.logic.children.push(child);
+        self.view.core.mark_dirty();
         self
     }
 }
@@ -49,11 +50,17 @@ impl<'a> Component for Body<'a> {
         all
     }
 
-    fn render(&self) -> VNode {
-        VNode::Empty
-    }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
 
-    fn as_any(&self) -> Option<&dyn std::any::Any> { None }
+    fn render(&self) -> VNode {
+        VNode::Element(VElement {
+            tag: "body".to_string(),
+            style: self.view.core.style.read().unwrap().clone(),
+            attributes: Attributes::default(),
+            children: self.logic.children.render_all(),
+            key: Some(self.id.clone()),
+        })
+    }
 
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
@@ -61,22 +68,20 @@ impl<'a> Component for Body<'a> {
     fn mark_dirty(&self) { self.view.core.mark_dirty(); }
     fn clear_dirty(&self) { self.view.core.clear_dirty(); }
 
-    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
+    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
         let style = self.view.core.style.read().unwrap().to_taffy();
         let node = taffy.new_with_children(style, &[]).unwrap();
         self.set_node(node.into());
         
-        for child in self.logic.children.iter() {
-            let child_node = child.layout(taffy, measurer, Some(node));
-            taffy.add_child(node, child_node).unwrap();
-        }
+        let mut child_nodes = self.logic.children.layout_all(taffy, measurer);
 
         let overlays = self.logic.overlays.get();
         for overlay in overlays {
             let overlay_node = overlay.layout(taffy, measurer, Some(node));
-            taffy.add_child(node, overlay_node).unwrap();
+            child_nodes.push(overlay_node);
         }
 
+        taffy.set_children(node, &child_nodes).unwrap();
         node
     }
 

@@ -1,9 +1,9 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, Vec2, ViewCore, Renderer, TextMeasurer, SceneNode};
+use rupa_vnode::Style;
 use crate::style::modifiers::base::Stylable;
 use crate::primitives::flex::Flex;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 pub struct VStack<'a> {
     pub inner: Flex<'a>,
@@ -11,7 +11,7 @@ pub struct VStack<'a> {
 
 impl<'a> VStack<'a> {
     pub fn new() -> Self {
-        let mut inner = Flex::new();
+        let inner = Flex::new();
         inner.view.core.style().flex.flex_direction = rupa_vnode::FlexDirection::Col;
         Self { inner }
     }
@@ -34,6 +34,7 @@ impl<'a> Stylable for VStack<'a> {
 impl<'a> Component for VStack<'a> {
     fn id(&self) -> &str { self.inner.id() }
     fn children(&self) -> Vec<&dyn Component> { self.inner.children() }
+    fn view_core(&self) -> Arc<ViewCore> { self.inner.view_core() }
     fn render(&self) -> VNode { self.inner.render() }
 
     fn get_node(&self) -> Option<SceneNode> { self.inner.get_node() }

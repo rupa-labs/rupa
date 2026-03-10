@@ -1,16 +1,16 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer};
+use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 pub struct FlexLogic<'a> {
     pub children: Children<'a>,
 }
 
 pub struct FlexView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Flex<'a> {
@@ -24,7 +24,7 @@ impl<'a> Flex<'a> {
         Self {
             id: generate_id(),
             logic: FlexLogic { children: Children::new() },
-            view: FlexView { core: ViewCore::new() },
+            view: FlexView { core: Arc::new(ViewCore::new()) },
         }
     }
 
@@ -62,7 +62,7 @@ impl<'a> Component for Flex<'a> {
         self.set_node(node.into());
         
         for child in self.logic.children.iter() {
-            let child_node = child.layout(taffy, measurer, Some(node));
+            let child_node = child.as_ref().layout(taffy, measurer, Some(node));
             taffy.add_child(node, child_node).unwrap();
         }
 

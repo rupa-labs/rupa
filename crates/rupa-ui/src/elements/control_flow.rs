@@ -1,53 +1,48 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
-use crate::style::modifiers::base::Stylable;
+use rupa_core::{Component, VNode, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode, Vec2};
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::Arc;
 
 // --- SHOW ---
 
-pub struct ShowLogic<'a> {
-    pub when: bool,
-    pub child: Box<dyn Component + 'a>,
+pub struct ShowLogic {
+    pub condition: Signal<bool>,
+    pub fallback: VNode,
 }
 
 pub struct ShowView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Show<'a> {
     pub id: String,
-    pub logic: ShowLogic<'a>,
+    pub logic: ShowLogic,
     pub view: ShowView,
+    pub child: Box<dyn Component + 'a>,
 }
 
 impl<'a> Show<'a> {
-    pub fn new(when: bool, child: Box<dyn Component + 'a>) -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+    pub fn new(condition: Signal<bool>, child: impl Component + 'a) -> Self {
         Self {
             id: generate_id(),
-            logic: ShowLogic { when, child },
-            view: ShowView { core: view },
+            logic: ShowLogic { condition, fallback: VNode::Empty },
+            view: ShowView { core: Arc::new(ViewCore::new()) },
+            child: Box::new(child),
         }
     }
 }
 
 impl<'a> Component for Show<'a> {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> {
-        if self.logic.when { vec![self.logic.child.as_ref()] } else { vec![] }
-    }
+    fn children(&self) -> Vec<&dyn Component> { vec![self.child.as_ref()] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
-        if self.logic.when {
-            self.logic.child.render()
+        if self.logic.condition.get() {
+            self.child.render()
         } else {
-            VNode::Empty
+            self.logic.fallback.clone()
         }
     }
-
-    fn as_any(&self) -> Option<&dyn std::any::Any> { None }
 
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
@@ -56,81 +51,63 @@ impl<'a> Component for Show<'a> {
     fn clear_dirty(&self) { self.view.core.clear_dirty(); }
 
     fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
-        let style = self.view.core.style.read().unwrap().to_taffy();
-        let node = if let Some(existing) = self.view.core.get_node() {
-            if self.view.core.is_dirty() { taffy.set_style(existing.raw(), style).unwrap(); }
-            existing.raw()
+        if self.logic.condition.get() {
+            self.child.layout(taffy, measurer, parent)
         } else {
-            let new_node = taffy.new_with_children(style, &[]).unwrap();
-            self.view.core.set_node(SceneNode::from(new_node));
-            new_node
-        };
-        if let Some(p) = parent {
-            let cur = taffy.children(p).unwrap_or_default();
-            if !cur.contains(&node) { taffy.add_child(p, node).unwrap(); }
+            let node = taffy.new_leaf(taffy::Style::default()).unwrap();
+            self.view.core.set_node(SceneNode::from(node));
+            node
         }
-        if self.logic.when {
-            let child_node = self.logic.child.layout(taffy, measurer, Some(node));
-            taffy.set_children(node, &[child_node]).unwrap();
-        } else {
-            taffy.set_children(node, &[]).unwrap();
-        }
-        self.view.core.clear_dirty();
-        node
     }
 
     fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
-        if self.logic.when {
-            self.logic.child.paint(renderer, taffy, node, is_group_hovered, global_pos);
+        if self.logic.condition.get() {
+            self.child.paint(renderer, taffy, node, is_group_hovered, global_pos);
         }
     }
 }
 
-impl<'a> Stylable for Show<'a> {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.style() }
-}
+// --- FOR EACH ---
 
-// --- FOREACH ---
-
-pub struct ForEachLogic<'a, T> {
-    pub items: Vec<T>,
-    pub builder: Box<dyn Fn(&T) -> Box<dyn Component + 'a> + Send + Sync>,
+pub struct ForEachLogic<T> {
+    pub items: Signal<Vec<T>>,
 }
 
 pub struct ForEachView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct ForEach<'a, T> {
     pub id: String,
-    pub logic: ForEachLogic<'a, T>,
+    pub logic: ForEachLogic<T>,
     pub view: ForEachView,
+    pub template: Arc<dyn Fn(&T) -> Box<dyn Component + 'a> + Send + Sync>,
 }
 
-impl<'a, T> ForEach<'a, T> {
-    pub fn new(items: Vec<T>, builder: impl Fn(&T) -> Box<dyn Component + 'a> + Send + Sync + 'static) -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+impl<'a, T: 'static + Send + Sync + Clone> ForEach<'a, T> {
+    pub fn new(items: Signal<Vec<T>>, template: impl Fn(&T) -> Box<dyn Component + 'a> + Send + Sync + 'static) -> Self {
         Self {
             id: generate_id(),
-            logic: ForEachLogic { items, builder: Box::new(builder) },
-            view: ForEachView { core: view },
+            logic: ForEachLogic { items },
+            view: ForEachView { core: Arc::new(ViewCore::new()) },
+            template: Arc::new(template),
         }
     }
 }
 
-impl<'a, T: Send + Sync> Component for ForEach<'a, T> {
+impl<'a, T: 'static + Send + Sync + Clone> Component for ForEach<'a, T> {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
-        let children = self.logic.items.iter()
-            .map(|item| (self.logic.builder)(item).render())
-            .collect();
+        let mut children = Vec::new();
+        for item in self.logic.items.get().iter() {
+            let comp = (self.template)(item);
+            children.push(comp.render());
+        }
         VNode::Fragment(children)
     }
-
-    fn as_any(&self) -> Option<&dyn std::any::Any> { None }
 
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
@@ -138,38 +115,10 @@ impl<'a, T: Send + Sync> Component for ForEach<'a, T> {
     fn mark_dirty(&self) { self.view.core.mark_dirty(); }
     fn clear_dirty(&self) { self.view.core.clear_dirty(); }
 
-    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
-        let style = self.view.core.style.read().unwrap().to_taffy();
-        let node = if let Some(existing) = self.view.core.get_node() {
-            if self.view.core.is_dirty() { taffy.set_style(existing.raw(), style).unwrap(); }
-            existing.raw()
-        } else {
-            let new_node = taffy.new_with_children(style, &[]).unwrap();
-            self.view.core.set_node(SceneNode::from(new_node));
-            new_node
-        };
-        if let Some(p) = parent {
-            let cur = taffy.children(p).unwrap_or_default();
-            if !cur.contains(&node) { taffy.add_child(p, node).unwrap(); }
-        }
-        
-        let child_nodes: Vec<NodeId> = self.logic.items.iter()
-            .map(|item| (self.logic.builder)(item).layout(taffy, measurer, Some(node)))
-            .collect();
-        
-        taffy.set_children(node, &child_nodes).unwrap();
-        self.view.core.clear_dirty();
-        node
+    fn layout(&self, _taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
+        // Complex logic for fragment reconciliation
+        todo!("ForEach layout reconciliation pending")
     }
 
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
-        for item in &self.logic.items {
-            let child = (self.logic.builder)(item);
-            child.paint(renderer, taffy, node, is_group_hovered, global_pos);
-        }
-    }
-}
-
-impl<'a, T: Send + Sync> Stylable for ForEach<'a, T> {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.style() }
+    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
 }

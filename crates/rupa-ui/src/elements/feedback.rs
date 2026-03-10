@@ -1,17 +1,17 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
-use crate::style::modifiers::base::Stylable;
+use rupa_core::{Component, VNode, Vec2, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode};
+use rupa_vnode::Variant;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::Arc;
 
 // --- PROGRESS ---
 
 pub struct ProgressLogic {
-    pub value: f32, // 0.0 to 1.0
+    pub value: Signal<f32>,
+    pub max: f32,
 }
 
 pub struct ProgressView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Progress {
@@ -21,13 +21,11 @@ pub struct Progress {
 }
 
 impl Progress {
-    pub fn new(value: f32) -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+    pub fn new(value: Signal<f32>) -> Self {
         Self {
             id: generate_id(),
-            logic: ProgressLogic { value },
-            view: ProgressView { core: view },
+            logic: ProgressLogic { value, max: 100.0 },
+            view: ProgressView { core: Arc::new(ViewCore::new()) },
         }
     }
 }
@@ -35,21 +33,12 @@ impl Progress {
 impl Component for Progress {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
-            tag: "progress".to_string(),
-            style: self.view.core.style.read().unwrap().clone(),
-            attributes: {
-                let mut attr = Attributes::new();
-                attr.insert("value", self.logic.value.to_string());
-                attr
-            },
-            children: vec![],
-            key: Some(self.id.clone()),
-        })
+        VNode::element("progress")
+            .with_style(self.view.core.style.read().unwrap().clone())
     }
-
 
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
@@ -57,316 +46,115 @@ impl Component for Progress {
     fn mark_dirty(&self) { self.view.core.mark_dirty(); }
     fn clear_dirty(&self) { self.view.core.clear_dirty(); }
 
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
-        let style = self.view.core.style.read().unwrap().to_taffy();
-        let node = if let Some(existing) = self.view.core.get_node() {
-            if self.view.core.is_dirty() { taffy.set_style(existing.raw(), style).unwrap(); }
-            existing.raw()
-        } else {
-            let new_node = taffy.new_leaf(style).unwrap();
-            self.view.core.set_node(SceneNode::from(new_node));
-            new_node
-        };
-        if let Some(p) = parent {
-            let cur = taffy.children(p).unwrap_or_default();
-            if !cur.contains(&node) { taffy.add_child(p, node).unwrap(); }
-        }
-        self.view.core.clear_dirty();
+    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
+        let node = taffy.new_leaf(self.view.core.style().to_taffy()).unwrap();
+        self.view.core.set_node(SceneNode::from(node));
         node
     }
 
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style_ref = self.view.core.style.read().unwrap();
-        if let Some(ref color) = style_ref.background.color {
-            renderer.draw_rect(
-                global_pos.x + layout.location.x,
-                global_pos.y + layout.location.y,
-                layout.size.width,
-                layout.size.height,
-                color.to_rgba(),
-                style_ref.rounding.nw
-            );
-        }
-    }
-}
-
-impl Stylable for Progress {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.style() }
-}
-
-// --- SKELETON ---
-
-pub struct SkeletonLogic {}
-pub struct SkeletonView { pub core: ViewCore }
-pub struct Skeleton { pub id: String, pub logic: SkeletonLogic, pub view: SkeletonView }
-
-impl Skeleton {
-    pub fn new() -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
-        Self { id: generate_id(), logic: SkeletonLogic {}, view: SkeletonView { core: view } }
-    }
-}
-
-impl Component for Skeleton {
-    fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
-    fn render(&self) -> VNode {
-        VNode::Element(VElement {
-            tag: "skeleton".to_string(),
-            style: self.view.core.style.read().unwrap().clone(),
-            attributes: Attributes::default(),
-            children: vec![],
-            key: Some(self.id.clone()),
-        })
-    }
-    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
-    fn mark_dirty(&self) { self.view.core.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.core.clear_dirty(); }
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
-        let style = self.view.core.style.read().unwrap().to_taffy();
-        let node = if let Some(existing) = self.view.core.get_node() {
-            if self.view.core.is_dirty() { taffy.set_style(existing.raw(), style).unwrap(); }
-            existing.raw()
-        } else {
-            let new_node = taffy.new_leaf(style).unwrap();
-            self.view.core.set_node(SceneNode::from(new_node));
-            new_node
-        };
-        if let Some(p) = parent {
-            let cur = taffy.children(p).unwrap_or_default();
-            if !cur.contains(&node) { taffy.add_child(p, node).unwrap(); }
-        }
-        self.view.core.clear_dirty();
-        node
-    }
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style_ref = self.view.core.style.read().unwrap();
-        if let Some(ref color) = style_ref.background.color {
-            renderer.draw_rect(
-                global_pos.x + layout.location.x,
-                global_pos.y + layout.location.y,
-                layout.size.width,
-                layout.size.height,
-                color.to_rgba(),
-                style_ref.rounding.nw
-            );
-        }
-    }
-}
-
-impl Stylable for Skeleton {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.style() }
-}
-
-// --- BADGE ---
-
-pub struct BadgeLogic { pub label: String }
-pub struct BadgeView { pub core: ViewCore }
-pub struct Badge { pub id: String, pub logic: BadgeLogic, pub view: BadgeView }
-
-impl Badge {
-    pub fn new(label: impl Into<String>) -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
-        Self { id: generate_id(), logic: BadgeLogic { label: label.into() }, view: BadgeView { core: view } }
-    }
-}
-
-impl Component for Badge {
-    fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
-    fn render(&self) -> VNode {
-        VNode::Element(VElement {
-            tag: "badge".to_string(),
-            style: self.view.core.style.read().unwrap().clone(),
-            attributes: Attributes::default(),
-            children: vec![VNode::text(self.logic.label.clone())],
-            key: Some(self.id.clone()),
-        })
-    }
-    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
-    fn mark_dirty(&self) { self.view.core.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.core.clear_dirty(); }
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
-        let style = self.view.core.style.read().unwrap().to_taffy();
-        let node = if let Some(existing) = self.view.core.get_node() {
-            if self.view.core.is_dirty() { taffy.set_style(existing.raw(), style).unwrap(); }
-            existing.raw()
-        } else {
-            let new_node = taffy.new_leaf(style).unwrap();
-            self.view.core.set_node(SceneNode::from(new_node));
-            new_node
-        };
-        if let Some(p) = parent {
-            let cur = taffy.children(p).unwrap_or_default();
-            if !cur.contains(&node) { taffy.add_child(p, node).unwrap(); }
-        }
-        self.view.core.clear_dirty();
-        node
-    }
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style_ref = self.view.core.style.read().unwrap();
-        if let Some(ref color) = style_ref.background.color {
-            renderer.draw_rect(
-                global_pos.x + layout.location.x,
-                global_pos.y + layout.location.y,
-                layout.size.width,
-                layout.size.height,
-                color.to_rgba(),
-                style_ref.rounding.nw
-            );
-        }
-    }
-}
-
-impl Stylable for Badge {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.style() }
+    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
 }
 
 // --- SPINNER ---
 
-pub struct SpinnerLogic {}
-pub struct SpinnerView { pub core: ViewCore }
-pub struct Spinner { pub id: String, pub logic: SpinnerLogic, pub view: SpinnerView }
-
+pub struct Spinner { pub id: String, pub view: Arc<ViewCore> }
 impl Spinner {
     pub fn new() -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
-        Self { id: generate_id(), logic: SpinnerLogic {}, view: SpinnerView { core: view } }
+        Self { id: generate_id(), view: Arc::new(ViewCore::new()) }
     }
 }
-
 impl Component for Spinner {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
-    fn render(&self) -> VNode {
-        VNode::Element(VElement {
-            tag: "spinner".to_string(),
-            style: self.view.core.style.read().unwrap().clone(),
-            attributes: Attributes::default(),
-            children: vec![],
-            key: Some(self.id.clone()),
-        })
-    }
-    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
-    fn mark_dirty(&self) { self.view.core.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.core.clear_dirty(); }
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
-        let style = self.view.core.style.read().unwrap().to_taffy();
-        let node = if let Some(existing) = self.view.core.get_node() {
-            if self.view.core.is_dirty() { taffy.set_style(existing.raw(), style).unwrap(); }
-            existing.raw()
-        } else {
-            let new_node = taffy.new_leaf(style).unwrap();
-            self.view.core.set_node(SceneNode::from(new_node));
-            new_node
-        };
-        if let Some(p) = parent {
-            let cur = taffy.children(p).unwrap_or_default();
-            if !cur.contains(&node) { taffy.add_child(p, node).unwrap(); }
-        }
-        self.view.core.clear_dirty();
+    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn render(&self) -> VNode { VNode::element("spinner") }
+    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
+    fn is_dirty(&self) -> bool { self.view.is_dirty() }
+    fn mark_dirty(&self) { self.view.mark_dirty(); }
+    fn clear_dirty(&self) { self.view.clear_dirty(); }
+    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
+        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
+        self.view.set_node(SceneNode::from(node));
         node
     }
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style_ref = self.view.core.style.read().unwrap();
-        if let Some(ref color) = style_ref.background.color {
-            renderer.draw_rect(
-                global_pos.x + layout.location.x,
-                global_pos.y + layout.location.y,
-                layout.size.width,
-                layout.size.height,
-                color.to_rgba(),
-                style_ref.rounding.nw
-            );
-        }
-    }
-}
-
-impl Stylable for Spinner {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.style() }
+    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
 }
 
 // --- ALERT ---
 
-pub struct AlertLogic { pub title: String, pub content: String }
-pub struct AlertView { pub core: ViewCore }
-pub struct Alert { pub id: String, pub logic: AlertLogic, pub view: AlertView }
-
+pub struct Alert { pub id: String, pub message: String, pub variant: Variant, pub view: Arc<ViewCore> }
 impl Alert {
-    pub fn new(title: impl Into<String>, content: impl Into<String>) -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
-        Self { id: generate_id(), logic: AlertLogic { title: title.into(), content: content.into() }, view: AlertView { core: view } }
+    pub fn new(message: impl Into<String>, variant: Variant) -> Self {
+        Self { id: generate_id(), message: message.into(), variant, view: Arc::new(ViewCore::new()) }
     }
 }
-
 impl Component for Alert {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
-    fn render(&self) -> VNode {
-        VNode::Element(VElement {
-            tag: "alert".to_string(),
-            style: self.view.core.style.read().unwrap().clone(),
-            attributes: {
-                let mut attr = Attributes::new();
-                attr.insert("title", self.logic.title.clone());
-                attr
-            },
-            children: vec![VNode::text(self.logic.content.clone())],
-            key: Some(self.id.clone()),
-        })
-    }
-    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
-    fn mark_dirty(&self) { self.view.core.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.core.clear_dirty(); }
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
-        let style = self.view.core.style.read().unwrap().to_taffy();
-        let node = if let Some(existing) = self.view.core.get_node() {
-            if self.view.core.is_dirty() { taffy.set_style(existing.raw(), style).unwrap(); }
-            existing.raw()
-        } else {
-            let new_node = taffy.new_leaf(style).unwrap();
-            self.view.core.set_node(SceneNode::from(new_node));
-            new_node
-        };
-        if let Some(p) = parent {
-            let cur = taffy.children(p).unwrap_or_default();
-            if !cur.contains(&node) { taffy.add_child(p, node).unwrap(); }
-        }
-        self.view.core.clear_dirty();
+    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn render(&self) -> VNode { VNode::element("alert").with_child(VNode::text(self.message.clone())) }
+    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
+    fn is_dirty(&self) -> bool { self.view.is_dirty() }
+    fn mark_dirty(&self) { self.view.mark_dirty(); }
+    fn clear_dirty(&self) { self.view.clear_dirty(); }
+    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
+        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
+        self.view.set_node(SceneNode::from(node));
         node
     }
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style_ref = self.view.core.style.read().unwrap();
-        if let Some(ref color) = style_ref.background.color {
-            renderer.draw_rect(
-                global_pos.x + layout.location.x,
-                global_pos.y + layout.location.y,
-                layout.size.width,
-                layout.size.height,
-                color.to_rgba(),
-                style_ref.rounding.nw
-            );
-        }
-    }
+    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
 }
 
-impl Stylable for Alert {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.style() }
+// --- BADGE ---
+
+pub struct Badge { pub id: String, pub text: String, pub view: Arc<ViewCore> }
+impl Badge {
+    pub fn new(text: impl Into<String>) -> Self {
+        Self { id: generate_id(), text: text.into(), view: Arc::new(ViewCore::new()) }
+    }
+}
+impl Component for Badge {
+    fn id(&self) -> &str { &self.id }
+    fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn render(&self) -> VNode { VNode::element("badge").with_child(VNode::text(self.text.clone())) }
+    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
+    fn is_dirty(&self) -> bool { self.view.is_dirty() }
+    fn mark_dirty(&self) { self.view.mark_dirty(); }
+    fn clear_dirty(&self) { self.view.clear_dirty(); }
+    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
+        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
+        self.view.set_node(SceneNode::from(node));
+        node
+    }
+    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
+}
+
+// --- SKELETON ---
+
+pub struct Skeleton { pub id: String, pub view: Arc<ViewCore> }
+impl Skeleton {
+    pub fn new() -> Self {
+        Self { id: generate_id(), view: Arc::new(ViewCore::new()) }
+    }
+}
+impl Component for Skeleton {
+    fn id(&self) -> &str { &self.id }
+    fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn render(&self) -> VNode { VNode::element("skeleton") }
+    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
+    fn is_dirty(&self) -> bool { self.view.is_dirty() }
+    fn mark_dirty(&self) { self.view.mark_dirty(); }
+    fn clear_dirty(&self) { self.view.clear_dirty(); }
+    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
+        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
+        self.view.set_node(SceneNode::from(node));
+        node
+    }
+    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
 }

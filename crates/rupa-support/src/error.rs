@@ -1,7 +1,7 @@
 use thiserror::Error;
 use std::sync::Arc;
 
-#[derive(Error, Debug, Clone)]
+#[derive(Error, Debug, Clone, PartialEq)]
 pub enum Error {
     #[error("Layout engine failure: {0}")]
     Layout(String),
@@ -26,6 +26,9 @@ pub enum Error {
 
     #[error("Panic caught in {location}: {message}")]
     Panic { location: String, message: String },
+
+    #[error("Custom error: {0}")]
+    Custom(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

@@ -1,9 +1,10 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
+use rupa_vnode::{Style, Attributes};
+
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 // --- LOGIC ---
 pub struct OverlayLogic<'a> {
@@ -12,14 +13,14 @@ pub struct OverlayLogic<'a> {
 
 // --- VIEW ---
 pub struct OverlayView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 impl OverlayView {
     pub fn new() -> Self {
-        let view = ViewCore::new();
-        view.style().layout.position = rupa_vnode::Position::Absolute;
-        Self { core: view }
+        let core = Arc::new(ViewCore::new());
+        core.style().layout.position = rupa_vnode::Position::Absolute;
+        Self { core }
     }
 }
 

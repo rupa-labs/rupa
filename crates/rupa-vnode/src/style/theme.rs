@@ -3,7 +3,7 @@ use crate::color::Color;
 use crate::style::Style;
 use crate::border::Rounding;
 use crate::spacing::Spacing;
-use rupa_signals::{Signal, Readable};
+use rupa_signals::Signal;
 use once_cell::sync::Lazy;
 
 #[derive(Clone, Debug, PartialEq, Default, Eq, Hash, serde::Serialize, serde::Deserialize)]

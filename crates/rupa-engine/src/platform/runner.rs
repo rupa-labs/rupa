@@ -1,4 +1,3 @@
-use rupa_core::Renderer;
 use rupa_core::Error;
 use crate::platform::app::AppMetadata;
 

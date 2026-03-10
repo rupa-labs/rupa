@@ -59,6 +59,11 @@ impl Renderer for TuiRenderer {
     fn core(&self) -> &RenderCore { &self.core }
     fn core_mut(&mut self) -> &mut RenderCore { &mut self.core }
 
+    fn render_patch(&mut self, _patch: rupa_core::Patch) {
+        // TUI Patching logic pending
+        todo!("TUI render_patch not yet implemented")
+    }
+
     fn draw_rect(&mut self, x: f32, y: f32, width: f32, height: f32, color: [f32; 4], _radius: f32) {
         let scale = self.core.scale_factor;
         let tx = (x + self.core.camera_offset.x) * self.core.camera_zoom * scale;

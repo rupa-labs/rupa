@@ -1,8 +1,10 @@
 use rupa_core::{Component, Vec2, Signal, generate_id, Error, CursorIcon, Renderer};
 use rupa_core::events::InputEvent;
+use crate::platform::dispatcher::InputDispatcher;
+
 use crate::platform::{SharedPlatformCore, runner::*, register_redraw_proxy, AppMetadata};
 use crate::renderer::tui::TuiRenderer;
-use crate::platform::dispatcher::InputDispatcher;
+
 
 pub struct TerminalRunner {
     pub core: SharedPlatformCore,
@@ -44,7 +46,7 @@ impl TerminalRunner {
         }
     }
 
-    fn dispatch_event(&mut self, event: InputEvent) {
+    fn _dispatch_event(&mut self, event: InputEvent) {
         let mut core = match self.core.write() {
             Ok(c) => c,
             Err(_) => return,

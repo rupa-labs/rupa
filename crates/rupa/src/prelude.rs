@@ -1,5 +1,5 @@
 pub use crate::signals::{Signal, Memo, Effect, Readable};
-pub use crate::styling::{
+pub use crate::vnode::{
     Style, Color, Theme, Variant, ColorMode, 
     TextAlign, FontWeight, Breakpoint,
     Spacing, Rounding, Shadow, Layout, Display, Position, Flex, FlexDirection, AlignItems, JustifyContent

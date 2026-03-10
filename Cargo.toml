@@ -21,6 +21,7 @@ members = [
     "crates/rupa-docs",
     "crates/rupa-signals",
     "crates/rupa-vnode",
+    "crates/rupa-broadcast",
     "crates/rupa-store",
     "crates/rupa-net",
     "crates/rupa-motion",
@@ -51,6 +52,7 @@ repository = "https://github.com/rupa-labs/rupa"
 rupa-support = { path = "crates/rupa-support" }
 rupa-signals = { path = "crates/rupa-signals" }
 rupa-vnode = { path = "crates/rupa-vnode" }
+rupa-broadcast = { path = "crates/rupa-broadcast" }
 rupa-store = { path = "crates/rupa-store" }
 rupa-net = { path = "crates/rupa-net" }
 rupa-motion = { path = "crates/rupa-motion" }
@@ -113,3 +115,4 @@ pollster = "0.3"
 glyphon = "0.5"
 bytemuck = { version = "1.14", features = ["derive"] }
 image = "0.24"
+async-trait = "0.1"

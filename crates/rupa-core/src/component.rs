@@ -1,10 +1,11 @@
 use taffy::prelude::*;
 use rupa_vnode::VNode;
-use rupa_support::{Vec2, Error};
+use rupa_support::Vec2;
 use crate::renderer::{Renderer, TextMeasurer};
 use crate::events::{UIEvent, KeyCode};
 use crate::scene::SceneNode;
 use rupa_vnode::AccessibilityNode;
+use std::sync::Arc;
 
 use crate::view::ViewCore;
 
@@ -17,6 +18,14 @@ pub trait Component: Send + Sync {
     /// Produces a Virtual Node representation of this component.
     /// This is the "Universal Language" used for SSR, DOM, and GPU rendering.
     fn render(&self) -> VNode;
+
+    fn get_prev_vnode(&self) -> VNode {
+        self.view_core().get_prev_vnode()
+    }
+
+    fn set_prev_vnode(&self, node: VNode) {
+        self.view_core().set_prev_vnode(node);
+    }
 
     /// Optional: Allows downcasting trait objects to concrete types.
     /// Only works for components that are 'static.

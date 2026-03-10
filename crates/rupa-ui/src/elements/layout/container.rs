@@ -1,16 +1,16 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
+use rupa_vnode::{Style, Theme, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 pub struct ContainerLogic<'a> {
     pub children: Children<'a>,
 }
 
 pub struct ContainerView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Container<'a> {
@@ -21,16 +21,16 @@ pub struct Container<'a> {
 
 impl<'a> Container<'a> {
     pub fn new() -> Self {
-        let view = ViewCore::new();
+        let core = Arc::new(ViewCore::new());
         // Apply default theme styling if necessary
-        Theme::current().apply_defaults(&mut view.style());
+        Theme::current().apply_defaults(&mut core.style());
         
         Self {
             id: generate_id(),
             logic: ContainerLogic {
                 children: Children::new(),
             },
-            view: ContainerView { core: view },
+            view: ContainerView { core },
         }
     }
 
@@ -44,6 +44,7 @@ impl<'a> Container<'a> {
 impl<'a> Component for Container<'a> {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.as_refs() }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {

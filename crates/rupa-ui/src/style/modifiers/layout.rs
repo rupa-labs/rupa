@@ -1,4 +1,5 @@
-use rupa_vnode::{Style, Display, Position, FlexDirection, AlignItems, JustifyContent};
+use rupa_vnode::{Style, Display, Position, AlignItems, JustifyContent};
+
 use super::base::{StyleModifier, Stylable};
 
 // --- Functional API ---

@@ -24,7 +24,7 @@ pub use forms::{Label, Checkbox, Radio, Select, Switch, Input};
 pub use layout::{Container, Section, VStack, HStack};
 pub use navigation::{Navbar, Tabs, Breadcrumb};
 pub use overlay::{Modal, Tooltip};
-pub use svg::{Svg, Icon, SvgCanvas};
+pub use svg::{Svg, Icon};
 pub use text::Text;
 pub use theme_switcher::ThemeSwitcher;
 pub use viewport::Viewport;

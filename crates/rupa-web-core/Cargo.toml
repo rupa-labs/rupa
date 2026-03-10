@@ -11,9 +11,12 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 rupa-core.workspace = true
 rupa-ui.workspace = true
+rupa-signals.workspace = true
 wasm-bindgen.workspace = true
 js-sys.workspace = true
 log.workspace = true
+serde-wasm-bindgen = "0.6"
+console_error_panic_hook = "0.1"
 
 [dependencies.web-sys]
 workspace = true

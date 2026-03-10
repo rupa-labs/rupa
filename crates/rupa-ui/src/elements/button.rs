@@ -1,10 +1,9 @@
 use crate::Children;
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, Vec2, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners};
+use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign};
 use crate::style::modifiers::base::Stylable;
-use std::sync::Arc;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 // --- LOGIC ---
 
@@ -46,13 +45,13 @@ impl ButtonLogic {
 // --- VIEW ---
 
 pub struct ButtonView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 impl ButtonView {
     pub fn new() -> Self {
         Self {
-            core: ViewCore::new(),
+            core: Arc::new(ViewCore::new()),
         }
     }
 
@@ -206,10 +205,10 @@ impl Component for CloseButton {
     }
 }
 
-pub struct ButtonGroup<'a> { pub id: String, pub children: Children<'a>, pub view: ViewCore }
+pub struct ButtonGroup<'a> { pub id: String, pub children: Children<'a>, pub view: Arc<ViewCore> }
 impl<'a> ButtonGroup<'a> {
     pub fn new() -> Self {
-        Self { id: generate_id(), children: Children::new(), view: ViewCore::new() }
+        Self { id: generate_id(), children: Children::new(), view: Arc::new(ViewCore::new()) }
     }
     pub fn child(mut self, child: Button) -> Self { self.children.add(Box::new(child)); self.view.mark_dirty(); self }
 }

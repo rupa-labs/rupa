@@ -12,6 +12,8 @@ thread_local! {
 /// A subscriber that can be notified when a dependency changes.
 pub trait Subscriber: Send + Sync {
     fn notify(&self);
+    /// Allows the subscriber to re-run itself if it holds logic (like an Effect).
+    fn run(&self) {}
 }
 
 #[derive(Default)]
@@ -64,14 +66,14 @@ pub struct SignalInner<T> {
 
 /// A reactive state container.
 pub struct Signal<T> {
-    id: usize,
+    _id: usize,
     inner: Arc<SignalInner<T>>,
 }
 
 impl<T> Clone for Signal<T> {
     fn clone(&self) -> Self {
         Self {
-            id: self.id,
+            _id: self._id,
             inner: self.inner.clone(),
         }
     }
@@ -95,7 +97,7 @@ impl<'de, T: Serialize + Deserialize<'de> + Clone + Send + Sync> Deserialize<'de
 impl<T: Clone + Send + Sync> Signal<T> {
     pub fn new(value: T) -> Self {
         Self {
-            id: NEXT_ID.fetch_add(1, Ordering::SeqCst),
+            _id: NEXT_ID.fetch_add(1, Ordering::SeqCst),
             inner: Arc::new(SignalInner {
                 value: RwLock::new(value),
                 subscribers: RwLock::new(Vec::new()),
@@ -167,11 +169,12 @@ impl<T> Clone for Memo<T> {
 }
 
 trait MemoTrait<T>: Subscriber {
-    fn get(&self) -> T;
+    fn get(self: Arc<Self>) -> T;
 }
 
 impl<T: Clone + Send + Sync + 'static, F: Fn() -> T + Send + Sync + 'static> MemoTrait<T> for MemoInner<T, F> {
-    fn get(&self) -> T {
+    fn get(self: Arc<Self>) -> T {
+        // Track the memo as a dependency for the current context
         RUNTIME.with(|rt| {
             if let Some(sub) = rt.borrow().current_context() {
                 let mut subs = self.subscribers.write().unwrap();
@@ -181,7 +184,10 @@ impl<T: Clone + Send + Sync + 'static, F: Fn() -> T + Send + Sync + 'static> Mem
 
         let mut is_dirty = self.is_dirty.write().unwrap();
         if *is_dirty || self.value.read().unwrap().is_none() {
-            let result = (self.func)();
+            // Run the computation in the memo's own context to track its dependencies
+            let sub: Arc<dyn Subscriber> = self.clone();
+            let result = with_context(sub, || (self.func)());
+            
             *self.value.write().unwrap() = Some(result.clone());
             *is_dirty = false;
             result
@@ -193,10 +199,18 @@ impl<T: Clone + Send + Sync + 'static, F: Fn() -> T + Send + Sync + 'static> Mem
 
 impl<T: Send + Sync, F: Send + Sync> Subscriber for MemoInner<T, F> {
     fn notify(&self) {
-        *self.is_dirty.write().unwrap() = true;
-        let subs = self.subscribers.read().unwrap();
-        for sub in subs.iter().filter_map(|w| w.upgrade()) {
-            sub.notify();
+        let should_notify = {
+            let mut is_dirty = self.is_dirty.write().unwrap();
+            let was_dirty = *is_dirty;
+            *is_dirty = true;
+            !was_dirty // Only notify if it wasn't already dirty
+        };
+
+        if should_notify {
+            let subs = self.subscribers.read().unwrap();
+            for sub in subs.iter().filter_map(|w| w.upgrade()) {
+                sub.notify();
+            }
         }
     }
 }
@@ -215,7 +229,7 @@ impl<T: Clone + Send + Sync + 'static> Memo<T> {
     }
 
     pub fn get(&self) -> T {
-        self.inner.get()
+        self.inner.clone().get()
     }
 }
 
@@ -227,14 +241,26 @@ pub struct Effect {
 }
 
 struct EffectInner<F> {
-    id: usize,
-    func: F,
+    _id: usize,
+    func: RwLock<F>,
+}
+
+impl<F: Fn() + Send + Sync + 'static> EffectInner<F> {
+    fn execute(self: &Arc<Self>) {
+        RUNTIME.with(|rt| {
+            let sub: Arc<dyn Subscriber> = self.clone();
+            rt.borrow_mut().push_context(Arc::downgrade(&sub));
+            (self.func.read().unwrap())();
+            rt.borrow_mut().pop_context();
+        });
+    }
 }
 
 impl<F: Fn() + Send + Sync + 'static> Subscriber for EffectInner<F> {
     fn notify(&self) {
-        // Safe because notify doesn't take &Arc<Self>, but we need to run it in context.
-        // For simplicity in this artisan impl, we'll re-run via a helper.
+        // In this simplified implementation, we run directly.
+        // A production implementation would use a global task queue.
+        (self.func.read().unwrap())();
     }
 }
 
@@ -242,15 +268,9 @@ impl Effect {
     pub fn new<F>(func: F) -> Self 
     where F: Fn() + Send + Sync + 'static {
         let id = NEXT_ID.fetch_add(1, Ordering::SeqCst);
-        let inner = Arc::new(EffectInner { id, func });
+        let inner = Arc::new(EffectInner { _id: id, func: RwLock::new(func) });
         
-        // Initial run
-        RUNTIME.with(|rt| {
-            let sub: Arc<dyn Subscriber> = inner.clone();
-            rt.borrow_mut().push_context(Arc::downgrade(&sub));
-            (inner.func)();
-            rt.borrow_mut().pop_context();
-        });
+        inner.execute();
 
         Effect { 
             _id: id,
@@ -276,4 +296,128 @@ impl<T: Clone + Send + Sync> Readable<T> for Signal<T> {
 
 impl<T: Clone + Send + Sync + 'static> Readable<T> for Memo<T> {
     fn get(&self) -> T { self.get() }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    #[test]
+    fn test_signal_basic() {
+        let s = Signal::new(10);
+        assert_eq!(s.get(), 10);
+        s.set(20);
+        assert_eq!(s.get(), 20);
+    }
+
+    #[test]
+    fn test_signal_update() {
+        let s = Signal::new(vec![1, 2]);
+        s.update(|v| v.push(3));
+        assert_eq!(s.get(), vec![1, 2, 3]);
+    }
+
+    #[test]
+    fn test_memo_basic() {
+        let s = Signal::new(10);
+        let m = Memo::new({
+            let s = s.clone();
+            move || s.get() * 2
+        });
+
+        assert_eq!(m.get(), 20);
+        s.set(15);
+        assert_eq!(m.get(), 30);
+    }
+
+    #[test]
+    fn test_memo_lazy() {
+        let call_count = Arc::new(AtomicUsize::new(0));
+        let s = Signal::new(10);
+        let m = Memo::new({
+            let s = s.clone();
+            let count = call_count.clone();
+            move || {
+                count.fetch_add(1, Ordering::SeqCst);
+                s.get() * 2
+            }
+        });
+
+        // Should not have been called yet (lazy)
+        assert_eq!(call_count.load(Ordering::SeqCst), 0);
+        
+        assert_eq!(m.get(), 20);
+        assert_eq!(call_count.load(Ordering::SeqCst), 1);
+
+        // Accessing again without change shouldn't re-run
+        assert_eq!(m.get(), 20);
+        assert_eq!(call_count.load(Ordering::SeqCst), 1);
+
+        s.set(20);
+        // Dirty now, but still shouldn't run until 'get'
+        assert_eq!(call_count.load(Ordering::SeqCst), 1);
+        assert_eq!(m.get(), 40);
+        assert_eq!(call_count.load(Ordering::SeqCst), 2);
+    }
+
+    #[test]
+    fn test_effect_basic() {
+        let s = Signal::new(10);
+        let out = Arc::new(RwLock::new(0));
+        
+        let _e = {
+            let s = s.clone();
+            let out = out.clone();
+            Effect::new(move || {
+                *out.write().unwrap() = s.get() + 1;
+            })
+        };
+
+        assert_eq!(*out.read().unwrap(), 11);
+        s.set(20);
+        assert_eq!(*out.read().unwrap(), 21);
+    }
+
+    #[test]
+    fn test_nested_reactivity() {
+        let s = Signal::new(10);
+        let m = Memo::new({
+            let s = s.clone();
+            move || s.get() + 5
+        });
+        let out = Arc::new(RwLock::new(0));
+
+        let _e = {
+            let m = m.clone();
+            let out = out.clone();
+            Effect::new(move || {
+                *out.write().unwrap() = m.get() * 2;
+            })
+        };
+
+        assert_eq!(*out.read().unwrap(), 30); // (10 + 5) * 2
+        s.set(20);
+        assert_eq!(*out.read().unwrap(), 50); // (20 + 5) * 2
+    }
+
+    #[test]
+    fn test_untrack() {
+        let s = Signal::new(10);
+        let out = Arc::new(RwLock::new(0));
+
+        let _e = {
+            let s = s.clone();
+            let out = out.clone();
+            Effect::new(move || {
+                let val = untrack(|| s.get());
+                *out.write().unwrap() = val;
+            })
+        };
+
+        assert_eq!(*out.read().unwrap(), 10);
+        s.set(20);
+        // Should NOT update because s.get() was untracked
+        assert_eq!(*out.read().unwrap(), 10);
+    }
 }

@@ -1,6 +1,6 @@
 use rupa_core::component::Component;
 use rupa_core::{Vec2, Signal, CursorIcon};
-use rupa_core::events::{InputEvent, PointerButton, ButtonState, Modifiers, UIEvent}; 
+use rupa_core::events::{InputEvent, ButtonState, Modifiers, UIEvent}; 
 use crate::scene::{SceneCore, HitDiscovery};
 use std::sync::Arc;
 
@@ -14,7 +14,7 @@ impl InputDispatcher {
         scene: &SceneCore,
         viewport: &Signal<Vec2>,
         cursor_pos: &mut Vec2,
-        requested_cursor: &mut CursorIcon,
+        __requested_cursor: &mut CursorIcon,
         pointer_capture: &mut Option<String>,
         focused_id: &mut Option<String>,
         event_listeners: &[Arc<dyn Fn(&InputEvent) + Send + Sync>],

@@ -1,8 +1,8 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
+use rupa_vnode::{Style, Theme, Attributes};
 use crate::style::modifiers::base::Stylable;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 // --- BRAND ---
 
@@ -11,7 +11,7 @@ pub struct BrandLogic {
 }
 
 pub struct BrandView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Brand {
@@ -22,12 +22,12 @@ pub struct Brand {
 
 impl Brand {
     pub fn new(name: impl Into<String>) -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+        let core = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut core.style());
         Self {
             id: generate_id(),
             logic: BrandLogic { name: name.into() },
-            view: BrandView { core: view },
+            view: BrandView { core },
         }
     }
 }
@@ -39,6 +39,7 @@ impl Stylable for Brand {
 impl Component for Brand {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {

@@ -1,8 +1,8 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode};
+use rupa_vnode::{Style, Color, Theme, TextAlign, Attributes};
 use crate::style::modifiers::base::Stylable;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 // --- LABEL ---
 
@@ -11,7 +11,7 @@ pub struct LabelLogic {
 }
 
 pub struct LabelView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Label {
@@ -22,12 +22,12 @@ pub struct Label {
 
 impl Label {
     pub fn new(text: impl Into<String>) -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+        let core = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut core.style());
         Self {
             id: generate_id(),
             logic: LabelLogic { text: text.into() },
-            view: LabelView { core: view },
+            view: LabelView { core },
         }
     }
 }
@@ -95,7 +95,7 @@ pub struct InputLogic {
 }
 
 pub struct InputView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Input {
@@ -106,15 +106,15 @@ pub struct Input {
 
 impl Input {
     pub fn new(placeholder: impl Into<String>) -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+        let core = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut core.style());
         Self {
             id: generate_id(),
             logic: InputLogic {
                 value: Signal::new(String::new()),
                 placeholder: placeholder.into(),
             },
-            view: InputView { core: view },
+            view: InputView { core },
         }
     }
 }
@@ -191,7 +191,7 @@ pub struct CheckboxLogic {
 }
 
 pub struct CheckboxView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Checkbox {
@@ -202,12 +202,12 @@ pub struct Checkbox {
 
 impl Checkbox {
     pub fn new() -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+        let core = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut core.style());
         Self {
             id: generate_id(),
             logic: CheckboxLogic { checked: Signal::new(false) },
-            view: CheckboxView { core: view },
+            view: CheckboxView { core },
         }
     }
 }
@@ -283,7 +283,7 @@ pub struct SwitchLogic {
 }
 
 pub struct SwitchView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Switch {
@@ -294,12 +294,12 @@ pub struct Switch {
 
 impl Switch {
     pub fn new() -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+        let core = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut core.style());
         Self {
             id: generate_id(),
             logic: SwitchLogic { active: Signal::new(false) },
-            view: SwitchView { core: view },
+            view: SwitchView { core },
         }
     }
 }
@@ -375,7 +375,7 @@ pub struct RadioLogic {
 }
 
 pub struct RadioView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Radio {
@@ -386,12 +386,12 @@ pub struct Radio {
 
 impl Radio {
     pub fn new() -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+        let core = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut core.style());
         Self {
             id: generate_id(),
             logic: RadioLogic { selected: Signal::new(false) },
-            view: RadioView { core: view },
+            view: RadioView { core },
         }
     }
 }
@@ -468,7 +468,7 @@ pub struct SelectLogic {
 }
 
 pub struct SelectView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Select {
@@ -479,15 +479,15 @@ pub struct Select {
 
 impl Select {
     pub fn new() -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+        let core = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut core.style());
         Self {
             id: generate_id(),
             logic: SelectLogic {
                 options: vec![],
                 selected_index: Signal::new(None),
             },
-            view: SelectView { core: view },
+            view: SelectView { core },
         }
     }
 }

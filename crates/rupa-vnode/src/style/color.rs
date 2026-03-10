@@ -1,4 +1,4 @@
-use crate::theme::{Theme, ColorMode};
+use crate::style::theme::{Theme, ColorMode};
 
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum Color {

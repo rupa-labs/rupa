@@ -8,8 +8,9 @@ use rupa_core::{Component, Renderer};
 use crate::renderer::gui::renderer::Renderer as GuiRenderer;
 use rupa_core::{Vec2, Error, Signal, Readable, generate_id, CursorIcon};
 use rupa_core::events::{InputEvent, UIEvent, EventListeners, Modifiers, PointerButton, ButtonState, KeyCode};
-use crate::platform::dispatcher::InputDispatcher;
+
 use crate::platform::desktop::input::map_key;
+use crate::platform::dispatcher::InputDispatcher;
 use crate::platform::{SharedPlatformCore, runner::*, register_redraw_proxy, AppMetadata};
 
 pub struct DesktopRunner {
@@ -155,6 +156,13 @@ impl PlatformRunner for DesktopRunner {
             .map_err(|e| Error::Platform(format!("Failed to build event loop: {}", e)))?;
             
         let proxy = event_loop.create_proxy();
+        
+        // Connect the reactive system to the event loop
+        let proxy_clone = proxy.clone();
+        rupa_core::view::set_redraw_callback(move || {
+            let _ = proxy_clone.send_event(PlatformEvent::RequestRedraw);
+        });
+
         register_redraw_proxy(Box::new(move || {
             let _ = proxy.send_event(PlatformEvent::RequestRedraw);
         }));

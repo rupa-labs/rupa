@@ -9,6 +9,7 @@ license.workspace = true
 rupa-core.workspace = true
 rupa-signals.workspace = true
 rupa-support.workspace = true
+async-trait.workspace = true
 image.workspace = true
 log.workspace = true
 thiserror.workspace = true

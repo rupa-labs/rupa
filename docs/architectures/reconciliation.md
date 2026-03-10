@@ -66,10 +66,15 @@ If two elements have different tags (e.g., a `Div` changed to a `Button`), the e
 
 ### B. Keyed Reconciliation
 For lists of children, Rupa uses an optional `key` property. 
-- **With Keys**: The engine can track nodes even if they move, enabling efficient `Move` patches instead of `Delete/Create`.
-- **Without Keys**: The engine performs a simple index-based comparison.
+- **With Keys**: The engine tracks nodes even if they are reordered, inserted, or removed. This enables surgical `Move` patches instead of expensive `Delete/Create` cycles, preserving the internal state and performance of the elements.
+- **Without Keys**: The engine performs a simple index-based comparison. This is efficient for static lists but may cause re-renders if elements change positions.
 
-### C. Component Memoization
+### C. Deep Diffing Optimization
+To minimize updates to the active renderer, the engine performs fine-grained comparisons:
+- **Style Diffing**: Instead of replacing entire style objects, Rupa identifies changed sub-properties (e.g., just the padding or background) and sends atomic updates.
+- **Attribute Diffing**: Identifies exactly which attributes were added, removed, or changed.
+
+### D. Component Memoization
 If a `VComponent`'s props haven't changed (checked via partial equality), the engine skips diffing its children entirely, assuming the output remains the same.
 
 ---

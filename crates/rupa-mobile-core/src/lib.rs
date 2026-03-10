@@ -1,33 +1,30 @@
 pub mod infra;
 
-use rupa_core::events::InputEvent;
-use rupa_engine::App;
+pub use rupa_core::events::InputEvent;
+pub use rupa_engine::App;
 
 /// Standardized mobile lifecycle states.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MobileLifecycle {
     /// App is visible and in the foreground.
     Active,
-    /// App is partially obscured or moving to background.
+    /// App is in the foreground but not receiving events.
     Inactive,
-    /// App is in the background, GPU resources should be released.
-    Suspended,
+    /// App is in the background.
+    Background,
 }
 
-/// The core trait for mobile-specific application runners.
-pub trait MobileRunner {
-    /// Initializes the native mobile shell.
-    fn init(&mut self);
-    
-    /// Handles native lifecycle transitions.
-    fn on_lifecycle_change(&mut self, state: MobileLifecycle);
-    
-    /// Dispatches touch events to the Rupa core.
-    fn handle_input(&mut self, event: InputEvent);
+/// Unified access to mobile-specific hardware features.
+pub struct MobileHardware;
+
+impl MobileHardware {
+    pub fn vibrate(duration_ms: u32) {
+        log::info!("Rupa Mobile: Vibrate for {}ms", duration_ms);
+    }
 }
 
 /// Entry point for bootstrapping a Rupa application on mobile.
-pub fn bootstrap_mobile(app: App) {
+pub fn bootstrap_mobile(__app: App) {
     log::info!("Rupa Mobile: Bootstrapping application...");
     // Initialization logic for Winit event loop on Android/iOS
 }

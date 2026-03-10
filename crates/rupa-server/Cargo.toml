@@ -7,7 +7,7 @@ license.workspace = true
 
 [dependencies]
 rupa-core.workspace = true
-rupa-server.workspace = true
+rupa-server-core.workspace = true
 rupa-store.workspace = true
 rupa-auth.workspace = true
 rupa-i18n.workspace = true

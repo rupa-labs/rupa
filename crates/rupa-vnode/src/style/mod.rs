@@ -16,6 +16,7 @@ pub mod attributes;
 pub mod motion;
 pub mod types;
 pub mod style;
+pub mod theme;
 
 pub use spacing::Spacing;
 pub use border::{Border, Rounding, Outline};
@@ -34,4 +35,5 @@ pub use a11y::{SemanticRole, AccessibilityNode};
 pub use attributes::Attributes;
 pub use motion::{Motion, Transition, Animation, TimingFunction, Easing};
 pub use types::{TextAlign, FontWeight, Breakpoint, Scale};
+pub use theme::{Theme, ColorMode, Variant};
 pub use style::Style;

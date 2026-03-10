@@ -1,9 +1,9 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
+use rupa_vnode::{Style, Theme, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 // --- MODAL ---
 
@@ -12,7 +12,7 @@ pub struct ModalLogic<'a> {
 }
 
 pub struct ModalView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Modal<'a> {
@@ -23,14 +23,12 @@ pub struct Modal<'a> {
 
 impl<'a> Modal<'a> {
     pub fn new() -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+        let core = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut core.style());
         Self {
             id: generate_id(),
-            logic: ModalLogic {
-                children: Children::new(),
-            },
-            view: ModalView { core: view },
+            logic: ModalLogic { children: Children::new() },
+            view: ModalView { core },
         }
     }
 
@@ -44,6 +42,7 @@ impl<'a> Modal<'a> {
 impl<'a> Component for Modal<'a> {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.as_refs() }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     fn is_modal(&self) -> bool { true }
     
     fn render(&self) -> VNode {
@@ -56,7 +55,6 @@ impl<'a> Component for Modal<'a> {
         })
     }
 
-
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
     fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
@@ -66,16 +64,13 @@ impl<'a> Component for Modal<'a> {
     fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
         let style = self.view.core.style.read().unwrap().to_taffy();
         let node = if let Some(existing) = self.view.core.get_node() {
-            if self.view.core.is_dirty() {
-                taffy.set_style(existing.raw(), style).unwrap();
-            }
+            if self.view.core.is_dirty() { taffy.set_style(existing.raw(), style).unwrap(); }
             existing.raw()
         } else {
             let new_node = taffy.new_with_children(style, &[]).unwrap();
             self.view.core.set_node(SceneNode::from(new_node));
             new_node
         };
-
         let child_nodes = self.logic.children.layout_all(taffy, measurer);
         taffy.set_children(node, &child_nodes).unwrap();
         self.view.core.clear_dirty();
@@ -99,7 +94,7 @@ pub struct TooltipLogic {
 }
 
 pub struct TooltipView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Tooltip {
@@ -110,12 +105,12 @@ pub struct Tooltip {
 
 impl Tooltip {
     pub fn new(text: impl Into<String>) -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+        let core = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut core.style());
         Self {
             id: generate_id(),
             logic: TooltipLogic { text: text.into() },
-            view: TooltipView { core: view },
+            view: TooltipView { core },
         }
     }
 }
@@ -123,6 +118,7 @@ impl Tooltip {
 impl Component for Tooltip {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
@@ -137,7 +133,6 @@ impl Component for Tooltip {
             key: Some(self.id.clone()),
         })
     }
-
 
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
@@ -163,9 +158,7 @@ impl Component for Tooltip {
         node
     }
 
-    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {
-        // Tooltip painting logic
-    }
+    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
 }
 
 impl Stylable for Tooltip {

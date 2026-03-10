@@ -1,20 +1,20 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, Vec2, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode};
+use rupa_vnode::{Style, Color};
 use crate::style::modifiers::base::Stylable;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 pub struct TextLogic {
     pub content: Signal<String>,
 }
 
 pub struct TextView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 impl TextView {
     pub fn new() -> Self {
-        Self { core: ViewCore::new() }
+        Self { core: Arc::new(ViewCore::new()) }
     }
 
     pub fn render(&self, renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, node: NodeId, logic: &TextLogic, global_pos: Vec2, width: f32) {
@@ -62,7 +62,7 @@ impl Component for Text {
     fn mark_dirty(&self) { self.view.core.mark_dirty(); }
     fn clear_dirty(&self) { self.view.core.clear_dirty(); }
 
-    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
+    fn layout(&self, taffy: &mut TaffyTree<()>, __measurer: &dyn TextMeasurer, parent: Option<NodeId>) -> NodeId {
         let style = self.view.core.style.read().unwrap();
         let t_style = style.to_taffy();
         

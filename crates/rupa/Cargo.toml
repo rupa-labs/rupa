@@ -10,4 +10,24 @@ rupa-core.workspace = true
 rupa-ui.workspace = true
 rupa-engine.workspace = true
 rupa-macros.workspace = true
+rupa-signals.workspace = true
+rupa-vnode.workspace = true
+rupa-store.workspace = true
+rupa-net.workspace = true
+rupa-auth.workspace = true
+rupa-i18n.workspace = true
+rupa-motion.workspace = true
+rupa-assets.workspace = true
+rupa-server-core = { workspace = true, optional = true }
+rupa-web-core = { workspace = true, optional = true }
+rupa-mobile-core = { workspace = true, optional = true }
 log.workspace = true
+env_logger = "0.11"
+
+[features]
+default = ["desktop"]
+desktop = ["rupa-engine/desktop"]
+tui = ["rupa-engine/terminal"]
+ssr = ["rupa-server-core"]
+web = ["rupa-web-core"]
+mobile = ["rupa-mobile-core"]

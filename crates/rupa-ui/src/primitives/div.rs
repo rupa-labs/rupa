@@ -1,16 +1,16 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer};
+use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 pub struct DivLogic<'a> {
     pub children: Children<'a>,
 }
 
 pub struct DivView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Div<'a> {
@@ -21,8 +21,9 @@ pub struct Div<'a> {
 
 impl<'a> Div<'a> {
     pub fn new() -> Self {
-        let view = DivView { core: ViewCore::new() };
-        view.core.style().flex.flex_direction = rupa_vnode::FlexDirection::Col;
+        let core = Arc::new(ViewCore::new());
+        core.style().flex.flex_direction = rupa_vnode::FlexDirection::Col;
+        let view = DivView { core };
         Self {
             id: generate_id(),
             logic: DivLogic { children: Children::new() },
@@ -64,7 +65,7 @@ impl<'a> Component for Div<'a> {
         self.set_node(node.into());
         
         for child in self.logic.children.iter() {
-            let child_node = child.layout(taffy, measurer, Some(node));
+            let child_node = child.as_ref().layout(taffy, measurer, Some(node));
             taffy.add_child(node, child_node).unwrap();
         }
 

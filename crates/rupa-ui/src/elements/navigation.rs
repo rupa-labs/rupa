@@ -1,9 +1,9 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
+use rupa_vnode::{Style, Theme, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 // --- NAVBAR ---
 
@@ -12,7 +12,7 @@ pub struct NavbarLogic<'a> {
 }
 
 pub struct NavbarView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Navbar<'a> {
@@ -23,14 +23,12 @@ pub struct Navbar<'a> {
 
 impl<'a> Navbar<'a> {
     pub fn new() -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+        let core = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut core.style());
         Self {
             id: generate_id(),
-            logic: NavbarLogic {
-                children: Children::new(),
-            },
-            view: NavbarView { core: view },
+            logic: NavbarLogic { children: Children::new() },
+            view: NavbarView { core },
         }
     }
 }
@@ -38,6 +36,7 @@ impl<'a> Navbar<'a> {
 impl<'a> Component for Navbar<'a> {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.as_refs() }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
@@ -49,7 +48,6 @@ impl<'a> Component for Navbar<'a> {
         })
     }
 
-
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
     fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
@@ -59,16 +57,13 @@ impl<'a> Component for Navbar<'a> {
     fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
         let style = self.view.core.style.read().unwrap().to_taffy();
         let node = if let Some(existing) = self.view.core.get_node() {
-            if self.view.core.is_dirty() {
-                taffy.set_style(existing.raw(), style).unwrap();
-            }
+            if self.view.core.is_dirty() { taffy.set_style(existing.raw(), style).unwrap(); }
             existing.raw()
         } else {
             let new_node = taffy.new_with_children(style, &[]).unwrap();
             self.view.core.set_node(SceneNode::from(new_node));
             new_node
         };
-
         let child_nodes = self.logic.children.layout_all(taffy, measurer);
         taffy.set_children(node, &child_nodes).unwrap();
         self.view.core.clear_dirty();
@@ -92,7 +87,7 @@ pub struct TabsLogic<'a> {
 }
 
 pub struct TabsView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Tabs<'a> {
@@ -103,14 +98,12 @@ pub struct Tabs<'a> {
 
 impl<'a> Tabs<'a> {
     pub fn new() -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+        let core = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut core.style());
         Self {
             id: generate_id(),
-            logic: TabsLogic {
-                children: Children::new(),
-            },
-            view: TabsView { core: view },
+            logic: TabsLogic { children: Children::new() },
+            view: TabsView { core },
         }
     }
 }
@@ -118,6 +111,7 @@ impl<'a> Tabs<'a> {
 impl<'a> Component for Tabs<'a> {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.as_refs() }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
@@ -129,7 +123,6 @@ impl<'a> Component for Tabs<'a> {
         })
     }
 
-
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
     fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
@@ -139,16 +132,13 @@ impl<'a> Component for Tabs<'a> {
     fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
         let style = self.view.core.style.read().unwrap().to_taffy();
         let node = if let Some(existing) = self.view.core.get_node() {
-            if self.view.core.is_dirty() {
-                taffy.set_style(existing.raw(), style).unwrap();
-            }
+            if self.view.core.is_dirty() { taffy.set_style(existing.raw(), style).unwrap(); }
             existing.raw()
         } else {
             let new_node = taffy.new_with_children(style, &[]).unwrap();
             self.view.core.set_node(SceneNode::from(new_node));
             new_node
         };
-
         let child_nodes = self.logic.children.layout_all(taffy, measurer);
         taffy.set_children(node, &child_nodes).unwrap();
         self.view.core.clear_dirty();
@@ -172,7 +162,7 @@ pub struct BreadcrumbLogic<'a> {
 }
 
 pub struct BreadcrumbView {
-    pub core: ViewCore,
+    pub core: Arc<ViewCore>,
 }
 
 pub struct Breadcrumb<'a> {
@@ -183,14 +173,12 @@ pub struct Breadcrumb<'a> {
 
 impl<'a> Breadcrumb<'a> {
     pub fn new() -> Self {
-        let view = ViewCore::new();
-        Theme::current().apply_defaults(&mut view.style());
+        let core = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut core.style());
         Self {
             id: generate_id(),
-            logic: BreadcrumbLogic {
-                children: Children::new(),
-            },
-            view: BreadcrumbView { core: view },
+            logic: BreadcrumbLogic { children: Children::new() },
+            view: BreadcrumbView { core },
         }
     }
 }
@@ -198,6 +186,7 @@ impl<'a> Breadcrumb<'a> {
 impl<'a> Component for Breadcrumb<'a> {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.logic.children.as_refs() }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
@@ -209,7 +198,6 @@ impl<'a> Component for Breadcrumb<'a> {
         })
     }
 
-
     fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
     fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
@@ -219,16 +207,13 @@ impl<'a> Component for Breadcrumb<'a> {
     fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
         let style = self.view.core.style.read().unwrap().to_taffy();
         let node = if let Some(existing) = self.view.core.get_node() {
-            if self.view.core.is_dirty() {
-                taffy.set_style(existing.raw(), style).unwrap();
-            }
+            if self.view.core.is_dirty() { taffy.set_style(existing.raw(), style).unwrap(); }
             existing.raw()
         } else {
             let new_node = taffy.new_with_children(style, &[]).unwrap();
             self.view.core.set_node(SceneNode::from(new_node));
             new_node
         };
-
         let child_nodes = self.logic.children.layout_all(taffy, measurer);
         taffy.set_children(node, &child_nodes).unwrap();
         self.view.core.clear_dirty();

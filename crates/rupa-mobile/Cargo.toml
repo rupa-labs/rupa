@@ -1,5 +1,5 @@
 [package]
-name = "rupa-mobile-core-facade"
+name = "rupa-mobile"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

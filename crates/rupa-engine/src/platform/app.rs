@@ -5,15 +5,15 @@ use rupa_vnode::{Style, Theme};
 use crate::platform::context::PlatformCore;
 use rupa_core::{Signal, Vec2, Error};
 use rupa_core::events::InputEvent;
+pub use rupa_ui::style::modifiers::base::StyleModifier;
 
 #[cfg(feature = "desktop")]
 use crate::platform::desktop::DesktopRunner;
 #[cfg(feature = "terminal")]
 use crate::platform::terminal::TerminalRunner;
-#[cfg(feature = "web")]
+#[cfg(feature = "gui")]
 use crate::platform::web::WebRunner;
 #[cfg(feature = "mobile")]
-use crate::platform::mobile::MobileRunner;
 
 use crate::platform::runner::PlatformRunner;
 
@@ -136,8 +136,8 @@ impl App {
     }
 
     /// Style the implicit root 'Body' element.
-    pub fn style(mut self, modifier: impl Fn(&mut Style)) -> Self {
-        modifier(&mut self.body_style);
+    pub fn style(mut self, modifier: impl StyleModifier) -> Self {
+        modifier.apply(&mut self.body_style);
         self
     }
 
@@ -161,7 +161,7 @@ impl App {
         registry.build_all(self);
     }
 
-    fn prepare_root(&mut self, viewport: Signal<Vec2>) -> Box<dyn Component> {
+    fn prepare_root(&mut self, __viewport: Signal<Vec2>) -> Box<dyn Component> {
         let mut body = rupa_ui::Body::new();
         *body.view.core.style() = self.body_style.clone();
         // Overlays and children will be handled differently in the new architecture

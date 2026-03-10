@@ -1,5 +1,5 @@
 use rupa_support::Vec2;
-use crate::types::TextAlign;
+use rupa_vnode::TextAlign;
 use crate::reconciler::Patch;
 
 /// Shared internal state for all renderers.

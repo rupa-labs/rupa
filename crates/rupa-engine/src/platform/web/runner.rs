@@ -5,10 +5,10 @@ use winit::window::{WindowId, Window as WinitWindow};
 use std::sync::Arc;
 
 use rupa_core::{Component, Vec2, Error, Signal, Readable, CursorIcon, Renderer};
-use rupa_core::events::InputEvent;
+
 use crate::renderer::gui::renderer::Renderer as GuiRenderer;
 use crate::platform::{SharedPlatformCore, runner::*, AppMetadata};
-use crate::platform::dispatcher::InputDispatcher;
+
 
 pub struct WebRunner {
     pub core: SharedPlatformCore,

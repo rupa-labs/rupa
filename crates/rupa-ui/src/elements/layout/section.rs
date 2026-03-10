@@ -1,17 +1,15 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Readable, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners, CursorIcon};
-use rupa_vnode::{Style, Color, Theme, Variant, Spacing, Scale, Accessibility, TextAlign, SemanticRole, Attributes};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
+use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
-use crate::elements::Text;
-use crate::elements::layout::VStack;
 use taffy::prelude::*;
-use std::sync::RwLockWriteGuard;
+use std::sync::{RwLockWriteGuard, Arc};
 
 pub struct Section<'a> {
     pub id: String,
     pub title: String,
     pub children: Children<'a>,
-    pub view: ViewCore,
+    pub view: Arc<ViewCore>,
 }
 
 impl<'a> Section<'a> {
@@ -20,12 +18,13 @@ impl<'a> Section<'a> {
             id: generate_id(),
             title: title.into(),
             children: Children::new(),
-            view: ViewCore::new(),
+            view: Arc::new(ViewCore::new()),
         }
     }
 
     pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self {
         self.children.push(child);
+        self.view.mark_dirty();
         self
     }
 }
@@ -33,6 +32,7 @@ impl<'a> Section<'a> {
 impl<'a> Component for Section<'a> {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { self.children.as_refs() }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
@@ -43,7 +43,6 @@ impl<'a> Component for Section<'a> {
             key: Some(self.id.clone()),
         })
     }
-
 
     fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
     fn set_node(&self, node: SceneNode) { self.view.set_node(node); }

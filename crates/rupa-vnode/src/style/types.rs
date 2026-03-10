@@ -37,6 +37,7 @@ pub enum Breakpoint {
     Xl4,
     Xl5,
     Xl6,
+    Custom(u32),
 }
 
 impl Breakpoint {
@@ -52,6 +53,7 @@ impl Breakpoint {
             Breakpoint::Xl4 => 2560.0,
             Breakpoint::Xl5 => 3840.0,
             Breakpoint::Xl6 => 5120.0,
+            Breakpoint::Custom(v) => *v as f32,
         }
     }
 }
@@ -72,6 +74,12 @@ pub enum Scale {
     Xl5,
     Xl6,
     Custom(u32),
+}
+
+impl From<f32> for Scale {
+    fn from(v: f32) -> Self {
+        Scale::Custom(v.round() as u32)
+    }
 }
 
 impl Scale {
