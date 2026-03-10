@@ -1,8 +1,8 @@
-use rupa_core::{Component, VNode, ViewCore, generate_id, Signal, vnode::Style, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
+use rupa_core::{Component, VNode, ViewCore, generate_id, Signal, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
 use rupa_ui::elements::{VStack, Text, Button};
 use rupa_engine::App;
 use std::sync::Arc;
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, CommandFactory};
 use crate::ui::ListSelector;
 use crate::templates::{Scaffolder, TemplateType};
 
@@ -11,7 +11,7 @@ use crate::templates::{Scaffolder, TemplateType};
 #[command(about = "Rupa Framework CLI - Craft with excellence.", long_about = None)]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
@@ -30,6 +30,10 @@ enum Commands {
         #[arg(long)]
         to: Option<String>,
     },
+    /// Display version information about Rupa CLI and Engine.
+    Version,
+    /// Print help information.
+    Help,
 }
 
 #[derive(Clone, PartialEq, Default)]
@@ -57,6 +61,22 @@ impl CreateWizard {
             stage: Signal::new(WizardStage::Welcome),
             project_name: Signal::new("my-rupa-app".into()),
             view: Arc::new(ViewCore::new()),
+        }
+    }
+
+    fn _run_scaffold(&self, template_idx: usize) {
+        let name = self.project_name.get();
+        let template = match template_idx {
+            0 => TemplateType::Showroom,
+            1 => TemplateType::Composite,
+            _ => TemplateType::Atomic,
+        };
+
+        self.stage.set(WizardStage::Scaffolding);
+        
+        match Scaffolder::craft(&name, template) {
+            Ok(_) => self.stage.set(WizardStage::Finished),
+            Err(e) => self.stage.set(WizardStage::Error(e.to_string())),
         }
     }
 }
@@ -140,13 +160,13 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Create { name: _ } => {
+        Some(Commands::Create { name: _ }) => {
             let wizard = CreateWizard::new();
             App::new("create-rupa-app")
                 .root(wizard)
                 .run_terminal();
         }
-        Commands::Update { canary, to } => {
+        Some(Commands::Update { canary, to }) => {
             println!("🔄 Refining your artisan tools...");
             
             let mut cmd = std::process::Command::new("cargo");
@@ -169,6 +189,24 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
                 Ok(s) if s.success() => println!("✨ Rupa CLI has been successfully refined."),
                 _ => eprintln!("❌ Refinement failed. Please ensure Cargo is installed and you have network access."),
             }
+        }
+        Some(Commands::Version) | None => {
+            println!("🎨 RUPA FRAMEWORK");
+            println!("------------------");
+            println!("CLI Version:    {}", env!("CARGO_PKG_VERSION"));
+            println!("Engine Version: {}", env!("CARGO_PKG_VERSION"));
+            println!("Artisan Tier:   Showroom");
+            println!("Workshop:       https://github.com/rupa-labs/rupa");
+            
+            if cli.command.is_none() {
+                println!("\nUsage: rupa <COMMAND>");
+                println!("Run 'rupa help' for more information.");
+            }
+        }
+        Some(Commands::Help) => {
+            let mut cmd = Cli::command();
+            cmd.print_help().unwrap();
+            println!();
         }
     }
 

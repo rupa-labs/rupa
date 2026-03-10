@@ -27,22 +27,17 @@ rupa = "0.1"
 
 ---
 
-## 🛠️ Option 2: Via Git Clone (Artisan/Contributor Mode)
+## 🛠️ Option 2: Via Git Repository (Artisan/Bleeding Edge)
 
-If you want to live on the "Bleeding Edge," contribute to the framework, or use the latest unreleased features, you can install directly from the source.
+If you want the latest unreleased features without manually cloning the repository, you can install directly from GitHub using Cargo:
 
-### 1. Clone the Workshop
 ```bash
-git clone https://github.com/rupa-labs/rupa.git
-cd rupa
+cargo install --git https://github.com/rupa-labs/rupa --bin rupa
 ```
 
-### 2. Build and Install Locally
-This will compile and install the CLI binary from your local copy:
-```bash
-cargo install --path crates/rupa-cli
-```
-
+### Option 3: Via Manual Git Clone (Contributor Mode)
+If you intend to contribute to the framework or modify its materials:
+...
 ### 3. Local Development Link
 If you are building an app while modifying the framework itself, link to your local clone in your app's `Cargo.toml`:
 ```toml
