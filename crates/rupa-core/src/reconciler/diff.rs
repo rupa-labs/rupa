@@ -49,13 +49,15 @@ pub fn reconcile(old: &VNode, new: &VNode, _parent_id: Option<String>, index: us
             let mut changes = Vec::new();
             let el_id = old_el.key.clone().unwrap_or_else(|| format!("{}_{}", old_el.tag, index));
 
-            // 1. Deep Style Diffing
+            // 1. Deep Style Diffing (with Motion awareness)
             diff_styles(&old_el.style, &new_el.style, &mut changes);
 
             // 2. Deep Attribute Diffing
             diff_attributes(&old_el.attributes, &new_el.attributes, &mut changes);
 
             if !changes.is_empty() {
+                // If the element has motion rules, we can wrap the updates later
+                // (Future: specialized animated patches)
                 patches.push(Patch::Update { id: el_id.clone(), changes });
             }
 

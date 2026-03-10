@@ -4,6 +4,11 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "The core reconciliation and orchestration engine for the Rupa Framework."
+repository.workspace = true
+readme = "README.md"
+keywords = ["rupa", "core", "reconciliation", "ui"]
+categories = ["gui"]
 
 [dependencies]
 rupa-support.workspace = true

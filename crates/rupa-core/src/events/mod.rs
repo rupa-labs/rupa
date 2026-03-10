@@ -108,3 +108,4 @@ pub struct EventListeners {
     pub on_key: Option<Arc<dyn Fn(&mut UIEvent, KeyCode) + Send + Sync>>,
     pub on_text: Option<Arc<dyn Fn(&mut UIEvent, &str) + Send + Sync>>,
 }
+pub mod dispatcher;

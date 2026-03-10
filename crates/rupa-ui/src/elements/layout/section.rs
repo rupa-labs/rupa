@@ -39,6 +39,7 @@ impl<'a> Component for Section<'a> {
             tag: "section".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),
+            motion: None,
             children: self.children.render_all(),
             key: Some(self.id.clone()),
         })

@@ -4,15 +4,22 @@ use super::base::{StyleModifier, Stylable};
 
 // --- Functional API ---
 
-pub fn motion(duration: Duration, easing: Easing) -> impl StyleModifier {
+pub fn transition(duration: Duration, easing: Easing) -> impl StyleModifier {
     move |s: &mut Style| {
         let mut m = s.motion.clone().unwrap_or_default();
-        m.transitions.push(Transition {
-            property: "all".into(), // Default to all for now
+        m.transition = Some(Transition {
             duration: duration.as_millis() as f32,
-            timing: easing.clone(),
-            ..Default::default()
+            delay: 0.0,
+            easing: easing.clone(),
         });
+        s.motion = Some(m);
+    }
+}
+
+pub fn spring() -> impl StyleModifier {
+    move |s: &mut Style| {
+        let mut m = s.motion.clone().unwrap_or_default();
+        m.spring = Some(Default::default());
         s.motion = Some(m);
     }
 }
@@ -20,8 +27,12 @@ pub fn motion(duration: Duration, easing: Easing) -> impl StyleModifier {
 // --- Chaining API ---
 
 pub trait ChainedMotion: Stylable {
-    fn motion(self, duration: Duration, easing: Easing) -> Self { 
-        self.style(motion(duration, easing)) 
+    fn transition(self, duration: Duration, easing: Easing) -> Self { 
+        self.style(transition(duration, easing)) 
+    }
+
+    fn spring(self) -> Self {
+        self.style(spring())
     }
 }
 

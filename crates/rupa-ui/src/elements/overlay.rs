@@ -50,6 +50,7 @@ impl<'a> Component for Modal<'a> {
             tag: "modal".to_string(),
             style: self.view.core.style.read().unwrap().clone(),
             attributes: Attributes::default(),
+            motion: None,
             children: self.logic.children.render_all(),
             key: Some(self.id.clone()),
         })
@@ -129,6 +130,8 @@ impl Component for Tooltip {
                 attr.insert("text", self.logic.text.clone());
                 attr
             },
+            motion: None,
+
             children: vec![VNode::text(self.logic.text.clone())],
             key: Some(self.id.clone()),
         })

@@ -10,7 +10,7 @@ use rupa_core::{Vec2, Error, Signal, Readable, generate_id, CursorIcon};
 use rupa_core::events::{InputEvent, UIEvent, EventListeners, Modifiers, PointerButton, ButtonState, KeyCode};
 
 use crate::platform::desktop::input::map_key;
-use crate::platform::dispatcher::InputDispatcher;
+use rupa_core::events::dispatcher::InputDispatcher;
 use crate::platform::{SharedPlatformCore, runner::*, register_redraw_proxy, AppMetadata};
 
 pub struct DesktopRunner {
@@ -98,6 +98,7 @@ impl DesktopRunner {
         let mut requested_cursor = core.requested_cursor;
         let mut pointer_capture = core.pointer_capture.take();
         let mut focused_id = core.focused_id.take();
+        let mut hovered_path = std::mem::take(&mut core.hovered_path);
         let event_listeners = core.event_listeners.clone();
         
         if let Some(ref root) = core.root {
@@ -110,32 +111,17 @@ impl DesktopRunner {
                 &mut requested_cursor,
                 &mut pointer_capture,
                 &mut focused_id,
+                &mut hovered_path,
                 &event_listeners,
                 core.debug,
             );
-        }
-
-        // Handle Cursor change request
-        if core.requested_cursor != requested_cursor {
-            if let Some(window) = &self.window {
-                let winit_cursor = match requested_cursor {
-                    CursorIcon::Default => winit::window::CursorIcon::Default,
-                    CursorIcon::Pointer => winit::window::CursorIcon::Pointer,
-                    CursorIcon::Text => winit::window::CursorIcon::Text,
-                    CursorIcon::Grab => winit::window::CursorIcon::Grab,
-                    CursorIcon::Grabbing => winit::window::CursorIcon::Grabbing,
-                    CursorIcon::NotAllowed => winit::window::CursorIcon::NotAllowed,
-                    CursorIcon::Wait => winit::window::CursorIcon::Wait,
-                    CursorIcon::Crosshair => winit::window::CursorIcon::Crosshair,
-                };
-                window.set_cursor(winit_cursor);
-            }
         }
 
         core.cursor_pos = cursor_pos;
         core.requested_cursor = requested_cursor;
         core.pointer_capture = pointer_capture;
         core.focused_id = focused_id;
+        core.hovered_path = hovered_path;
         
         if let Some(window) = &self.window {
             window.request_redraw();
@@ -272,6 +258,14 @@ impl ApplicationHandler<PlatformEvent> for DesktopRunner {
                 });
             }
             WindowEvent::RedrawRequested => {
+                // 1. Tick the motion engine
+                if rupa_motion::GLOBAL_TIMELINE.tick() {
+                    if let Some(window) = &self.window {
+                        window.request_redraw();
+                    }
+                }
+                
+                // 2. Perform the actual redraw
                 self.handle_redraw();
             }
             _ => {}

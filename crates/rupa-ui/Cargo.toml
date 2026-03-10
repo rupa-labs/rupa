@@ -4,6 +4,11 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "A suite of semantic, high-level UI components built on the Rupa Framework."
+repository.workspace = true
+readme = "README.md"
+keywords = ["rupa", "ui", "components", "semantic", "widgets"]
+categories = ["gui"]
 
 [dependencies]
 rupa-core.workspace = true

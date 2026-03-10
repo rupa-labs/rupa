@@ -8,6 +8,7 @@ use rupa_core::events::InputEvent;
 pub use rupa_ui::style::modifiers::base::StyleModifier;
 
 #[cfg(feature = "desktop")]
+use crate::platform::runner::PlatformRunner;
 use crate::platform::desktop::DesktopRunner;
 #[cfg(feature = "terminal")]
 use crate::platform::terminal::TerminalRunner;

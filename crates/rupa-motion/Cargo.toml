@@ -4,6 +4,11 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "A high-performance physics-based motion and animation engine for the Rupa Framework."
+repository.workspace = true
+readme = "README.md"
+keywords = ["rupa", "animation", "motion", "spring", "physics"]
+categories = ["gui", "multimedia"]
 
 [dependencies]
 rupa-core.workspace = true
@@ -11,3 +16,4 @@ rupa-signals.workspace = true
 rupa-vnode.workspace = true
 rupa-support.workspace = true
 serde.workspace = true
+lazy_static = "1.5.0"

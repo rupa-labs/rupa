@@ -1,6 +1,3 @@
+pub use rupa_core::scene::{SceneCore, SceneNode, SceneState, HitDiscovery, HitResult};
 pub mod layout;
 pub mod node;
-pub mod core;
-
-pub use self::core::{SceneCore, SceneState, HitDiscovery, HitResult};
-pub use self::node::SceneNode;

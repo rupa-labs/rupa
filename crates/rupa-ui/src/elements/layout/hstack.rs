@@ -12,7 +12,7 @@ pub struct HStack<'a> {
 impl<'a> HStack<'a> {
     pub fn new() -> Self {
         let inner = Flex::new();
-        inner.view.core.style().flex.flex_direction = rupa_vnode::FlexDirection::Row;
+        inner.view.style().flex.flex_direction = rupa_vnode::FlexDirection::Row;
         Self { inner }
     }
 
@@ -22,13 +22,13 @@ impl<'a> HStack<'a> {
     }
 
     pub fn gap(self, val: f32) -> Self {
-        self.inner.view.core.style().flex.gap = Some(val);
+        self.inner.view.style().flex.gap = Some(val);
         self
     }
 }
 
 impl<'a> Stylable for HStack<'a> {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.inner.view.core.style() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.inner.view.style() }
 }
 
 impl<'a> Component for HStack<'a> {

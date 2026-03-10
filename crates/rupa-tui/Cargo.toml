@@ -4,10 +4,14 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "A high-performance terminal UI renderer for the Rupa Framework."
+repository.workspace = true
+readme = "README.md"
+keywords = ["rupa", "tui", "terminal", "renderer"]
+categories = ["command-line-interface", "gui"]
 
 [dependencies]
 rupa-core.workspace = true
-rupa-engine = { workspace = true, features = ["tui", "terminal"] }
 rupa-signals.workspace = true
 rupa-telemetry.workspace = true
 rupa-support.workspace = true

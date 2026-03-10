@@ -7,101 +7,100 @@ use std::sync::{RwLockWriteGuard, Arc};
 
 // --- CARD ---
 
-pub struct CardLogic<'a> {
-    pub children: Children<'a>,
-}
-
-pub struct CardView {
-    pub core: Arc<ViewCore>,
-}
-
+/// A container component with an elevated surface.
 pub struct Card<'a> {
     pub id: String,
-    pub logic: CardLogic<'a>,
-    pub view: CardView,
+    pub children: Children<'a>,
+    pub view: Arc<ViewCore>,
 }
 
 impl<'a> Card<'a> {
     pub fn new() -> Self {
-        let core = Arc::new(ViewCore::new());
-        Theme::current().apply_defaults(&mut core.style());
+        let view = Arc::new(ViewCore::new());
+        Theme::current().apply_defaults(&mut view.style());
         Self {
             id: generate_id(),
-            logic: CardLogic { children: Children::new() },
-            view: CardView { core },
+            children: Children::new(),
+            view,
         }
     }
-}
 
-impl<'a> Stylable for Card<'a> {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.core.style() }
+    pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self {
+        self.children.push(child);
+        self.view.mark_dirty();
+        self
+    }
 }
 
 impl<'a> Component for Card<'a> {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { self.logic.children.as_refs() }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
+    fn children(&self) -> Vec<&dyn Component> { self.children.as_refs() }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
             tag: "card".to_string(),
-            style: self.view.core.style.read().unwrap().clone(),
+            style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),
-            children: self.logic.children.render_all(),
+            motion: None,
+            children: self.children.render_all(),
             key: Some(self.id.clone()),
         })
     }
 
-    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
-    fn mark_dirty(&self) { self.view.core.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.core.clear_dirty(); }
+    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
+    fn is_dirty(&self) -> bool { self.view.is_dirty() }
+    fn mark_dirty(&self) { self.view.mark_dirty(); }
+    fn clear_dirty(&self) { self.view.clear_dirty(); }
 
     fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = if let Some(existing) = self.view.core.get_node() {
-            if self.view.core.is_dirty() { taffy.set_style(existing.raw(), self.view.core.style().to_taffy()).unwrap(); }
-            existing.raw()
-        } else {
-            let new_node = taffy.new_with_children(self.view.core.style().to_taffy(), &[]).unwrap();
-            self.view.core.set_node(SceneNode::from(new_node));
-            new_node
-        };
-        let child_nodes = self.logic.children.layout_all(taffy, measurer);
+        let node = taffy.new_with_children(self.view.style().to_taffy(), &[]).unwrap();
+        self.view.set_node(SceneNode::from(node));
+        let child_nodes = self.children.layout_all(taffy, measurer);
         taffy.set_children(node, &child_nodes).unwrap();
-        self.view.core.clear_dirty();
+        self.view.clear_dirty();
         node
     }
 
     fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
-        let style_ref = self.view.core.style.read().unwrap();
-        self.logic.children.paint_all(renderer, taffy, node, is_group_hovered || style_ref.is_group, global_pos, 0);
+        let style_ref = self.view.style.read().unwrap();
+        if let Some(ref color) = style_ref.background.color {
+            let layout = taffy.layout(node).unwrap();
+            renderer.draw_rect(
+                global_pos.x + layout.location.x,
+                global_pos.y + layout.location.y,
+                layout.size.width,
+                layout.size.height,
+                color.to_rgba(),
+                style_ref.rounding.nw
+            );
+        }
+        self.children.paint_all(renderer, taffy, node, is_group_hovered || style_ref.is_group, global_pos, 0);
     }
+}
+
+impl<'a> Stylable for Card<'a> {
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
 }
 
 // --- TABLE ---
 
-pub struct TableLogic<'a> {
-    pub headers: Vec<String>,
-    pub rows: Vec<Vec<Box<dyn Component + 'a>>>,
-}
-
-pub struct TableView {
-    pub core: Arc<ViewCore>,
-}
-
+/// A component for displaying structured data.
 pub struct Table<'a> {
     pub id: String,
-    pub logic: TableLogic<'a>,
-    pub view: TableView,
+    pub headers: Vec<String>,
+    pub rows: Vec<Vec<Box<dyn Component + 'a>>>,
+    pub view: Arc<ViewCore>,
 }
 
 impl<'a> Table<'a> {
     pub fn new() -> Self {
         Self {
             id: generate_id(),
-            logic: TableLogic { headers: vec![], rows: vec![] },
-            view: TableView { core: Arc::new(ViewCore::new()) },
+            headers: vec![],
+            rows: vec![],
+            view: Arc::new(ViewCore::new()),
         }
     }
 }
@@ -109,56 +108,56 @@ impl<'a> Table<'a> {
 impl<'a> Component for Table<'a> {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
             tag: "table".to_string(),
-            style: self.view.core.style.read().unwrap().clone(),
+            style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),
+            motion: None,
             children: vec![],
             key: Some(self.id.clone()),
         })
     }
 
-    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
-    fn mark_dirty(&self) { self.view.core.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.core.clear_dirty(); }
+    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
+    fn is_dirty(&self) -> bool { self.view.is_dirty() }
+    fn mark_dirty(&self) { self.view.mark_dirty(); }
+    fn clear_dirty(&self) { self.view.clear_dirty(); }
 
     fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.core.style().to_taffy()).unwrap();
-        self.view.core.set_node(SceneNode::from(node));
+        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
+        self.view.set_node(SceneNode::from(node));
+        self.view.clear_dirty();
         node
     }
 
     fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
 }
 
+impl<'a> Stylable for Table<'a> {
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
+}
+
 // --- ACCORDION ---
 
-pub struct AccordionLogic<'a> {
-    pub items: Vec<(String, Box<dyn Component + 'a>)>,
-    pub expanded_index: Signal<Option<usize>>,
-}
-
-pub struct AccordionView {
-    pub core: Arc<ViewCore>,
-}
-
+/// A space-saving collapsible content component.
 pub struct Accordion<'a> {
     pub id: String,
-    pub logic: AccordionLogic<'a>,
-    pub view: AccordionView,
+    pub items: Vec<(String, Box<dyn Component + 'a>)>,
+    pub expanded_index: Signal<Option<usize>>,
+    pub view: Arc<ViewCore>,
 }
 
 impl<'a> Accordion<'a> {
     pub fn new() -> Self {
         Self {
             id: generate_id(),
-            logic: AccordionLogic { items: vec![], expanded_index: Signal::new(None) },
-            view: AccordionView { core: Arc::new(ViewCore::new()) },
+            items: vec![],
+            expanded_index: Signal::new(None),
+            view: Arc::new(ViewCore::new()),
         }
     }
 }
@@ -166,29 +165,35 @@ impl<'a> Accordion<'a> {
 impl<'a> Component for Accordion<'a> {
     fn id(&self) -> &str { &self.id }
     fn children(&self) -> Vec<&dyn Component> { vec![] }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
+    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
         VNode::Element(VElement {
             tag: "accordion".to_string(),
-            style: self.view.core.style.read().unwrap().clone(),
+            style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),
+            motion: None,
             children: vec![],
             key: Some(self.id.clone()),
         })
     }
 
-    fn get_node(&self) -> Option<SceneNode> { self.view.core.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.core.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.core.is_dirty() }
-    fn mark_dirty(&self) { self.view.core.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.core.clear_dirty(); }
+    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
+    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
+    fn is_dirty(&self) -> bool { self.view.is_dirty() }
+    fn mark_dirty(&self) { self.view.mark_dirty(); }
+    fn clear_dirty(&self) { self.view.clear_dirty(); }
 
     fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.core.style().to_taffy()).unwrap();
-        self.view.core.set_node(SceneNode::from(node));
+        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
+        self.view.set_node(SceneNode::from(node));
+        self.view.clear_dirty();
         node
     }
 
     fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
+}
+
+impl<'a> Stylable for Accordion<'a> {
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
 }

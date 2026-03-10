@@ -15,6 +15,10 @@ impl Spacing {
         Self { top: val, right: val, bottom: val, left: val }
     }
 
+    pub fn is_zero(&self) -> bool {
+        self.top == 0.0 && self.right == 0.0 && self.bottom == 0.0 && self.left == 0.0
+    }
+
     pub fn to_taffy(&self) -> Rect<LengthPercentage> {
         Rect {
             left: LengthPercentage::Length(self.left),

@@ -1,9 +1,10 @@
-use rupa_core::{Component, VNode, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
-use rupa_vnode::Style;
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
+use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use taffy::prelude::*;
 use std::sync::{RwLockWriteGuard, Arc};
 
+/// A ready-to-use toggle for Light and Dark modes.
 pub struct ThemeSwitcher {
     pub id: String,
     pub view: Arc<ViewCore>,
@@ -24,8 +25,14 @@ impl Component for ThemeSwitcher {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::element("theme-switcher")
-            .with_style(self.view.style.read().unwrap().clone())
+        VNode::Element(VElement {
+            tag: "theme-switcher".to_string(),
+            style: self.view.style.read().unwrap().clone(),
+            attributes: Attributes::default(),
+            motion: None,
+            children: vec![],
+            key: Some(self.id.clone()),
+        })
     }
 
     fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
@@ -37,6 +44,7 @@ impl Component for ThemeSwitcher {
     fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
         let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
         self.view.set_node(SceneNode::from(node));
+        self.view.clear_dirty();
         node
     }
 

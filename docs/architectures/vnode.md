@@ -37,10 +37,14 @@ pub struct VElement {
     pub tag: String,
     pub style: Style,
     pub attributes: Attributes,
+    pub motion: Option<Motion>, // Declarative animation rules
     pub children: Vec<VNode>,
     pub key: Option<String>, // Used for efficient list reconciliation
 }
 ```
+
+### 2.1 The Motion Attribute
+The `motion` field allows components to declare how they should transition between states or animate upon entry/exit. This ensures that even in a headless or serialized environment, the intent for animation is preserved.
 
 ---
 

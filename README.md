@@ -14,46 +14,57 @@ Rupa Framework is designed for developers who demand the perfect balance between
 
 ---
 
-## 🏗️ The Showroom (Target-Driven Choice)
+## 🏗️ Getting Started (The Artisan Way)
 
-Rupa is engineered as an **"IKEA-style"** ecosystem. You decide the scale of your framework:
+The fastest way to start crafting with Rupa is through our aesthetic installation wizard.
 
-1.  **Native Power:** High-performance rendering via `rupa-desktop` or `rupa-tui`.
-2.  **Web Excellence:** Modern DOM-based rendering with `rupa-server` (SSR) and `rupa-web` (SPA).
-3.  **Headless Logic:** Just use `rupa-headless` for logic-only automation or background services.
+### 1. Install the Rupa CLI
+Ensure you have [Rust](https://www.rust-lang.org/) installed, then run:
 
-For a full list of crates, see [**Crate References**](./docs/crate-references.md).
+```bash
+cargo install rupa-cli
+```
+
+### 2. Create Your Project
+Launch the crafting wizard and follow the intuitive steps:
+
+```bash
+rupa create
+```
+
+For more detailed instructions, see the [**Getting Started Guide**](./docs/getting-started.md).
 
 ---
 
-## 🚀 Quick Start (Showroom Mode)
+## 🚀 Manual Quick Start (Showroom Mode)
 
-Add Rupa to your `Cargo.toml`:
+If you prefer to set up manually, add Rupa to your `Cargo.toml`:
 
 ```toml
 [dependencies]
 # For Desktop (WGPU) applications
-rupa = { version = "0.1", features = ["desktop"] }
-
-# For Full-Stack Web (SSR + DOM) applications
-rupa = { version = "0.1", features = ["web", "ssr"] }
+rupa = { git = "https://github.com/rupa-labs/rupa", features = ["desktop"] }
 ```
 
-Create a reactive counter that works across GPU, Terminal, and Web:
+Create a reactive counter that works across Desktop, Terminal, and Web:
 
 ```rust
 use rupa::prelude::*;
 
 fn main() {
+    // 1. Define your reactive state
     let count = Signal::new(0);
 
+    // 2. Build your app using aesthetic Tiers
     App::new("Artisan Counter")
         .root(
             VStack::new()
-                .style((p(20.0), items_center()))
+                .p(32.0)
+                .items_center()
+                .gap(16.0)
                 .child(Box::new(Text::new(Memo::new({
                     let count = count.clone();
-                    move || format!("Count: {}", count.get())
+                    move || format!("Current Value: {}", count.get())
                 }))))
                 .child(Box::new(Button::new("Increment")
                     .on_click(move |_| count.update(|v| *v += 1))

@@ -33,7 +33,7 @@ pub use filters::Filter;
 pub use accessibility::Accessibility;
 pub use a11y::{SemanticRole, AccessibilityNode};
 pub use attributes::Attributes;
-pub use motion::{Motion, Transition, Animation, TimingFunction, Easing};
+pub use motion::{Motion, Transition, SpringConfig, Easing};
 pub use types::{TextAlign, FontWeight, Breakpoint, Scale};
 pub use theme::{Theme, ColorMode, Variant};
 pub use style::Style;

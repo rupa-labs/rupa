@@ -48,6 +48,7 @@ impl<'a> Component for Grid<'a> {
             tag: "grid".to_string(),
             style: self.view.core.style.read().unwrap().clone(),
             attributes: Attributes::default(),
+            motion: None,
             children: self.logic.children.render_all(),
             key: Some(self.id.clone()),
         })

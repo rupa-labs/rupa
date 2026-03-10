@@ -5,6 +5,7 @@ use crate::elements::Children;
 use taffy::prelude::*;
 use std::sync::{RwLockWriteGuard, Arc};
 
+/// A root-level viewport container.
 pub struct Viewport<'a> {
     pub id: String,
     pub children: Children<'a>,
@@ -37,6 +38,7 @@ impl<'a> Component for Viewport<'a> {
             tag: "viewport".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),
+            motion: None,
             children: self.children.render_all(),
             key: Some(self.id.clone()),
         })

@@ -4,9 +4,16 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "The cross-platform native rendering engine for the Rupa Framework, supporting GPU, Terminal, and Web."
+repository.workspace = true
+readme = "README.md"
+keywords = ["rupa", "engine", "renderer", "wgpu", "cross-platform"]
+categories = ["gui", "rendering"]
 
 [dependencies]
 rupa-core.workspace = true
+rupa-tui.workspace = true
+rupa-motion.workspace = true
 rupa-ui.workspace = true
 rupa-vnode.workspace = true
 log.workspace = true

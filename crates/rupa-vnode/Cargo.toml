@@ -4,6 +4,11 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "The universal DNA of Rupa Framework: Platform-agnostic Virtual UI Nodes and Style models."
+repository.workspace = true
+readme = "README.md"
+keywords = ["rupa", "vdom", "vnode", "ui", "dna"]
+categories = ["gui", "web-programming"]
 
 [dependencies]
 rupa-signals.workspace = true

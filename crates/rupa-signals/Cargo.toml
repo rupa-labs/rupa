@@ -4,6 +4,11 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "A fine-grained reactivity system based on Signals, Memos, and Effects for the Rupa Framework."
+repository.workspace = true
+readme = "README.md"
+keywords = ["rupa", "reactivity", "signals", "ui"]
+categories = ["asynchronous", "gui"]
 
 [dependencies]
 rupa-support.workspace = true

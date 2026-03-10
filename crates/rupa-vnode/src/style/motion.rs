@@ -1,39 +1,68 @@
 use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
-pub enum TimingFunction {
-    #[default] Ease, Linear, EaseIn, EaseOut, EaseInOut, StepStart, StepEnd,
+pub enum Easing {
+    #[default]
+    Linear,
+    EaseIn,
+    EaseOut,
+    EaseInOut,
+    BackIn,
+    BackOut,
     CubicBezier(f32, f32, f32, f32),
-    Spring, 
 }
 
-pub type Easing = TimingFunction;
-
-#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
-pub enum TransitionBehavior { #[default] Normal, AllowDiscrete }
-
+/// Configuration for a duration-based transition.
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct Transition {
-    pub property: String,
     pub duration: f32, // milliseconds
-    pub timing: TimingFunction,
-    pub delay: f32,
-    pub behavior: TransitionBehavior,
+    pub delay: f32,    // milliseconds
+    pub easing: Easing,
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct Animation {
-    pub name: String,
-    pub duration: f32,
-    pub timing: TimingFunction,
-    pub delay: f32,
-    pub iteration_count: String, 
-    pub direction: String, 
-    pub fill_mode: String, 
+impl Transition {
+    pub fn new(millis: f32) -> Self {
+        Self { duration: millis, delay: 0.0, easing: Easing::EaseInOut }
+    }
 }
 
+/// Configuration for spring physics.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SpringConfig {
+    pub stiffness: f32,
+    pub damping: f32,
+    pub mass: f32,
+    pub precision: f32,
+}
+
+impl Default for SpringConfig {
+    fn default() -> Self {
+        Self {
+            stiffness: 170.0,
+            damping: 26.0,
+            mass: 1.0,
+            precision: 0.01,
+        }
+    }
+}
+
+/// Declarative motion intent for a UI element.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Motion {
-    pub transitions: Vec<Transition>,
-    pub animations: Vec<Animation>,
+    pub transition: Option<Transition>,
+    pub spring: Option<SpringConfig>,
+}
+
+impl Motion {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_transition(transition: Transition) -> Self {
+        Self { transition: Some(transition), spring: None }
+    }
+
+    pub fn with_spring(config: SpringConfig) -> Self {
+        Self { transition: None, spring: Some(config) }
+    }
 }

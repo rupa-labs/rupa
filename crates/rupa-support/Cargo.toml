@@ -4,6 +4,11 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "Foundation utilities, common types, and error handling for the Rupa Framework."
+repository.workspace = true
+readme = "README.md"
+keywords = ["rupa", "framework", "utils", "ui"]
+categories = ["development-tools"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }

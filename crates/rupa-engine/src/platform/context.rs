@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
-use rupa_core::{Component, Vec2, Signal, generate_id, Error};
+use rupa_core::{Component, Vec2, Signal};
 use rupa_core::events::InputEvent; use rupa_core::CursorIcon;
 use crate::platform::app::AppMetadata;
-use crate::scene::SceneCore;
+use rupa_core::scene::SceneCore;
 
 pub struct PlatformCore {
     pub metadata: AppMetadata,
@@ -13,6 +13,7 @@ pub struct PlatformCore {
     pub requested_cursor: CursorIcon,
     pub pointer_capture: Option<String>,
     pub focused_id: Option<String>,
+    pub hovered_path: Vec<String>,
     pub event_listeners: Vec<Arc<dyn Fn(&InputEvent) + Send + Sync>>,
     pub debug: bool,
 }
@@ -28,6 +29,7 @@ impl PlatformCore {
             requested_cursor: CursorIcon::Default,
             pointer_capture: None,
             focused_id: None,
+            hovered_path: Vec::new(),
             event_listeners: Vec::new(),
             debug: false,
         }

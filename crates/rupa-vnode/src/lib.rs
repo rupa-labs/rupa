@@ -24,6 +24,7 @@ pub struct VElement {
     pub tag: String,
     pub style: Style,
     pub attributes: Attributes,
+    pub motion: Option<Motion>,
     pub children: Vec<VNode>,
     pub key: Option<String>,
 }
@@ -41,6 +42,7 @@ impl VNode {
             tag: tag.into(),
             style: Style::default(),
             attributes: Attributes::default(),
+            motion: None,
             children: Vec::new(),
             key: None,
         })
@@ -57,6 +59,13 @@ impl VNode {
     pub fn with_style(mut self, style: Style) -> Self {
         if let VNode::Element(ref mut el) = self {
             el.style = style;
+        }
+        self
+    }
+
+    pub fn with_motion(mut self, motion: Motion) -> Self {
+        if let VNode::Element(ref mut el) = self {
+            el.motion = Some(motion);
         }
         self
     }

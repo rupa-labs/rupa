@@ -4,12 +4,26 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "Aesthetic command-line tooling and project initializer for the Rupa Framework."
+repository.workspace = true
+readme = "README.md"
+keywords = ["rupa", "cli", "scaffolding", "wizard"]
+categories = ["command-line-interface", "development-tools"]
+
+[[bin]]
+name = "rupa"
+path = "src/main.rs"
 
 [dependencies]
 rupa-support.workspace = true
+rupa-engine = { workspace = true, features = ["tui", "terminal"] }
+rupa-ui.workspace = true
+rupa-core.workspace = true
+rupa-signals.workspace = true
 clap = { version = "4.4", features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 serde.workspace = true
 serde_json.workspace = true
 toml = "0.8"
 log.workspace = true
+taffy.workspace = true
