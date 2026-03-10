@@ -15,9 +15,9 @@ impl Animatable for f32 {
     }
 }
 
-impl Animatable for rupa_support::Vec2 {
+impl Animatable for rupa_base::Vec2 {
     fn interpolate(&self, other: &Self, t: f32) -> Self {
-        rupa_support::Vec2::new(
+        rupa_base::Vec2::new(
             self.x + (other.x - self.x) * t,
             self.y + (other.y - self.y) * t
         )

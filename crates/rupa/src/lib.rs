@@ -13,11 +13,11 @@ pub use rupa_core as core;
 pub use rupa_ui as ui;
 pub use rupa_engine as engine;
 #[cfg(feature = "ssr")]
-pub use rupa_server_core as server_core;
+pub use rupa_server as server_core;
 #[cfg(feature = "web")]
-pub use rupa_web_core as web_core;
+pub use rupa_web as web_core;
 #[cfg(feature = "mobile")]
-pub use rupa_mobile_core as mobile_core;
+pub use rupa_mobile as mobile_core;
 pub use rupa_macros as macros;
 
 

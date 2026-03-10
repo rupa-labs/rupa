@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::Path;
-use rupa_support::Error;
+use rupa_base::Error;
 
 /// Defines the project templates available for scaffolding.
 pub enum TemplateType {
@@ -109,7 +109,7 @@ impl Component for MyComponent {{
     fn layout(&self, taffy: &mut taffy::prelude::TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<taffy::prelude::NodeId>) -> taffy::prelude::NodeId {{
         taffy.new_leaf(taffy::prelude::Style::default()).unwrap()
     }}
-    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &taffy::prelude::TaffyTree<()>, _node: taffy::prelude::NodeId, _is_group_hovered: bool, _global_pos: rupa_support::Vec2) {{}}
+    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &taffy::prelude::TaffyTree<()>, _node: taffy::prelude::NodeId, _is_group_hovered: bool, _global_pos: rupa_base::Vec2) {{}}
 }}
 "# , run_method)
     }

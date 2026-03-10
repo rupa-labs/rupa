@@ -1,4 +1,4 @@
-use rupa_support::Error;
+use rupa_base::Error;
 use serde::{Serialize, de::DeserializeOwned};
 use std::any::Any;
 
@@ -15,10 +15,25 @@ pub trait BoxedActionHandler: Send + Sync {
     fn handle_json(&self, json_payload: &str) -> Result<(), Error>;
 }
 
-impl<A: Action, H: ActionHandler<A>> BoxedActionHandler for H {
+/// A generic wrapper that implements BoxedActionHandler for any ActionHandler.
+pub struct GenericActionHandler<A: Action, H: ActionHandler<A>> {
+    pub handler: H,
+    _marker: std::marker::PhantomData<A>,
+}
+
+impl<A: Action, H: ActionHandler<A>> GenericActionHandler<A, H> {
+    pub fn new(handler: H) -> Self {
+        Self {
+            handler,
+            _marker: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<A: Action, H: ActionHandler<A>> BoxedActionHandler for GenericActionHandler<A, H> {
     fn handle_json(&self, json_payload: &str) -> Result<(), Error> {
         let action: A = serde_json::from_str(json_payload)
             .map_err(|e| Error::Platform(format!("Failed to deserialize action payload: {}", e)))?;
-        self.handle(action)
+        self.handler.handle(action)
     }
 }

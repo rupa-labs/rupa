@@ -1,7 +1,7 @@
 use crate::component::Component;
 use crate::events::{InputEvent, ButtonState, Modifiers, UIEvent};
 use crate::scene::{SceneCore, HitDiscovery};
-use rupa_support::Vec2;
+use rupa_base::Vec2;
 use rupa_signals::{Signal, CursorIcon};
 use std::sync::Arc;
 

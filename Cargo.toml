@@ -12,13 +12,6 @@ members = [
     "crates/rupa-server",
     "crates/rupa-tui",
     "crates/rupa-mobile",
-    "crates/rupa-fullstack",
-    "crates/rupa-headless",
-    "crates/rupa-hybrid",
-    "crates/rupa-server-core",
-    "crates/rupa-web-core",
-    "crates/rupa-mobile-core",
-    "crates/rupa-docs",
     "crates/rupa-signals",
     "crates/rupa-vnode",
     "crates/rupa-broadcast",
@@ -36,8 +29,14 @@ members = [
     "crates/rupa-canvas",
     "crates/rupa-cli",
     "crates/rupa-test",
-    "crates/rupa-support",
+    "crates/rupa-base",
     "crates/rupa-md",
+    "crates/rupa-console",
+    "crates/rupa-terminal",
+    "crates/rupa-headless",
+    "crates/rupa-docs",
+    "crates/rupa-fullstack",
+    "crates/rupa-hybrid",
 ]
 
 [workspace.package]
@@ -50,7 +49,7 @@ repository = "https://github.com/rupa-labs/rupa"
 
 [workspace.dependencies]
 # Atomic Materials (Tier 1)
-rupa-support = { path = "crates/rupa-support" }
+rupa-base = { path = "crates/rupa-base" }
 rupa-signals = { path = "crates/rupa-signals" }
 rupa-vnode = { path = "crates/rupa-vnode" }
 rupa-broadcast = { path = "crates/rupa-broadcast" }
@@ -67,27 +66,26 @@ rupa-context = { path = "crates/rupa-context" }
 rupa-telemetry = { path = "crates/rupa-telemetry" }
 rupa-canvas = { path = "crates/rupa-canvas" }
 rupa-md = { path = "crates/rupa-md" }
+rupa-console = { path = "crates/rupa-console" }
+rupa-terminal = { path = "crates/rupa-terminal" }
 
 # Composite Assemblies (Tier 2)
 rupa-core = { path = "crates/rupa-core" }
 rupa-ui = { path = "crates/rupa-ui" }
 rupa-engine = { path = "crates/rupa-engine" }
-rupa-server-core = { path = "crates/rupa-server-core" }
-rupa-web-core = { path = "crates/rupa-web-core" }
-rupa-mobile-core = { path = "crates/rupa-mobile-core" }
+rupa-server = { path = "crates/rupa-server" }
+rupa-web = { path = "crates/rupa-web" }
+rupa-mobile = { path = "crates/rupa-mobile" }
 rupa-macros = { path = "crates/rupa-macros" }
 rupa-docs = { path = "crates/rupa-docs" }
+rupa-fullstack = { path = "crates/rupa-fullstack" }
+rupa-hybrid = { path = "crates/rupa-hybrid" }
 
 # Artisan Showrooms (Tier 3)
 rupa = { path = "crates/rupa" }
 rupa-desktop = { path = "crates/rupa-desktop" }
-rupa-web = { path = "crates/rupa-web" }
-rupa-server = { path = "crates/rupa-server" }
 rupa-tui = { path = "crates/rupa-tui" }
-rupa-mobile = { path = "crates/rupa-mobile" }
-rupa-fullstack = { path = "crates/rupa-fullstack" }
 rupa-headless = { path = "crates/rupa-headless" }
-rupa-hybrid = { path = "crates/rupa-hybrid" }
 
 # Developer Tooling
 rupa-cli = { path = "crates/rupa-cli" }

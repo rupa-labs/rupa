@@ -8,6 +8,6 @@ license.workspace = true
 [dependencies]
 rupa-signals.workspace = true
 rupa-store.workspace = true
-rupa-support.workspace = true
+rupa-base.workspace = true
 serde.workspace = true
 log.workspace = true

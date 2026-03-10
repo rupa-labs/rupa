@@ -1,7 +1,7 @@
-use rupa_core::{Component, VNode, ViewCore, generate_id, Signal, UIEvent, vnode::Style, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
+use rupa_core::{Component, VNode, ViewCore, generate_id, Signal, UIEvent, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
 use rupa_ui::elements::{VStack, Text};
 use taffy::prelude::*;
-use std::sync::{Arc, RwLockWriteGuard};
+use std::sync::Arc;
 
 /// A TUI-optimized selection list.
 pub struct ListSelector {
@@ -61,7 +61,7 @@ impl Component for ListSelector {
         node
     }
 
-    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: rupa_support::Vec2) {}
+    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: rupa_base::Vec2) {}
 
     fn on_key(&self, _event: &mut UIEvent, key: rupa_core::events::KeyCode) {
         match key {

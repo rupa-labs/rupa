@@ -11,10 +11,11 @@ keywords = ["rupa", "core", "reconciliation", "ui"]
 categories = ["gui"]
 
 [dependencies]
-rupa-support.workspace = true
+rupa-base.workspace = true
 rupa-signals.workspace = true
 rupa-vnode.workspace = true
 log.workspace = true
 thiserror.workspace = true
 serde.workspace = true
+serde_json.workspace = true
 taffy.workspace = true

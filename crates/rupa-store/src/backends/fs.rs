@@ -1,5 +1,5 @@
 use crate::store::Store;
-use rupa_support::Error;
+use rupa_base::Error;
 use std::fs;
 use std::path::PathBuf;
 

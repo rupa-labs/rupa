@@ -1,4 +1,4 @@
-use rupa_support::Error;
+use rupa_base::Error;
 
 /// The core contract for all physical storage backends in Rupa.
 pub trait Store: Send + Sync {

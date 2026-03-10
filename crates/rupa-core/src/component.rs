@@ -1,6 +1,6 @@
 use taffy::prelude::*;
 use rupa_vnode::VNode;
-use rupa_support::Vec2;
+use rupa_base::Vec2;
 use crate::renderer::{Renderer, TextMeasurer};
 use crate::events::{UIEvent, KeyCode};
 use crate::scene::SceneNode;

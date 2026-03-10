@@ -1,4 +1,4 @@
-use rupa_support::Error;
+use rupa_base::Error;
 use async_trait::async_trait;
 
 #[async_trait]

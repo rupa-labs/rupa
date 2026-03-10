@@ -1,17 +1,19 @@
 [package]
-name = "rupa-tui"
+name = "rupa-console"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-description = "Terminal UI components and Showroom for the Rupa Framework."
+description = "Low-level terminal rendering and runner infrastructure for the Rupa Framework."
 repository.workspace = true
 readme = "README.md"
 
 [dependencies]
 rupa-core.workspace = true
 rupa-engine.workspace = true
-rupa-console.workspace = true
 rupa-signals.workspace = true
 rupa-base.workspace = true
-rupa-ui.workspace = true
+rupa-motion.workspace = true
+crossterm.workspace = true
+taffy.workspace = true
+log.workspace = true

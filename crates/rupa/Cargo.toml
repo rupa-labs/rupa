@@ -23,12 +23,12 @@ log.workspace = true
 # Showrooms
 rupa-desktop = { workspace = true, optional = true }
 rupa-tui = { workspace = true, optional = true }
-rupa-web-core = { workspace = true, optional = true }
-rupa-server-core = { workspace = true, optional = true }
+rupa-web = { workspace = true, optional = true }
+rupa-server = { workspace = true, optional = true }
 
 [features]
 default = ["desktop"]
 desktop = ["rupa-desktop"]
 tui = ["rupa-tui"]
-ssr = ["rupa-server-core"]
-web = ["rupa-web-core"]
+ssr = ["rupa-server"]
+web = ["rupa-web"]

@@ -1,4 +1,4 @@
-use rupa_support::Error;
+use rupa_base::Error;
 
 /// The behavioral contract for a Rupa Console Command.
 /// This allows users to extend the CLI with project-specific logic.

@@ -1,4 +1,4 @@
-use rupa_support::Vec2;
+use rupa_base::Vec2;
 use std::sync::Arc;
 use serde::{Serialize, Deserialize};
 

@@ -1,8 +1,9 @@
 use rupa_core::{Component, VNode, ViewCore, generate_id, Signal, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
 use rupa_ui::elements::{VStack, Text, Button};
 use rupa_engine::App;
-use rupa_tui::{TerminalRunner, TerminalRenderer};
+use rupa_terminal::{TerminalRunner, Console};
 use rupa_engine::platform::runner::PlatformRunner;
+use rupa_signals::Effect;
 use std::sync::Arc;
 use clap::{Parser, Subcommand};
 use crate::ui::ListSelector;
@@ -47,7 +48,7 @@ enum Commands {
     Version,
 }
 
-#[derive(Clone, PartialEq, Default)]
+#[derive(Clone, Copy, PartialEq, Default, Debug)]
 enum WizardStage {
     #[default]
     Welcome,
@@ -55,41 +56,60 @@ enum WizardStage {
     TemplateSelection,
     Scaffolding,
     Finished,
-    Error(String),
+    Error,
 }
 
 struct CreateWizard {
     id: String,
     stage: Signal<WizardStage>,
     project_name: Signal<String>,
+    selected_template: Signal<Option<usize>>,
+    error_msg: Signal<String>,
     view: Arc<ViewCore>,
+    _effect: Arc<Effect>,
 }
 
 impl CreateWizard {
     pub fn new() -> Self {
+        let stage = Signal::new(WizardStage::Welcome);
+        let project_name = Signal::new("my-rupa-app".to_string());
+        let selected_template = Signal::new(None);
+        let error_msg = Signal::new("".to_string());
+        
+        let wizard_state = (stage.clone(), project_name.clone(), selected_template.clone(), error_msg.clone());
+        
+        let effect = Effect::new(move || {
+            let (stage, project_name, selected_template, error_msg) = wizard_state.clone();
+            if stage.get() == WizardStage::Scaffolding {
+                if let Some(idx) = selected_template.get() {
+                    let name = project_name.get();
+                    let template = match idx {
+                        0 => TemplateType::ZeroBloat,
+                        1 => TemplateType::Desktop,
+                        2 => TemplateType::Web,
+                        3 => TemplateType::Tui,
+                        _ => TemplateType::Library,
+                    };
+
+                    match Scaffolder::craft(&name, template) {
+                        Ok(_) => stage.set(WizardStage::Finished),
+                        Err(e) => {
+                            error_msg.set(e.to_string());
+                            stage.set(WizardStage::Error);
+                        }
+                    }
+                }
+            }
+        });
+
         Self {
             id: generate_id(),
-            stage: Signal::new(WizardStage::Welcome),
-            project_name: Signal::new("my-rupa-app".into()),
+            stage,
+            project_name,
+            selected_template,
+            error_msg,
             view: Arc::new(ViewCore::new()),
-        }
-    }
-
-    fn run_scaffold(&self, template_idx: usize) {
-        let name = self.project_name.get();
-        let template = match template_idx {
-            0 => TemplateType::ZeroBloat,
-            1 => TemplateType::Desktop,
-            2 => TemplateType::Web,
-            3 => TemplateType::Tui,
-            _ => TemplateType::Library,
-        };
-
-        self.stage.set(WizardStage::Scaffolding);
-        
-        match Scaffolder::craft(&name, template) {
-            Ok(_) => self.stage.set(WizardStage::Finished),
-            Err(e) => self.stage.set(WizardStage::Error(e.to_string())),
+            _effect: Arc::new(effect),
         }
     }
 }
@@ -117,7 +137,7 @@ impl Component for CreateWizard {
                 VStack::new()
                     .gap(12.0)
                     .child(Box::new(Text::new("PROJECT SIGNATURE")))
-                    .child(Box::new(Text::new("Name: 'my-rupa-app'")))
+                    .child(Box::new(Text::new(format!("Name: '{}'", self.project_name.get()))))
                     .child(Box::new(Button::new("Confirm Signature →").on_click({
                         let stage = self.stage.clone();
                         move |_| stage.set(WizardStage::TemplateSelection)
@@ -135,11 +155,10 @@ impl Component for CreateWizard {
                         "Terminal Arts (TUI)",
                         "Composite (UI Library)"
                     ]).on_submit({
-                        let wizard = self.clone(); // This is a bit hacky for this demo
                         let stage = self.stage.clone();
+                        let selected = self.selected_template.clone();
                         move |idx| {
-                            // In a real app, we'd trigger run_scaffold(idx)
-                            // For now, just set stage
+                            selected.set(Some(idx));
                             stage.set(WizardStage::Scaffolding);
                         }
                     })))
@@ -149,10 +168,16 @@ impl Component for CreateWizard {
                 VStack::new().child(Box::new(Text::new("CRAFTING..."))).render()
             }
             WizardStage::Finished => {
-                VStack::new().child(Box::new(Text::new("PROJECT READY!"))).render()
+                VStack::new()
+                    .child(Box::new(Text::new("PROJECT READY!")))
+                    .child(Box::new(Text::new(format!("Run: cd {} && cargo run", self.project_name.get()))))
+                    .render()
             }
-            WizardStage::Error(msg) => {
-                VStack::new().child(Box::new(Text::new(format!("ERROR: {}", msg)))).render()
+            WizardStage::Error => {
+                VStack::new()
+                    .child(Box::new(Text::new("CRAFTING FAILED")))
+                    .child(Box::new(Text::new(format!("Error: {}", self.error_msg.get()))))
+                    .render()
             }
         };
 
@@ -173,17 +198,19 @@ impl Component for CreateWizard {
         node
     }
 
-    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &taffy::prelude::TaffyTree<()>, _node: taffy::prelude::NodeId, _is_group_hovered: bool, _global_pos: rupa_support::Vec2) {}
+    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &taffy::prelude::TaffyTree<()>, _node: taffy::prelude::NodeId, _is_group_hovered: bool, _global_pos: rupa_base::Vec2) {}
 }
 
-// Clone implementation for wizard handle
 impl Clone for CreateWizard {
     fn clone(&self) -> Self {
         Self {
             id: self.id.clone(),
             stage: self.stage.clone(),
             project_name: self.project_name.clone(),
+            selected_template: self.selected_template.clone(),
+            error_msg: self.error_msg.clone(),
             view: self.view.clone(),
+            _effect: self._effect.clone(),
         }
     }
 }
@@ -193,10 +220,9 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
 
     match cli.command {
         Some(Commands::Create { name }) => {
-            // ... (logika create)
-            println!("🎨 Initializing Artisan Wizard...");
-            let mut wizard = CreateWizard::new();
-            
+            Console::info("Initializing Artisan Wizard...");
+            let wizard = CreateWizard::new();
+
             if let Some(project_name) = name {
                 wizard.project_name.set(project_name);
                 wizard.stage.set(WizardStage::TemplateSelection);
@@ -204,20 +230,20 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
 
             let app = App::new("create-rupa-app")
                 .root(wizard);
-            
+
             let runner = TerminalRunner::new(app.core.clone());
             if let Err(e) = runner.run() {
-                eprintln!("❌ Wizard inisialization failed: {}", e);
+                Console::error(format!("Wizard initialization failed: {}", e));
             }
         }
         Some(Commands::Build) => {
-            println!("🏗️  Building your Artisan Site...");
+            Console::info("Building your Artisan Site...");
             
             let pages_dir = std::path::Path::new("src/pages");
             let dist_dir = std::path::Path::new("dist");
 
             if !pages_dir.exists() {
-                eprintln!("❌ Error: 'src/pages' directory not found. Is this a Rupa project?");
+                Console::error("'src/pages' directory not found. Is this a Rupa project?");
                 return Ok(());
             }
 
@@ -230,21 +256,21 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
                 
                 if path.extension().map_or(false, |ext| ext == "md") {
                     let name = path.file_stem().unwrap().to_str().unwrap();
-                    println!("📄 Processing {}...", name);
+                    Console::text(format!("📄 Processing {}...", name));
 
                     let content = std::fs::read_to_string(&path).unwrap();
                     let vnode = rupa_md::MarkdownEngine::parse(&content);
-                    let html = rupa_server_core::HtmlRenderer::render_vnode(&vnode);
+                    let html = rupa_server::HtmlRenderer::render_vnode(&vnode);
 
                     let output_path = dist_dir.join(format!("{}.html", name));
                     std::fs::write(output_path, html).unwrap();
                 }
             }
 
-            println!("✨ Build complete! Your site is ready in 'dist/'.");
+            Console::success("Build complete! Your site is ready in 'dist/'.");
         }
         Some(Commands::Run { action, payload }) => {
-            println!("🚌 Dispatching Artisan Action: {}...", action);
+            Console::info(format!("Dispatching Artisan Action: {}...", action));
             
             let mut cmd = std::process::Command::new("cargo");
             cmd.arg("run");
@@ -259,23 +285,23 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
 
             let status = cmd.status();
             if let Err(e) = status {
-                eprintln!("❌ Failed to execute action: {}", e);
+                Console::error(format!("Failed to execute action: {}", e));
             }
         }
-        Commands::Update { canary, to } => {
-            println!("🔄 Refining your artisan tools...");
+        Some(Commands::Update { canary, to }) => {
+            Console::info("Refining your artisan tools...");
 
             let mut cmd = std::process::Command::new("cargo");
             cmd.arg("install");
 
             if canary {
-                println!("🚀 Pulling the bleeding edge from the workshop (Git)...");
+                Console::info("Pulling the bleeding edge from the workshop (Git)...");
                 cmd.args(["--git", "https://github.com/rupa-labs/rupa", "rupa-cli"]);
-            } else if let Some(version) = to {
-                println!("📍 Switching to version: {}...", version);
-                cmd.args(["rupa-cli", "--version", &version]);
+            } else if let Some(ref version) = to {
+                Console::info(format!("Switching to version: {}...", version));
+                cmd.args(["rupa-cli", "--version", version]);
             } else {
-                println!("📦 Fetching the latest stable release from registry...");
+                Console::info("Fetching the latest stable release from registry...");
                 cmd.arg("rupa-cli");
             }
 
@@ -283,37 +309,36 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
 
             match status {
                 Ok(s) if s.success() => {
-                    println!("✨ Rupa CLI has been successfully refined.");
+                    Console::success("Rupa CLI has been successfully refined.");
                 }
                 _ => {
                     if !canary && to.is_none() {
-                        println!("💡 Stable release not found in registry. Redirecting to artisan repository...");
+                        Console::info("Stable release not found in registry. Redirecting to artisan repository...");
                         let git_status = std::process::Command::new("cargo")
                             .args(["install", "--git", "https://github.com/rupa-labs/rupa", "rupa-cli"])
                             .status();
 
                         match git_status {
-                            Ok(s) if s.success() => println!("✨ Rupa CLI has been successfully refined from repository."),
-                            _ => eprintln!("❌ Refinement failed. Please ensure Cargo is installed and you have network access."),
+                            Ok(s) if s.success() => Console::success("Rupa CLI has been successfully refined from repository."),
+                            _ => Console::error("Refinement failed. Please ensure Cargo is installed and you have network access."),
                         }
                     } else {
-                        eprintln!("❌ Refinement failed. Please ensure Cargo is installed and you have network access.");
+                        Console::error("Refinement failed. Please ensure Cargo is installed and you have network access.");
                     }
                 }
             }
         }
-
         Some(Commands::Version) | None => {
-            println!("🎨 RUPA FRAMEWORK");
-            println!("------------------");
-            println!("CLI Version:    {}", env!("CARGO_PKG_VERSION"));
-            println!("Engine Version: {}", env!("CARGO_PKG_VERSION"));
-            println!("Artisan Tier:   Showroom");
-            println!("Workshop:       https://github.com/rupa-labs/rupa");
+            Console::draw_box("RUPA FRAMEWORK", vec![
+                format!("CLI Version:    {}", env!("CARGO_PKG_VERSION")),
+                format!("Engine Version: {}", env!("CARGO_PKG_VERSION")),
+                "Artisan Tier:   Showroom".to_string(),
+                "Workshop:       https://github.com/rupa-labs/rupa".to_string(),
+            ]);
             
             if cli.command.is_none() {
-                println!("\nUsage: rupa <COMMAND>");
-                println!("Run 'rupa --help' for more information.");
+                Console::text("\nUsage: rupa <COMMAND>");
+                Console::text("Run 'rupa --help' for more information.");
             }
         }
     }

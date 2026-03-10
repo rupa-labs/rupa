@@ -14,6 +14,6 @@ categories = ["gui", "multimedia"]
 rupa-core.workspace = true
 rupa-signals.workspace = true
 rupa-vnode.workspace = true
-rupa-support.workspace = true
+rupa-base.workspace = true
 serde.workspace = true
 lazy_static = "1.5.0"

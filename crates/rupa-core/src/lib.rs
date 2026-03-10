@@ -7,8 +7,8 @@ pub mod reconciler;
 pub mod action;
 
 // Re-export Atomic Pieces
-pub use rupa_support as support;
-pub use rupa_support::{Vec2, Error, generate_id};
+pub use rupa_base as support;
+pub use rupa_base::{Vec2, Error, generate_id};
 
 pub use rupa_signals as signals;
 pub use rupa_signals::{Signal, Memo, Effect, Readable, CursorIcon};

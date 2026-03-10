@@ -12,7 +12,7 @@ categories = ["gui", "web-programming"]
 
 [dependencies]
 rupa-signals.workspace = true
-rupa-support.workspace = true
+rupa-base.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 taffy.workspace = true

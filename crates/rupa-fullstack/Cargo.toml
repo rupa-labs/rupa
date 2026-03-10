@@ -8,8 +8,8 @@ license.workspace = true
 [dependencies]
 rupa-core.workspace = true
 rupa-ui.workspace = true
-rupa-server-core.workspace = true
-rupa-web-core.workspace = true
+rupa-server.workspace = true
+rupa-web.workspace = true
 rupa-router.workspace = true
 rupa-store.workspace = true
 rupa-auth.workspace = true

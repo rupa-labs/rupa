@@ -4,10 +4,17 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "The Backend showroom for the Rupa Framework, supporting SSR and Static Site Generation."
+repository.workspace = true
+readme = "README.md"
+keywords = ["rupa", "server", "ssr", "html"]
+categories = ["gui", "web-programming"]
 
 [dependencies]
 rupa-core.workspace = true
-rupa-server-core.workspace = true
-rupa-store.workspace = true
-rupa-auth.workspace = true
-rupa-i18n.workspace = true
+rupa-ui.workspace = true
+rupa-vnode.workspace = true
+axum.workspace = true
+tokio.workspace = true
+serde.workspace = true
+log.workspace = true

@@ -1,10 +1,10 @@
 [package]
-name = "rupa-tui"
+name = "rupa-terminal"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-description = "Terminal UI components and Showroom for the Rupa Framework."
+description = "The flagship Terminal showroom and facade for crafting aesthetic Rupa CLI applications."
 repository.workspace = true
 readme = "README.md"
 
@@ -12,6 +12,7 @@ readme = "README.md"
 rupa-core.workspace = true
 rupa-engine.workspace = true
 rupa-console.workspace = true
+rupa-tui.workspace = true
+rupa-ui.workspace = true
 rupa-signals.workspace = true
 rupa-base.workspace = true
-rupa-ui.workspace = true

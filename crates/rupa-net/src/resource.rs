@@ -1,5 +1,5 @@
 use rupa_signals::Signal;
-use rupa_support::Error;
+use rupa_base::Error;
 
 /// A reactive state machine for asynchronous data fetching.
 #[derive(Clone, Debug, PartialEq)]

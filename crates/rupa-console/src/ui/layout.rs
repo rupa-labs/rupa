@@ -21,6 +21,6 @@ impl ConsoleLayout {
             println!("{}│ {} {}│", border_color, format!("{:<width$}", line, width = width - 4), border_color);
         }
         
-        println!("{}{}{}{}", border_color, "└", "─".repeat(width - 2), "┘", reset);
+        println!("{}{}{}{}{}", border_color, "└", "─".repeat(width - 2), "┘", reset);
     }
 }
