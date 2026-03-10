@@ -15,7 +15,8 @@ cargo install rupa-cli
 
 ### 2. Verify Installation
 ```bash
-rupa --version
+rupa --version  # Output: rupa 0.1.0
+rupa version    # Detailed artisan info
 ```
 
 ### 3. Usage in Projects

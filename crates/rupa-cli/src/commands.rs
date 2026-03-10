@@ -1,15 +1,16 @@
 use rupa_core::{Component, VNode, ViewCore, generate_id, Signal, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
 use rupa_ui::elements::{VStack, Text, Button};
 use rupa_engine::App;
-use rupa_tui::TerminalRunner;
+use rupa_tui::{TerminalRunner, TerminalRenderer};
 use rupa_engine::platform::runner::PlatformRunner;
 use std::sync::Arc;
-use clap::{Parser, Subcommand, CommandFactory};
+use clap::{Parser, Subcommand};
 use crate::ui::ListSelector;
 use crate::templates::{Scaffolder, TemplateType};
 
 #[derive(Parser)]
 #[command(name = "rupa")]
+#[command(version)]
 #[command(about = "Rupa Framework CLI - Craft with excellence.", long_about = None)]
 struct Cli {
     #[command(subcommand)]
@@ -182,12 +183,15 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
 
     match cli.command {
         Some(Commands::Create { name: _ }) => {
+            println!("🎨 Initializing Artisan Wizard...");
             let wizard = CreateWizard::new();
             let app = App::new("create-rupa-app")
                 .root(wizard);
             
             let runner = TerminalRunner::new(app.core.clone());
-            let _ = runner.run();
+            if let Err(e) = runner.run() {
+                eprintln!("❌ Wizard inisialization failed: {}", e);
+            }
         }
         Some(Commands::Update { canary, to }) => {
             println!("🔄 Refining your artisan tools...");

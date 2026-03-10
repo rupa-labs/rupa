@@ -5,7 +5,9 @@ use crate::TerminalRenderer;
 use rupa_engine::platform::{SharedPlatformCore, runner::*, register_redraw_proxy, AppMetadata};
 use crossterm::{
     event::{self, Event, KeyCode, MouseEventKind, KeyModifiers},
-    terminal::{disable_raw_mode, enable_raw_mode, size},
+    terminal::{disable_raw_mode, enable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen},
+    cursor::{Hide, Show},
+    ExecutableCommand,
 };
 use std::time::Duration;
 
@@ -104,14 +106,17 @@ impl PlatformRunner for TerminalRunner {
     }
 
     fn run(mut self) -> Result<(), Error> {
+        let mut out = std::io::stdout();
         enable_raw_mode().map_err(|e| Error::Platform(format!("Failed to enable raw mode: {}", e)))?;
+        out.execute(EnterAlternateScreen).unwrap();
+        out.execute(Hide).unwrap();
         
         register_redraw_proxy(Box::new(|| {}));
 
         loop {
             // 1. Tick animation
             if rupa_motion::GLOBAL_TIMELINE.tick() {
-                // Animation running, redraw will happen below
+                // Animation running
             }
 
             // 2. Handle redraw
@@ -158,6 +163,8 @@ impl PlatformRunner for TerminalRunner {
             }
         }
 
+        out.execute(Show).unwrap();
+        out.execute(LeaveAlternateScreen).unwrap();
         disable_raw_mode().unwrap();
         Ok(())
     }
