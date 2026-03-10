@@ -29,10 +29,10 @@ rupa = "0.1"
 
 ## 🛠️ Option 2: Via Git Repository (Artisan/Bleeding Edge)
 
-If you want the latest unreleased features without manually cloning the repository, you can install directly from GitHub using Cargo:
+If you want the latest unreleased features without manually cloning the repository, you can install the CLI directly from GitHub:
 
 ```bash
-cargo install --git https://github.com/rupa-labs/rupa --bin rupa
+cargo install --git https://github.com/rupa-labs/rupa rupa-cli
 ```
 
 ### Option 3: Via Manual Git Clone (Contributor Mode)
