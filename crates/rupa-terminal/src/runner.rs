@@ -172,6 +172,12 @@ impl TerminalRunner {
         if let InputEvent::Key { key, .. } = &event {
             let clickable_ids = Self::find_clickable_ids(&self.last_vnode);
             if !clickable_ids.is_empty() {
+                // If nothing is focused, default to first element
+                if focused_id.is_none() {
+                    focused_id = Some(clickable_ids[0].clone());
+                    core.focused_id = focused_id.clone();
+                }
+
                 let mut current_idx = focused_id.as_ref()
                     .and_then(|id| clickable_ids.iter().position(|c| c == id))
                     .unwrap_or(0);
@@ -219,7 +225,11 @@ impl TerminalRunner {
         let mut ids = Vec::new();
         match node {
             VNode::Element(el) => {
-                if el.handlers.on_click.is_some() {
+                let has_handler = el.handlers.on_click.is_some() 
+                    || el.handlers.on_submit.is_some() 
+                    || el.handlers.on_input.is_some();
+
+                if has_handler {
                     if let Some(ref key) = el.key {
                         ids.push(key.clone());
                     }

@@ -107,5 +107,9 @@ pub struct EventListeners {
     pub on_drag: Option<Arc<dyn Fn(&mut UIEvent, Vec2) + Send + Sync>>,
     pub on_key: Option<Arc<dyn Fn(&mut UIEvent, KeyCode) + Send + Sync>>,
     pub on_text: Option<Arc<dyn Fn(&mut UIEvent, &str) + Send + Sync>>,
+    /// Triggered when text input occurs (e.g., in an Input field).
+    pub on_input: Option<Arc<dyn Fn(String) + Send + Sync>>,
+    /// Triggered when a form action is submitted (e.g., Enter in an Input).
+    pub on_submit: Option<Arc<dyn Fn(String) + Send + Sync>>,
 }
 pub mod dispatcher;

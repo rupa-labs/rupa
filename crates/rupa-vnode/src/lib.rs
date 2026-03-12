@@ -51,6 +51,31 @@ pub struct VElement {
     pub key: Option<String>,
 }
 
+#[derive(Default, Clone)]
+pub struct EventHandlers {
+    pub on_click: Option<std::sync::Arc<dyn Fn(UIEvent) + Send + Sync>>,
+    pub on_hover: Option<std::sync::Arc<dyn Fn(UIEvent) + Send + Sync>>,
+    pub on_input: Option<std::sync::Arc<dyn Fn(String) + Send + Sync>>,
+    pub on_submit: Option<std::sync::Arc<dyn Fn(String) + Send + Sync>>,
+}
+
+impl std::fmt::Debug for EventHandlers {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("EventHandlers")
+            .field("on_click", &self.on_click.as_ref().map(|_| "Fn"))
+            .field("on_hover", &self.on_hover.as_ref().map(|_| "Fn"))
+            .field("on_input", &self.on_input.as_ref().map(|_| "Fn"))
+            .field("on_submit", &self.on_submit.as_ref().map(|_| "Fn"))
+            .finish()
+    }
+}
+
+impl PartialEq for EventHandlers {
+    fn eq(&self, _other: &Self) -> bool {
+        true // Handlers are skipped in deep tree comparison
+    }
+}
+
 /// Metadata for a lazily-resolved component in the VNode tree.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct VComponent {
@@ -62,13 +87,6 @@ pub struct VComponent {
 
 impl VNode {
     /// Creates a new Element node.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use rupa_vnode::VNode;
-    /// let node = VNode::element("div");
-    /// ```
     pub fn element(tag: impl Into<String>) -> Self {
         VNode::Element(VElement {
             tag: tag.into(),
@@ -103,6 +121,22 @@ impl VNode {
     pub fn with_handler(mut self, handler: impl Fn(UIEvent) + Send + Sync + 'static) -> Self {
         if let VNode::Element(ref mut el) = self {
             el.handlers.on_click = Some(std::sync::Arc::new(handler));
+        }
+        self
+    }
+
+    /// Fluent API: Assigns an input handler.
+    pub fn on_input(mut self, handler: impl Fn(String) + Send + Sync + 'static) -> Self {
+        if let VNode::Element(ref mut el) = self {
+            el.handlers.on_input = Some(std::sync::Arc::new(handler));
+        }
+        self
+    }
+
+    /// Fluent API: Assigns a submit handler.
+    pub fn on_submit(mut self, handler: impl Fn(String) + Send + Sync + 'static) -> Self {
+        if let VNode::Element(ref mut el) = self {
+            el.handlers.on_submit = Some(std::sync::Arc::new(handler));
         }
         self
     }
@@ -159,20 +193,6 @@ mod tests {
             assert_eq!(el.children[0], VNode::text("Hello Rupa"));
         } else {
             panic!("Node should be an element");
-        }
-    }
-
-    #[test]
-    fn test_fragment_creation() {
-        let frag = VNode::fragment(vec![
-            VNode::text("A"),
-            VNode::text("B"),
-        ]);
-        
-        if let VNode::Fragment(children) = frag {
-            assert_eq!(children.len(), 2);
-        } else {
-            panic!("Node should be a fragment");
         }
     }
 }

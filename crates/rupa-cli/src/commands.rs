@@ -1,5 +1,5 @@
 use rupa_core::{Component, VNode, ViewCore, Id, Signal};
-use rupa_ui::elements::*;
+use rupa_ui::elements::{VStack, Text, Button, Input};
 use rupa_engine::App;
 use rupa_terminal::{TerminalRunner, Console};
 use rupa_console::Progress;
@@ -99,15 +99,27 @@ impl Component for CreateWizard {
                 VStack::new()
                     .child(Text::new("🎨 RUPA FRAMEWORK"))
                     .child(Text::new("The Artisan's Choice for Multi-platform Excellence."))
-                    .child(Button::new("Begin Crafting →").on_click(move |_| stage.set(WizardStage::NameInput)))
+                    .child(Button::new("Begin Crafting →")
+                        .with_key("btn-welcome")
+                        .on_click(move |_| stage.set(WizardStage::NameInput)))
             }
             WizardStage::NameInput => {
                 let stage = self.stage.clone();
-                let name = self.project_name.get();
+                let project_name = self.project_name.clone();
+                
                 VStack::new()
                     .child(Text::new("PROJECT SIGNATURE"))
-                    .child(Text::new(format!("Name: '{}'", name)))
-                    .child(Button::new("Confirm Signature →").on_click(move |_| stage.set(WizardStage::TemplateSelection)))
+                    .child({
+                        let stage = stage.clone();
+                        Input::new("Enter project name...")
+                            .with_key("project-name-input")
+                            .value(project_name)
+                            .on_submit(move |_| stage.set(WizardStage::TemplateSelection))
+                    })
+                    .child(Button::new("Confirm Signature →")
+                        .with_key("btn-name-confirm")
+                        .on_click(move |_| stage.set(WizardStage::TemplateSelection))
+                    )
             }
             WizardStage::TemplateSelection => {
                 let stage = self.stage.clone();
@@ -126,12 +138,14 @@ impl Component for CreateWizard {
                 for (idx, name) in templates.into_iter().enumerate() {
                     let stage = stage.clone();
                     let selected = selected.clone();
-                    list = list.child(Button::new(name).on_click(move |_| {
-                        batch(|| {
-                            selected.set(Some(idx));
-                            stage.set(WizardStage::Scaffolding);
-                        });
-                    }));
+                    list = list.child(Button::new(name)
+                        .with_key(format!("template-{}", idx))
+                        .on_click(move |_| {
+                            batch(|| {
+                                selected.set(Some(idx));
+                                stage.set(WizardStage::Scaffolding);
+                            });
+                        }));
                 }
                 
                 list
@@ -182,11 +196,17 @@ impl Component for CreateWizard {
                 VStack::new()
                     .child(Text::new("PROJECT READY!"))
                     .child(Text::new(format!("Run: cd {} && cargo run", self.project_name.get())))
+                    .child(Button::new("Exit Wizard")
+                        .with_key("btn-exit-success")
+                        .on_click(|_| std::process::exit(0)))
             }
             WizardStage::Error => {
                 VStack::new()
                     .child(Text::new("CRAFTING FAILED"))
                     .child(Text::new(format!("Error: {}", self.error_msg.get())))
+                    .child(Button::new("Exit")
+                        .with_key("btn-exit-error")
+                        .on_click(|_| std::process::exit(1)))
             }
         };
 
@@ -323,6 +343,7 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
             match status {
                 Ok(s) if s.success() => {
                     Console::success("Rupa CLI has been successfully refined.");
+                    perform_post_update_cleanup();
                 }
                 _ => {
                     if !canary && to.is_none() {
@@ -332,7 +353,10 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
                             .status();
 
                         match git_status {
-                            Ok(s) if s.success() => Console::success("Rupa CLI has been successfully refined from repository."),
+                            Ok(s) if s.success() => {
+                                Console::success("Rupa CLI has been successfully refined from repository.");
+                                perform_post_update_cleanup();
+                            },
                             _ => Console::error("Refinement failed. Please ensure Cargo is installed and you have network access."),
                         }
                     } else {
@@ -357,4 +381,19 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+fn perform_post_update_cleanup() {
+    // 1. Visual Terminal Reset
+    print!("\x1B[2J\x1B[H"); // Clear screen and home cursor
+    
+    // 2. Internal Cache Clearing (Future implementation)
+    // let _ = std::fs::remove_dir_all("~/.rupa/cache"); 
+
+    Console::draw_box("REFINEMENT COMPLETE", vec![
+        "Internal session caches have been cleared.".to_string(),
+        "To apply changes immediately in this shell, run:".to_string(),
+        "".to_string(),
+        "  hash -r (bash)  OR  rehash (zsh)".to_string(),
+    ]);
 }

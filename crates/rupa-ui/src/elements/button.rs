@@ -54,6 +54,11 @@ impl Button {
         self.disabled.set(disabled);
         self
     }
+
+    pub fn with_key(mut self, key: impl Into<String>) -> Self {
+        self.id = key.into();
+        self
+    }
 }
 
 impl Stylable for Button {

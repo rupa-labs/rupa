@@ -105,7 +105,24 @@ impl Scaffolder {
         }
 
         report(0.9, "Re-initializing project identity...");
-        // Future: Update Cargo.toml [package] name automatically
+        // Update Cargo.toml [package] name automatically
+        let cargo_path = Path::new(name).join("Cargo.toml");
+        if cargo_path.exists() {
+            if let Ok(content) = fs::read_to_string(&cargo_path) {
+                let mut new_content = String::new();
+                let mut replaced = false;
+                for line in content.lines() {
+                    if !replaced && line.trim().starts_with("name =") {
+                        new_content.push_str(&format!("name = \"{}\"\n", name));
+                        replaced = true;
+                    } else {
+                        new_content.push_str(line);
+                        new_content.push_str("\n");
+                    }
+                }
+                let _ = fs::write(cargo_path, new_content);
+            }
+        }
         
         report(1.0, "Crafting complete from Git!");
         Ok(())
