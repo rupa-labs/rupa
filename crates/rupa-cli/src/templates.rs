@@ -2,15 +2,18 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 use rupa_base::Error;
+use std::process::Command;
 
 /// Defines the project templates available for scaffolding.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum TemplateType {
     ZeroBloat,
     Desktop,
     Web,
     Tui,
     Library,
+    /// A custom template from a Git repository.
+    Git(String),
 }
 
 pub struct Scaffolder;
@@ -34,6 +37,11 @@ impl Scaffolder {
             return Err(Error::Platform(format!("Directory '{}' already exists.", project_name)));
         }
 
+        // Handle Git Template separately
+        if let TemplateType::Git(url) = template {
+            return Self::craft_from_git(project_name, &url, progress);
+        }
+
         report(0.1, "Initializing directory structure...");
         // 1. Create base directory structure
         Self::create_dirs(root)?;
@@ -41,11 +49,11 @@ impl Scaffolder {
         report(0.3, "Generating manifest (Cargo.toml)...");
         // 2. Generate Cargo.toml
         let cargo_toml = match template {
-            TemplateType::ZeroBloat => Self::showroom_cargo(project_name, &["desktop"]),
-            TemplateType::Desktop => Self::showroom_cargo(project_name, &["desktop"]),
+            TemplateType::ZeroBloat | TemplateType::Desktop => Self::showroom_cargo(project_name, &["desktop"]),
             TemplateType::Web => Self::showroom_cargo(project_name, &["web", "ssr"]),
             TemplateType::Tui => Self::showroom_cargo(project_name, &["terminal"]),
             TemplateType::Library => Self::base_cargo(project_name),
+            TemplateType::Git(_) => unreachable!(), // Handled above
         };
         fs::write(root.join("Cargo.toml"), cargo_toml).map_err(|e| Error::Platform(e.to_string()))?;
 
@@ -55,20 +63,51 @@ impl Scaffolder {
         fs::write(root.join("src/main.rs"), main_rs).map_err(|e| Error::Platform(e.to_string()))?;
 
         report(0.7, "Assembling components...");
-        // 4. Generate src/components/mod.rs and src/components/app.rs
         if !matches!(template, TemplateType::Library) {
             fs::write(root.join("src/components/mod.rs"), "pub mod app;\npub use app::AppRoot;\n").unwrap();
             fs::write(root.join("src/components/app.rs"), Self::generate_app_component()).unwrap();
         }
 
         report(0.9, "Finalizing environment (.gitignore, GEMINI.md)...");
-        // 5. Generate .gitignore
         fs::write(root.join(".gitignore"), "/target\nCargo.lock\n.rupa_storage\n").unwrap();
-
-        // 6. Generate GEMINI.md (Standard Compliance)
         fs::write(root.join("GEMINI.md"), Self::generate_gemini_md(project_name)).unwrap();
 
         report(1.0, "Crafting complete!");
+        Ok(())
+    }
+
+    fn craft_from_git(
+        name: &str, 
+        url: &str, 
+        progress: Option<Arc<dyn Fn(f32, &str) + Send + Sync>>
+    ) -> Result<(), Error> {
+        let report = |val: f32, msg: &str| {
+            if let Some(ref p) = progress {
+                p(val, msg);
+            }
+        };
+
+        report(0.2, &format!("Pulling template from {}...", url));
+        
+        let status = Command::new("git")
+            .args(["clone", "--depth", "1", url, name])
+            .status()
+            .map_err(|e| Error::Platform(format!("Failed to execute git clone: {}", e)))?;
+
+        if !status.success() {
+            return Err(Error::Platform("Git clone failed. Please check the URL and your connection.".into()));
+        }
+
+        report(0.7, "Cleaning up git metadata...");
+        let dot_git = Path::new(name).join(".git");
+        if dot_git.exists() {
+            let _ = fs::remove_dir_all(dot_git);
+        }
+
+        report(0.9, "Re-initializing project identity...");
+        // Future: Update Cargo.toml [package] name automatically
+        
+        report(1.0, "Crafting complete from Git!");
         Ok(())
     }
 

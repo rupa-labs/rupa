@@ -201,14 +201,18 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
         Some(Commands::Create { name, template }) => {
             // Non-interactive flow
             if let (Some(project_name), Some(template_str)) = (&name, &template) {
-                let template_type = match template_str.to_lowercase().as_str() {
-                    "desktop" | "showroom" => TemplateType::Desktop,
-                    "web" => TemplateType::Web,
-                    "tui" | "terminal" => TemplateType::Tui,
-                    "library" => TemplateType::Library,
-                    _ => {
-                        Console::error(format!("Unknown template type: '{}'. Valid types: desktop, web, terminal, library", template_str));
-                        return Ok(());
+                let template_type = if template_str.starts_with("http") || template_str.starts_with("git@") {
+                    TemplateType::Git(template_str.clone())
+                } else {
+                    match template_str.to_lowercase().as_str() {
+                        "desktop" | "showroom" => TemplateType::Desktop,
+                        "web" => TemplateType::Web,
+                        "tui" | "terminal" => TemplateType::Tui,
+                        "library" => TemplateType::Library,
+                        _ => {
+                            Console::error(format!("Unknown template type: '{}'. Valid types: desktop, web, terminal, library, or a Git URL.", template_str));
+                            return Ok(());
+                        }
                     }
                 };
 
