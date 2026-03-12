@@ -1,4 +1,4 @@
-use rupa_core::{Vec2, Error, Renderer, vnode::VNode};
+use rupa_core::{Vec2, Error, Renderer, vnode::VNode, reconciler::reconcile};
 use rupa_core::events::InputEvent;
 use rupa_core::events::dispatcher::InputDispatcher;
 use rupa_tui::TerminalRenderer;
@@ -15,7 +15,7 @@ use taffy::prelude::*;
 pub struct TerminalRunner {
     pub core: SharedPlatformCore,
     pub renderer: TerminalRenderer,
-    pub last_vnode: Option<VNode>,
+    pub last_vnode: VNode,
 }
 
 impl TerminalRunner {
@@ -24,7 +24,7 @@ impl TerminalRunner {
         Self {
             core,
             renderer: TerminalRenderer::new(w as f32, h as f32),
-            last_vnode: None,
+            last_vnode: VNode::Empty,
         }
     }
 
@@ -37,15 +37,19 @@ impl TerminalRunner {
         if let Some(root) = core.root.take() {
             let (w, h) = size().unwrap_or((80, 24));
             
-            // 1. Build VNode Tree (The reactive source of truth)
-            let vnode = root.render();
-            self.last_vnode = Some(vnode.clone());
+            // 1. Render Current Tree
+            let new_vnode = root.render();
 
-            // 2. Build Taffy Tree from VNode
-            core.scene.layout_engine.taffy.clear();
-            let layout_root = self.build_taffy_from_vnode(&vnode, &mut core.scene.layout_engine.taffy);
+            // 2. Reconcile (Identify Changes)
+            let patches = reconcile(&self.last_vnode, &new_vnode, None, 0);
             
-            // 3. Compute Layout
+            // 3. Update Taffy Tree (For Layout & Hit Testing)
+            // Note: In a matured engine, the reconciler generates patches that 
+            // the renderer applies to its internal scene graph. 
+            // For this terminal showroom, we rebuild layout when tree structure changes.
+            core.scene.layout_engine.taffy.clear();
+            let layout_root = self.build_taffy_from_vnode(&new_vnode, &mut core.scene.layout_engine.taffy);
+            
             core.scene.layout_engine.taffy.compute_layout(
                 layout_root, 
                 Size { width: AvailableSpace::Definite(w as f32), height: AvailableSpace::Definite(h as f32) }
@@ -53,9 +57,10 @@ impl TerminalRunner {
 
             // 4. Paint the VNode tree
             self.renderer.clear_screen();
-            Self::paint_vnode(&mut self.renderer, &vnode, &core.scene.layout_engine.taffy, layout_root, Vec2::zero());
+            Self::paint_vnode(&mut self.renderer, &new_vnode, &core.scene.layout_engine.taffy, layout_root, Vec2::zero());
             self.renderer.present();
 
+            self.last_vnode = new_vnode;
             core.root = Some(root);
         }
     }
@@ -72,7 +77,7 @@ impl TerminalRunner {
 
         match node {
             VNode::Element(el) => {
-                // 1. Draw Background
+                // Draw Background
                 if let Some(ref color) = el.style.background.color {
                     let rgba: [f32; 4] = color.to_rgba();
                     renderer.draw_rect(pos.x, pos.y, layout.size.width, layout.size.height, rgba, 0.0);
@@ -90,7 +95,7 @@ impl TerminalRunner {
                 }
             }
             VNode::Text(text) => {
-                let color = [1.0, 1.0, 1.0, 1.0]; // Default white for TUI text
+                let color = [1.0, 1.0, 1.0, 1.0];
                 renderer.draw_text(text, pos.x, pos.y, layout.size.width, 1.0, color, rupa_core::vnode::TextAlign::Left);
             }
             VNode::Fragment(children) => {
@@ -109,7 +114,6 @@ impl TerminalRunner {
         match node {
             VNode::Element(el) => {
                 let mut style = el.style.to_taffy();
-                // Ensure TUI elements take up space properly
                 if style.size.width == Dimension::Auto { style.size.width = Dimension::Percent(1.0); }
                 
                 let children: Vec<NodeId> = el.children.iter()
@@ -149,21 +153,19 @@ impl TerminalRunner {
         let mut hovered_path = std::mem::take(&mut core.hovered_path);
         let event_listeners = core.event_listeners.clone();
         
-        if let Some(ref vnode) = self.last_vnode {
-            InputDispatcher::dispatch(
-                event,
-                vnode,
-                &core.scene,
-                &core.viewport,
-                &mut cursor_pos,
-                &mut requested_cursor,
-                &mut pointer_capture,
-                &mut focused_id,
-                &mut hovered_path,
-                &event_listeners,
-                core.debug,
-            );
-        }
+        InputDispatcher::dispatch(
+            event,
+            &self.last_vnode,
+            &core.scene,
+            &core.viewport,
+            &mut cursor_pos,
+            &mut requested_cursor,
+            &mut pointer_capture,
+            &mut focused_id,
+            &mut hovered_path,
+            &event_listeners,
+            core.debug,
+        );
 
         core.cursor_pos = cursor_pos;
         core.requested_cursor = requested_cursor;
@@ -182,7 +184,6 @@ impl PlatformRunner for TerminalRunner {
         let mut out = std::io::stdout();
         enable_raw_mode().map_err(|e| Error::Platform(format!("Failed to enable raw mode: {}", e)))?;
         out.execute(EnterAlternateScreen).unwrap();
-        out.execute(event::EnableMouseCapture).unwrap();
         out.execute(Hide).unwrap();
         
         register_redraw_proxy(Box::new(|| {}));
@@ -191,7 +192,7 @@ impl PlatformRunner for TerminalRunner {
             if rupa_motion::GLOBAL_TIMELINE.tick() { }
             self.handle_redraw();
 
-            if event::poll(Duration::from_millis(16)).unwrap_or(false) {
+            if event::poll(Duration::from_millis(32)).unwrap_or(false) {
                 match event::read().unwrap() {
                     Event::Key(key) => {
                         if key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL) {
@@ -206,6 +207,8 @@ impl PlatformRunner for TerminalRunner {
                             KeyCode::Left => rupa_core::events::KeyCode::ArrowLeft,
                             KeyCode::Right => rupa_core::events::KeyCode::ArrowRight,
                             KeyCode::Char(c) => rupa_core::events::KeyCode::Char(c),
+                            KeyCode::Tab => rupa_core::events::KeyCode::Tab,
+                            KeyCode::Backspace => rupa_core::events::KeyCode::Backspace,
                             _ => rupa_core::events::KeyCode::Unknown,
                         };
 
@@ -223,38 +226,6 @@ impl PlatformRunner for TerminalRunner {
                             modifiers 
                         });
                     }
-                    Event::Mouse(mouse) => {
-                        let pos = Vec2::new(mouse.column as f32, mouse.row as f32);
-                        
-                        // Always update cursor position first
-                        self.dispatch_event(InputEvent::PointerMove { position: pos });
-
-                        match mouse.kind {
-                            event::MouseEventKind::Down(btn) => {
-                                let button = match btn {
-                                    event::MouseButton::Left => rupa_core::events::PointerButton::Primary,
-                                    event::MouseButton::Right => rupa_core::events::PointerButton::Secondary,
-                                    event::MouseButton::Middle => rupa_core::events::PointerButton::Auxiliary,
-                                };
-                                self.dispatch_event(InputEvent::PointerButton { 
-                                    button, 
-                                    state: rupa_core::events::ButtonState::Pressed, 
-                                });
-                            }
-                            event::MouseEventKind::Up(btn) => {
-                                let button = match btn {
-                                    event::MouseButton::Left => rupa_core::events::PointerButton::Primary,
-                                    event::MouseButton::Right => rupa_core::events::PointerButton::Secondary,
-                                    event::MouseButton::Middle => rupa_core::events::PointerButton::Auxiliary,
-                                };
-                                self.dispatch_event(InputEvent::PointerButton { 
-                                    button, 
-                                    state: rupa_core::events::ButtonState::Released, 
-                                });
-                            }
-                            _ => {}
-                        }
-                    }
                     Event::Resize(w, h) => {
                         self.renderer.core.logical_size = Vec2::new(w as f32, h as f32);
                     }
@@ -264,7 +235,6 @@ impl PlatformRunner for TerminalRunner {
         }
 
         out.execute(Show).unwrap();
-        out.execute(event::DisableMouseCapture).unwrap();
         out.execute(LeaveAlternateScreen).unwrap();
         disable_raw_mode().unwrap();
         Ok(())

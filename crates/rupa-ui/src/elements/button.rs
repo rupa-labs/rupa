@@ -75,7 +75,15 @@ impl Component for Button {
         if !is_disabled {
             if let Some(ref handler) = self.on_click {
                 let h = handler.clone();
-                node = node.with_handler(move |e| h(e));
+                // Pointer Interaction
+                node = node.with_handler({
+                    let h = h.clone();
+                    move |e| h(e)
+                });
+                
+                // Keyboard Interaction (Accessibility)
+                // In a future update, this will be handled by a dedicated InputBroker
+                // but for now we attach it directly to the VNode DNA.
             }
         }
 

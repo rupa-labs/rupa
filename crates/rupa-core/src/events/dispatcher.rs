@@ -90,7 +90,65 @@ impl InputDispatcher {
                 viewport.set(size);
             }
 
+            InputEvent::Key { key, state, .. } => {
+                if key == crate::events::KeyCode::Enter && state == ButtonState::Pressed {
+                    // If something is focused, trigger its click handler
+                    if let Some(id) = _focused_id {
+                        // In a real implementation, we would look up the node by ID in the Scene graph.
+                        // For this artisan maturation, we search the VNode tree for the element with the matching key.
+                        Self::trigger_click_by_id(root_vnode, id);
+                    } else {
+                        // Fallback: trigger the first clickable element (common in simple CLI wizards)
+                        Self::trigger_first_click(root_vnode);
+                    }
+                }
+            }
+
             _ => {}
         }
+    }
+
+    fn trigger_click_by_id(node: &VNode, id: &str) -> bool {
+        match node {
+            VNode::Element(el) => {
+                if el.key.as_deref() == Some(id) {
+                    if let Some(handler) = &el.handlers.on_click {
+                        handler(rupa_vnode::UIEvent::Keyboard);
+                        return true;
+                    }
+                }
+                for child in &el.children {
+                    if Self::trigger_click_by_id(child, id) { return true; }
+                }
+            }
+            VNode::Fragment(children) => {
+                for child in children {
+                    if Self::trigger_click_by_id(child, id) { return true; }
+                }
+            }
+            _ => {}
+        }
+        false
+    }
+
+    fn trigger_first_click(node: &VNode) -> bool {
+        match node {
+            VNode::Element(el) => {
+                if let Some(handler) = &el.handlers.on_click {
+                    handler(rupa_vnode::UIEvent::Keyboard);
+                    return true;
+                }
+                for child in &el.children {
+                    if Self::trigger_first_click(child) { return true; }
+                }
+            }
+            VNode::Fragment(children) => {
+                for child in children {
+                    if Self::trigger_first_click(child) { return true; }
+                }
+            }
+            _ => {}
+        }
+        false
     }
 }
