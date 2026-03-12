@@ -33,12 +33,15 @@ Low-level, platform-agnostic crates that handle single responsibilities.
 ## 🛠️ 2. Composite Assemblies (The Core)
 Orchestrates Atomic Materials into functional systems.
 
-| Crate | Purpose |
-| :--- | :--- |
-| **`rupa-core`** | Reconciliation engine & Action Bus. |
-| **`rupa-engine`** | The Agnostic Kernel (App Lifecycle). |
-| **`rupa-ui`** | High-level semantic UI system. |
-| **`rupa-md`** | Markdown & MDX engine. |
+| Crate | Purpose | Detailed Docs |
+| :--- | :--- | :--- |
+| **`rupa-core`** | Reconciliation engine & Action Bus. | [View Docs](./crates/rupa-core.md) |
+| **`rupa-engine`** | The Agnostic Kernel (App Lifecycle). | [View Docs](./crates/rupa-engine.md) |
+| **`rupa-ui`** | High-level semantic UI system. | [View Docs](./crates/rupa-ui.md) |
+| **`rupa-md`** | Markdown & MDX engine. | [View Docs](./crates/rupa-md.md) |
+| **`rupa-router`** | Reactive navigation system. | [View Docs](./crates/rupa-router.md) |
+| **`rupa-tui`** | Terminal UI orchestration. | [View Docs](./crates/rupa-tui.md) |
+
 
 ---
 

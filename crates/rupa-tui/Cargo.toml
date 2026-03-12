@@ -12,6 +12,7 @@ readme = "README.md"
 rupa-core.workspace = true
 rupa-console.workspace = true
 rupa-signals.workspace = true
+rupa-vnode.workspace = true
 rupa-base.workspace = true
 rupa-ui.workspace = true
 taffy.workspace = true

@@ -90,6 +90,13 @@ impl VNode {
         self
     }
 
+    pub fn with_attr(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        if let VNode::Element(ref mut el) = self {
+            el.attributes.insert(key, value);
+        }
+        self
+    }
+
     pub fn with_key(mut self, key: impl Into<String>) -> Self {
         if let VNode::Element(ref mut el) = self {
             el.key = Some(key.into());

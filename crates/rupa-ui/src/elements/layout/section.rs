@@ -1,22 +1,20 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, VElement, ViewCore, Id};
 use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
-use taffy::prelude::*;
 use std::sync::{RwLockWriteGuard, Arc};
 
+/// A semantic section of a page.
 pub struct Section<'a> {
     pub id: String,
-    pub title: String,
     pub children: Children<'a>,
     pub view: Arc<ViewCore>,
 }
 
 impl<'a> Section<'a> {
-    pub fn new(title: impl Into<String>) -> Self {
+    pub fn new() -> Self {
         Self {
             id: Id::next().to_string(),
-            title: title.into(),
             children: Children::new(),
             view: Arc::new(ViewCore::new()),
         }
@@ -35,7 +33,8 @@ impl<'a> Component for Section<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { handlers: Default::default(), 
+        VNode::Element(VElement { 
+            handlers: Default::default(), 
             tag: "section".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),
@@ -43,33 +42,6 @@ impl<'a> Component for Section<'a> {
             children: self.children.render_all(),
             key: Some(self.id.clone()),
         })
-    }
-
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = if let Some(existing) = self.view.get_node() {
-            if self.view.is_dirty() { taffy.set_style(existing.raw(), self.view.style().to_taffy()).unwrap(); }
-            existing.raw()
-        } else {
-            let new_node = taffy.new_with_children(self.view.style().to_taffy(), &[]).unwrap();
-            self.view.set_node(SceneNode::from(new_node));
-            new_node
-        };
-
-        let child_nodes = self.children.layout_all(taffy, measurer);
-        taffy.set_children(node, &child_nodes).unwrap();
-        self.view.clear_dirty();
-        node
-    }
-
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
-        let style_ref = self.view.style.read().unwrap();
-        self.children.paint_all(renderer, taffy, node, is_group_hovered || style_ref.is_group, global_pos, 0);
     }
 }
 

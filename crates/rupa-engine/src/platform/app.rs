@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use rupa_core::Component;
-use rupa_core::action::{Action, ActionHandler, GenericActionHandler};
+use rupa_core::action::{Action, Handler, GenericHandler};
 use crate::platform::context::{PlatformCore, SharedPlatformCore};
 
 #[derive(Clone)]
@@ -43,10 +43,10 @@ impl App {
         self
     }
 
-    pub fn action<A: Action + 'static>(self, name: impl Into<String>, handler: impl ActionHandler<A> + 'static) -> Self {
+    pub fn action<A: Action + 'static>(self, name: impl Into<String>, handler: impl Handler<A> + 'static) -> Self {
         {
             let mut core = self.core.write().unwrap();
-            core.action_handlers.insert(name.into(), Box::new(GenericActionHandler::new(handler)));
+            core.action_handlers.insert(name.into(), Box::new(GenericHandler::new(handler)));
         }
         self
     }

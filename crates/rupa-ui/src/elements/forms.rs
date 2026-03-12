@@ -1,7 +1,6 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Signal, Renderer, TextMeasurer, SceneNode};
-use rupa_vnode::{Style, Color, Theme, TextAlign, Attributes};
+use rupa_core::{Component, VNode, VElement, ViewCore, Id, Signal};
+use rupa_vnode::{Style, Theme, Attributes};
 use crate::style::modifiers::base::Stylable;
-use taffy::prelude::*;
 use std::sync::{RwLockWriteGuard, Arc};
 
 // --- LABEL ---
@@ -27,11 +26,11 @@ impl Label {
 
 impl Component for Label {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { handlers: Default::default(), 
+        VNode::Element(VElement { 
+            handlers: Default::default(), 
             tag: "label".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {
@@ -43,25 +42,6 @@ impl Component for Label {
             children: vec![VNode::text(self.text.clone())],
             key: Some(self.id.clone()),
         })
-    }
-
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        self.view.clear_dirty();
-        node
-    }
-
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let text_color = Color::Semantic("text".into(), None).to_rgba();
-        renderer.draw_text(&self.text, global_pos.x + layout.location.x, global_pos.y + layout.location.y, layout.size.width, 14.0, text_color, TextAlign::Left);
     }
 }
 
@@ -94,11 +74,11 @@ impl Input {
 
 impl Component for Input {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { handlers: Default::default(), 
+        VNode::Element(VElement { 
+            handlers: Default::default(), 
             tag: "input".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {
@@ -111,35 +91,6 @@ impl Component for Input {
             children: vec![],
             key: Some(self.id.clone()),
         })
-    }
-
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        self.view.clear_dirty();
-        node
-    }
-
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style_ref = self.view.style.read().unwrap();
-        if let Some(ref color) = style_ref.background.color {
-            renderer.draw_rect(
-                global_pos.x + layout.location.x,
-                global_pos.y + layout.location.y,
-                layout.size.width,
-                layout.size.height,
-                color.to_rgba(),
-                style_ref.rounding.nw
-            );
-        }
-        // Draw placeholder or value here if needed
     }
 }
 
@@ -170,11 +121,11 @@ impl Checkbox {
 
 impl Component for Checkbox {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { handlers: Default::default(), 
+        VNode::Element(VElement { 
+            handlers: Default::default(), 
             tag: "checkbox".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {
@@ -186,34 +137,6 @@ impl Component for Checkbox {
             children: vec![],
             key: Some(self.id.clone()),
         })
-    }
-
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        self.view.clear_dirty();
-        node
-    }
-
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style_ref = self.view.style.read().unwrap();
-        if let Some(ref color) = style_ref.background.color {
-            renderer.draw_rect(
-                global_pos.x + layout.location.x,
-                global_pos.y + layout.location.y,
-                layout.size.width,
-                layout.size.height,
-                color.to_rgba(),
-                style_ref.rounding.nw
-            );
-        }
     }
 }
 
@@ -244,11 +167,11 @@ impl Switch {
 
 impl Component for Switch {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { handlers: Default::default(), 
+        VNode::Element(VElement { 
+            handlers: Default::default(), 
             tag: "switch".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {
@@ -260,34 +183,6 @@ impl Component for Switch {
             children: vec![],
             key: Some(self.id.clone()),
         })
-    }
-
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        self.view.clear_dirty();
-        node
-    }
-
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style_ref = self.view.style.read().unwrap();
-        if let Some(ref color) = style_ref.background.color {
-            renderer.draw_rect(
-                global_pos.x + layout.location.x,
-                global_pos.y + layout.location.y,
-                layout.size.width,
-                layout.size.height,
-                color.to_rgba(),
-                style_ref.rounding.nw
-            );
-        }
     }
 }
 
@@ -318,11 +213,11 @@ impl Radio {
 
 impl Component for Radio {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { handlers: Default::default(), 
+        VNode::Element(VElement { 
+            handlers: Default::default(), 
             tag: "radio".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {
@@ -334,34 +229,6 @@ impl Component for Radio {
             children: vec![],
             key: Some(self.id.clone()),
         })
-    }
-
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        self.view.clear_dirty();
-        node
-    }
-
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style_ref = self.view.style.read().unwrap();
-        if let Some(ref color) = style_ref.background.color {
-            renderer.draw_rect(
-                global_pos.x + layout.location.x,
-                global_pos.y + layout.location.y,
-                layout.size.width,
-                layout.size.height,
-                color.to_rgba(),
-                style_ref.rounding.nw
-            );
-        }
     }
 }
 
@@ -394,11 +261,11 @@ impl Select {
 
 impl Component for Select {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { handlers: Default::default(), 
+        VNode::Element(VElement { 
+            handlers: Default::default(), 
             tag: "select".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {
@@ -410,34 +277,6 @@ impl Component for Select {
             children: vec![],
             key: Some(self.id.clone()),
         })
-    }
-
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        self.view.clear_dirty();
-        node
-    }
-
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style_ref = self.view.style.read().unwrap();
-        if let Some(ref color) = style_ref.background.color {
-            renderer.draw_rect(
-                global_pos.x + layout.location.x,
-                global_pos.y + layout.location.y,
-                layout.size.width,
-                layout.size.height,
-                color.to_rgba(),
-                style_ref.rounding.nw
-            );
-        }
     }
 }
 

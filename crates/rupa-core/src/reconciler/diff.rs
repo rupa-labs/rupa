@@ -195,34 +195,16 @@ mod tests {
 
     #[test]
     fn test_attribute_diffing() {
-        let old_el = rupa_vnode::VElement {
-            tag: "div".to_string(),
-            style: Style::default(),
-            attributes: {
-                let mut a = Attributes::default();
-                a.map.insert("id".to_string(), "test".to_string());
-                a.map.insert("class".to_string(), "old".to_string());
-                a
-            },
-            children: vec![],
-            key: None,
-        };
-        let old_node = VNode::Element(old_el);
+        let old_node = VNode::element("div")
+            .with_key("test_node")
+            .with_attr("id", "test")
+            .with_attr("class", "old");
 
-        let new_el = rupa_vnode::VElement {
-            tag: "div".to_string(),
-            style: Style::default(),
-            attributes: {
-                let mut a = Attributes::default();
-                a.map.insert("id".to_string(), "test".to_string());
-                a.map.insert("class".to_string(), "new".to_string());
-                a.map.insert("data-foo".to_string(), "bar".to_string());
-                a
-            },
-            children: vec![],
-            key: None,
-        };
-        let new_node = VNode::Element(new_el);
+        let new_node = VNode::element("div")
+            .with_key("test_node")
+            .with_attr("id", "test")
+            .with_attr("class", "new")
+            .with_attr("data-foo", "bar");
 
         let patches = reconcile(&old_node, &new_node, None, 0);
         

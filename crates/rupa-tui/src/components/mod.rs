@@ -1,3 +1,2 @@
-pub mod list;
-
-pub use list::List;
+pub mod panel;
+pub use panel::Panel;

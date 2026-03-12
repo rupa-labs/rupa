@@ -1,80 +1,79 @@
 # Rupa Framework Engineering Standards 🛠️
 
-This document defines the mandatory engineering principles and foundational strategies for the Rupa Framework. Adherence to these standards is critical for maintaining a high-performance, scalable, and cross-platform ecosystem.
+This document defines the mandatory engineering principles and foundational strategies for the Rupa Framework. Adherence to these standards is critical for maintaining a high-performance, sustainable, and scalable system.
 
 ---
 
-## 1. Core Architectural Pillars (The Doctrine)
+## 1. Core Principles: The 3S Doctrine
 
-### 1.1 Zero-Cost Abstractions
-Rupa Framework leverages Rust's type system to ensure that abstractions do not impose a runtime penalty.
-*   **Generics over Trait Objects:** Prefer `impl Trait` for internal calculations, styling, and data processing to allow compiler inlining.
-*   **Surgical Dynamic Dispatch:** Use `dyn Trait` only at system boundaries (e.g., `Component` or `Renderer` interfaces) where flexibility is required at the cost of slight overhead.
+All engineering activities SHALL be evaluated against the 3S doctrine:
 
-### 1.2 Unified Virtual Tree (VNode Architecture)
-To support both GPU-based (WGPU) and DOM-based (Web) rendering, Rupa utilizes a shared intermediary structure: the **VNode**.
-*   **Agnostic Interface:** Components describe their intent via VNodes.
-*   **Multi-Pipeline Rendering:**
-    *   **Native Pipeline:** VNode -> Taffy (Layout) -> WGPU/TUI (Paint).
-    *   **Web Pipeline:** VNode -> HTML String (SSR) or DOM Elements (Client).
-*   **Separation of Concerns:** Components must never know how they are being rendered.
-
-### 1.3 Async-First & Reactive Integrity
-Modern UIs must be non-blocking and responsive.
-*   **Async Dispatching:** The event system and reactivity engine must be compatible with Rust's `async/await` ecosystem (Tokio/WASM).
-*   **Fine-Grained Reactivity:** UI updates are side-effects of `Signal<T>` changes, ensuring that only the necessary parts of the tree are recalculated.
+*   **Secure (S1):** Protection of integrity, boundaries, contracts, and failure semantics. Security overrides architectural flexibility.
+*   **Sustain (S2):** Maintainability, semantic clarity, documentation completeness, and reduced cognitive load for developers.
+*   **Scalable (S3):** Structural modularity, controlled dependency growth, and predictable performance under expansion.
 
 ---
 
-## 2. Platform & Ecosystem Strategy
+## 2. Architectural Governance
 
-### 2.1 Pluggable & Modular Design
-Rupa follows a "Plugin-First" philosophy. Core features should be decoupled into independent modules.
-*   **Feature Flags:** Use Cargo features to allow users to opt-out of heavy dependencies (e.g., `wgpu`, `ssr`).
-*   **Trait-Based Extensibility:** Systems like Routing, State Management, and Animations must be injectable via the `Plugin` trait.
+### 2.1 Mandatory Separation of Concerns (SOC)
+The system SHALL maintain strict logical isolation across layers:
+*   **Domain Layer**: Pure business rules with zero I/O or framework dependencies.
+*   **Application Layer**: Use-case orchestration and transaction coordination.
+*   **Infrastructure Layer**: Physical implementations (File systems, APIs, Databases).
+*   **Interface Layer**: Delivery mechanisms (HTTP, CLI, UI).
 
-### 2.2 Polyglot & Cross-Platform Integrity
-The framework is designed to bridge the gap between Rust and the JavaScript ecosystem.
-*   **Serialization DNA:** All core data structures (Style, Events, Layout) must implement `serde::Serialize` and `serde::Deserialize`.
-*   **Universal ABI:** Maintain a clean FFI/WASM boundary for Node.js, Bun, and Browser interoperability.
-*   **Platform Agnosticism:** Layers 3-9 (Core, UI, Composition) must remain 100% free of OS-specific or hardware-specific code.
-
-### 2.3 Strict Diagnostics & Transparency ("No Magic" Rule)
-Developer Experience (DX) is as important as performance.
-*   **Diagnostic Center:** Failures in rendering, layout, or event propagation must report clear, actionable errors with source context.
-*   **Fail-Safe Philosophy:** Use typed errors (`thiserror`) and avoid silent failures or placeholders.
-
-### 2.4 Dependency Minimalism (Thin Crates)
-To maintain the "Atomic Materials" philosophy and ensure fast compilation times, all crates MUST adhere to strict dependency discipline:
-- **Feature Gating**: Heavy dependencies (e.g., graphics, networking, complex parsers) MUST be optional and hidden behind feature flags.
-- **Kernel Purity**: The Agnostic Kernel (`rupa-engine`) and Core materials MUST NOT depend on platform-specific libraries.
-- **Granular Third-Party Features**: When using third-party crates (like `tokio` or `clap`), always prefer granular features over "full" bundles to avoid unnecessary bloat.
-- **Transitive Audit**: Regularly audit dependencies to ensure Tier 1 materials remain "thin" and do not accidentally pull heavyweight Composite Assemblies.
+### 2.2 Hexagonal Architecture (Ports & Adapters)
+*   **Tier 1 (Atoms)**: Act as **Ports** (Contracts/Traits).
+*   **Tier 2 (Composites)**: Act as the **Agnostic Core** (Logic).
+*   **Tier 3 (Showrooms)**: Act as **Adapters** (Platform-specific implementations).
 
 ---
 
-## 3. Development Lifecycle
+## 3. Dependency Governance
 
-### 3.1 TDD & Empirical Verification
-*   **Test-First:** New features or bug fixes must be preceded by an automated test.
-*   **Headless Validation:** UI components should be validated in headless environments before being tested in graphical runners.
-
-### 3.2 Documentation Parity (Sync or Sink)
-*   **1:1 Mapping:** Every technical implementation in `crates/` must have a corresponding architectural explanation in `docs/`.
-*   **Transparency:** No hidden logic. The execution flow from Input -> Signal -> VNode -> Render must be explicit and documented.
+*   **Abstractions over Concretes**: Modules SHALL depend on abstractions (traits), not concrete implementations.
+*   **Dependency Inversion**: High-level components SHALL NOT depend on low-level components; both SHALL depend on abstractions.
+*   **Zero-Cost Abstractions**: Utilize Rust's generics and traits to ensure abstractions impose no runtime overhead.
 
 ---
 
-## 4. Coding Conventions
+## 4. Clean Code Standards
 
-### 4.1 Naming & Semantics
-*   **Intent over Implementation:** Names describe *why* an object exists (e.g., `ArtisanButton`), not how it works (e.g., `WgpuClickableRect`).
-*   **Crate Naming Convention (The Workshop Standard):**
-    *   **Atomic Materials (Tier 1):** `rupa-<concept>`. Single noun describing a pure agnostic domain (e.g., `rupa-store`, `rupa-signals`).
-    *   **Composite Assembly Assemblies (Tier 2):** `rupa-<domain>-core`. Orchestrates multiple atomic materials for a specific technical domain (e.g., `rupa-server-core`, `rupa-web-core`).
-    *   **Artisan Showrooms (Tier 3):** `rupa-<target>`. Clean, business-oriented names for final entry points (e.g., `rupa-desktop`, `rupa-server`, `rupa-mobile`).
-    *   **Developer Tooling:** `rupa-<tool>`. Supporting ecosystem for DX (e.g., `rupa-cli`, `rupa-test`).
+*   **Artisan Naming**: Identifiers SHALL express intent, not implementation detail. Use short, clear names within their respective namespaces.
+*   **Single Responsibility**: Functions SHALL perform one task. Classes/Structs SHALL represent a single axis of change.
+*   **DRY Principle**: Business rules, validation logic, and constants SHALL be defined once in a single authoritative source.
 
-### 4.2 Module Hygiene
-*   **Clean Indices:** `mod.rs` files must only contain declarations (`pub mod`) and re-exports (`pub use`). Implementation logic is prohibited in index files.
-*   **Flat Prelude:** Keep user imports shallow through a centralized `prelude` module.
+---
+
+## 5. Test-Driven Development (TDD)
+
+Development SHALL follow the **Red-Green-Refactor** cycle:
+1.  **Red**: Write a failing test to define behavior or boundaries.
+2.  **Green**: Write the minimal code necessary to pass the test.
+3.  **Refactor**: Optimize structure while maintaining behavior and ensuring tests stay green.
+
+*Tests are treated as executable specifications that document the system's behavior.*
+
+---
+
+## 6. Documentation Standards (The Rustdoc Layer)
+
+Rupa Framework mandates the use of **Rustdoc** for all public APIs to ensure ease of use for Artisans.
+
+### 6.1 Documentation Syntax
+*   **Item Documentation (`///`)**: Use triple slashes to document structs, functions, traits, and fields.
+*   **Module Documentation (`//!`)**: Use at the first line of `lib.rs` or `mod.rs` to explain the module's purpose.
+
+### 6.2 Mandatory Content Structure
+Every public function documentation SHOULD include the following sections where relevant:
+*   **`# Examples`**: Valid usage examples (automatically verified as *doc-tests* by the compiler).
+*   **`# Errors`**: Explanation of when the function returns an `Err` variant.
+*   **`# Panics`**: Explanation of conditions that trigger a thread panic.
+
+---
+
+## 7. Module Hygiene
+
+*   **Clean Indices**: `mod.rs` files SHALL only contain declarations (`pub mod`) and re-exports (`pub use`). Implementation logic is prohibited in index files.
+*   **Flat Prelude**: Keep user imports shallow through a centralized `prelude` module.

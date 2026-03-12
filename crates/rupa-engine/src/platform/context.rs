@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 use rupa_core::{Component, Vec2, Signal};
 use rupa_core::events::InputEvent; use rupa_core::CursorIcon;
-use rupa_core::action::BoxedActionHandler;
+use rupa_core::action::BoxedHandler;
 use crate::platform::app::AppMetadata;
 use rupa_core::scene::SceneCore;
 use std::collections::HashMap;
@@ -16,7 +16,7 @@ pub struct PlatformCore {
     pub pointer_capture: Option<String>,
     pub focused_id: Option<String>,
     pub hovered_path: Vec<String>,
-    pub action_handlers: HashMap<String, Box<dyn BoxedActionHandler>>,
+    pub action_handlers: HashMap<String, Box<dyn BoxedHandler>>,
     pub event_listeners: Vec<Arc<dyn Fn(&InputEvent) + Send + Sync>>,
     pub debug: bool,
 }

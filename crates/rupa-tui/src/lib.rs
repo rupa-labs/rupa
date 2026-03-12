@@ -1,7 +1,9 @@
 use rupa_core::{Renderer, RenderCore, TextMeasurer, vnode::TextAlign};
 use rupa_base::Vec2;
-use rupa_console::Console;
 use std::io::{Write, stdout, Stdout};
+
+pub mod components;
+pub use components::*;
 
 /// A high-performance TUI renderer for the Rupa Framework.
 pub struct TerminalRenderer {

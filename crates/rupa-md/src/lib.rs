@@ -1,11 +1,19 @@
 use pulldown_cmark::{Parser, Event, Tag, Options, HeadingLevel};
 use rupa_vnode::{VNode, VElement, Attributes, Style};
+use std::collections::HashMap;
 
-pub struct MarkdownEngine;
+/// Configuration for the Markdown Engine.
+/// Allows mapping specific tags to custom styles.
+#[derive(Clone, Default)]
+pub struct Config {
+    pub tag_styles: HashMap<String, Style>,
+}
 
-impl MarkdownEngine {
-    /// Parses a markdown string into a VNode tree.
-    pub fn parse(content: &str) -> VNode {
+pub struct Engine;
+
+impl Engine {
+    /// Parses a markdown string into a VNode tree using an optional configuration.
+    pub fn parse(content: &str, config: Option<&Config>) -> VNode {
         let mut options = Options::empty();
         options.insert(Options::ENABLE_STRIKETHROUGH);
         options.insert(Options::ENABLE_TABLES);
@@ -19,6 +27,7 @@ impl MarkdownEngine {
         for event in parser {
             match event {
                 Event::Start(tag) => {
+                    let mut attributes = Attributes::default();
                     let vtag = match tag {
                         Tag::Heading { level, .. } => {
                             let l = match level {
@@ -37,8 +46,14 @@ impl MarkdownEngine {
                         Tag::Item => "li".to_string(),
                         Tag::Emphasis => "em".to_string(),
                         Tag::Strong => "strong".to_string(),
-                        Tag::Link { .. } => "a".to_string(),
-                        Tag::Image { .. } => "img".to_string(),
+                        Tag::Link { dest_url, .. } => {
+                            attributes.insert("href", dest_url.to_string());
+                            "a".to_string()
+                        },
+                        Tag::Image { dest_url, .. } => {
+                            attributes.insert("src", dest_url.to_string());
+                            "img".to_string()
+                        },
                         Tag::CodeBlock(_) => "pre".to_string(),
                         Tag::Table(_) => "table".to_string(),
                         Tag::TableHead => "thead".to_string(),
@@ -47,10 +62,15 @@ impl MarkdownEngine {
                         _ => "div".to_string(),
                     };
 
+                    let style = config
+                        .and_then(|c| c.tag_styles.get(&vtag))
+                        .cloned()
+                        .unwrap_or_default();
+
                     stack.push(VElement {
                         tag: vtag,
-                        style: Style::default(),
-                        attributes: Attributes::default(),
+                        style,
+                        attributes,
                         handlers: Default::default(),
                         motion: None,
                         children: Vec::new(),

@@ -15,6 +15,7 @@ use taffy::prelude::*;
 pub struct TerminalRunner {
     pub core: SharedPlatformCore,
     pub renderer: TerminalRenderer,
+    pub last_vnode: Option<VNode>,
 }
 
 impl TerminalRunner {
@@ -23,6 +24,7 @@ impl TerminalRunner {
         Self {
             core,
             renderer: TerminalRenderer::new(w as f32, h as f32),
+            last_vnode: None,
         }
     }
 
@@ -37,6 +39,7 @@ impl TerminalRunner {
             
             // 1. Build VNode Tree (The reactive source of truth)
             let vnode = root.render();
+            self.last_vnode = Some(vnode.clone());
 
             // 2. Build Taffy Tree from VNode
             core.scene.layout_engine.taffy.clear();
@@ -146,10 +149,10 @@ impl TerminalRunner {
         let mut hovered_path = std::mem::take(&mut core.hovered_path);
         let event_listeners = core.event_listeners.clone();
         
-        if let Some(ref root) = core.root {
+        if let Some(ref vnode) = self.last_vnode {
             InputDispatcher::dispatch(
                 event,
-                root.as_ref(),
+                vnode,
                 &core.scene,
                 &core.viewport,
                 &mut cursor_pos,

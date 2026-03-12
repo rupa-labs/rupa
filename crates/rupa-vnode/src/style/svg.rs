@@ -1,17 +1,17 @@
-use crate::color::Color;
-use rupa_base::Vec2;
+use rupa_base::{Vec2, Color};
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PathSegment {
     MoveTo(Vec2),
     LineTo(Vec2),
-    CurveTo(Vec2, Vec2, Vec2), // Control1, Control2, End
-    QuadTo(Vec2, Vec2),        // Control, End
-    ArcTo { radius: Vec2, rotation: f32, large_arc: bool, sweep: bool, end: crate::support::Vec2 },
+    CurveTo(Vec2, Vec2, Vec2),
+    QuadTo(Vec2, Vec2),
+    ArcTo { radius: Vec2, rotation: f32, large_arc: bool, sweep: bool, end: Vec2 },
     Close,
 }
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct PathData {
     pub segments: Vec<PathSegment>,
 }
@@ -29,22 +29,11 @@ impl PathData {
         self
     }
 
-    pub fn bezier_to(mut self, c1: impl Into<Vec2>, c2: impl Into<Vec2>, end: impl Into<Vec2>) -> Self {
-        self.segments.push(PathSegment::CurveTo(c1.into(), c2.into(), end.into()));
-        self
-    }
-
-    pub fn quad_to(mut self, c: impl Into<Vec2>, end: impl Into<Vec2>) -> Self {
-        self.segments.push(PathSegment::QuadTo(c.into(), end.into()));
-        self
-    }
-
     pub fn close(mut self) -> Self {
         self.segments.push(PathSegment::Close);
         self
     }
 
-    /// Converts the path data to a standard SVG string.
     pub fn to_svg_string(&self) -> String {
         let mut d = String::new();
         for seg in &self.segments {
@@ -61,11 +50,4 @@ impl PathData {
         }
         d.trim().to_string()
     }
-}
-
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct Svg {
-    pub fill: Option<Color>,
-    pub stroke: Option<Color>,
-    pub stroke_width: Option<f32>,
 }

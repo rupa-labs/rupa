@@ -1,13 +1,11 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, VElement, ViewCore, Id};
 use rupa_vnode::{Style, Theme, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
-use taffy::prelude::*;
 use std::sync::{RwLockWriteGuard, Arc};
 
 // --- NAVBAR ---
 
-/// A navigation header component.
 pub struct Navbar<'a> {
     pub id: String,
     pub children: Children<'a>,
@@ -16,12 +14,10 @@ pub struct Navbar<'a> {
 
 impl<'a> Navbar<'a> {
     pub fn new() -> Self {
-        let view = Arc::new(ViewCore::new());
-        Theme::current().apply_defaults(&mut view.style());
         Self {
             id: Id::next().to_string(),
             children: Children::new(),
-            view,
+            view: Arc::new(ViewCore::new()),
         }
     }
 
@@ -38,7 +34,8 @@ impl<'a> Component for Navbar<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { handlers: Default::default(), 
+        VNode::Element(VElement { 
+            handlers: Default::default(), 
             tag: "navbar".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),
@@ -46,26 +43,6 @@ impl<'a> Component for Navbar<'a> {
             children: self.children.render_all(),
             key: Some(self.id.clone()),
         })
-    }
-
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_with_children(self.view.style().to_taffy(), &[]).unwrap();
-        self.view.set_node(node.into());
-        let child_nodes = self.children.layout_all(taffy, measurer);
-        taffy.set_children(node, &child_nodes).unwrap();
-        self.view.clear_dirty();
-        node
-    }
-
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
-        let style_ref = self.view.style.read().unwrap();
-        self.children.paint_all(renderer, taffy, node, is_group_hovered || style_ref.is_group, global_pos, 0);
     }
 }
 
@@ -75,7 +52,6 @@ impl<'a> Stylable for Navbar<'a> {
 
 // --- TABS ---
 
-/// A component for switching between different views.
 pub struct Tabs<'a> {
     pub id: String,
     pub children: Children<'a>,
@@ -84,19 +60,11 @@ pub struct Tabs<'a> {
 
 impl<'a> Tabs<'a> {
     pub fn new() -> Self {
-        let view = Arc::new(ViewCore::new());
-        Theme::current().apply_defaults(&mut view.style());
         Self {
             id: Id::next().to_string(),
             children: Children::new(),
-            view,
+            view: Arc::new(ViewCore::new()),
         }
-    }
-
-    pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self {
-        self.children.push(child);
-        self.view.mark_dirty();
-        self
     }
 }
 
@@ -106,7 +74,8 @@ impl<'a> Component for Tabs<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { handlers: Default::default(), 
+        VNode::Element(VElement { 
+            handlers: Default::default(), 
             tag: "tabs".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),
@@ -115,35 +84,10 @@ impl<'a> Component for Tabs<'a> {
             key: Some(self.id.clone()),
         })
     }
-
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_with_children(self.view.style().to_taffy(), &[]).unwrap();
-        self.view.set_node(node.into());
-        let child_nodes = self.children.layout_all(taffy, measurer);
-        taffy.set_children(node, &child_nodes).unwrap();
-        self.view.clear_dirty();
-        node
-    }
-
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
-        let style_ref = self.view.style.read().unwrap();
-        self.children.paint_all(renderer, taffy, node, is_group_hovered || style_ref.is_group, global_pos, 0);
-    }
-}
-
-impl<'a> Stylable for Tabs<'a> {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
 }
 
 // --- BREADCRUMB ---
 
-/// A component for hierarchical path tracking.
 pub struct Breadcrumb<'a> {
     pub id: String,
     pub children: Children<'a>,
@@ -152,19 +96,11 @@ pub struct Breadcrumb<'a> {
 
 impl<'a> Breadcrumb<'a> {
     pub fn new() -> Self {
-        let view = Arc::new(ViewCore::new());
-        Theme::current().apply_defaults(&mut view.style());
         Self {
             id: Id::next().to_string(),
             children: Children::new(),
-            view,
+            view: Arc::new(ViewCore::new()),
         }
-    }
-
-    pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self {
-        self.children.push(child);
-        self.view.mark_dirty();
-        self
     }
 }
 
@@ -174,7 +110,8 @@ impl<'a> Component for Breadcrumb<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { handlers: Default::default(), 
+        VNode::Element(VElement { 
+            handlers: Default::default(), 
             tag: "breadcrumb".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),
@@ -183,28 +120,4 @@ impl<'a> Component for Breadcrumb<'a> {
             key: Some(self.id.clone()),
         })
     }
-
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_with_children(self.view.style().to_taffy(), &[]).unwrap();
-        self.view.set_node(node.into());
-        let child_nodes = self.children.layout_all(taffy, measurer);
-        taffy.set_children(node, &child_nodes).unwrap();
-        self.view.clear_dirty();
-        node
-    }
-
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
-        let style_ref = self.view.style.read().unwrap();
-        self.children.paint_all(renderer, taffy, node, is_group_hovered || style_ref.is_group, global_pos, 0);
-    }
-}
-
-impl<'a> Stylable for Breadcrumb<'a> {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
 }

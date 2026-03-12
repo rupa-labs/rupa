@@ -1,7 +1,6 @@
-use rupa_core::{Component, VNode, Vec2, ViewCore, Id, Signal, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, ViewCore, Id, Signal};
 use rupa_vnode::{Style, Variant};
 use crate::style::modifiers::base::Stylable;
-use taffy::prelude::*;
 use std::sync::{RwLockWriteGuard, Arc};
 
 // --- PROGRESS ---
@@ -32,29 +31,15 @@ impl Progress {
 
 impl Component for Progress {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("progress")
             .with_key(self.id.clone())
             .with_style(self.view.style.read().unwrap().clone())
+            .with_attr("value", self.value.get().to_string())
+            .with_attr("max", self.max.to_string())
     }
-
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        self.view.clear_dirty();
-        node
-    }
-
-    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
 }
 
 impl Stylable for Progress {
@@ -77,25 +62,12 @@ impl Spinner {
 
 impl Component for Spinner {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     fn render(&self) -> VNode {
         VNode::element("spinner")
             .with_key(self.id.clone())
             .with_style(self.view.style.read().unwrap().clone())
     }
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        self.view.clear_dirty();
-        node
-    }
-    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
 }
 
 impl Stylable for Spinner {
@@ -125,7 +97,6 @@ impl Alert {
 
 impl Component for Alert {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     fn render(&self) -> VNode {
         VNode::element("alert")
@@ -133,18 +104,6 @@ impl Component for Alert {
             .with_style(self.view.style.read().unwrap().clone())
             .with_child(VNode::text(self.message.clone()))
     }
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        self.view.clear_dirty();
-        node
-    }
-    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
 }
 
 impl Stylable for Alert {
@@ -172,7 +131,6 @@ impl Badge {
 
 impl Component for Badge {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     fn render(&self) -> VNode {
         VNode::element("badge")
@@ -180,18 +138,6 @@ impl Component for Badge {
             .with_style(self.view.style.read().unwrap().clone())
             .with_child(VNode::text(self.text.clone()))
     }
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        self.view.clear_dirty();
-        node
-    }
-    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
 }
 
 impl Stylable for Badge {
@@ -214,25 +160,12 @@ impl Skeleton {
 
 impl Component for Skeleton {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     fn render(&self) -> VNode {
         VNode::element("skeleton")
             .with_key(self.id.clone())
             .with_style(self.view.style.read().unwrap().clone())
     }
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        self.view.clear_dirty();
-        node
-    }
-    fn paint(&self, _renderer: &mut dyn Renderer, _taffy: &TaffyTree<()>, _node: NodeId, _is_group_hovered: bool, _global_pos: Vec2) {}
 }
 
 impl Stylable for Skeleton {

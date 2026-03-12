@@ -13,6 +13,7 @@ categories = ["gui"]
 [dependencies]
 rupa-base.workspace = true
 rupa-signals.workspace = true
+rupa-broadcast.workspace = true
 rupa-vnode.workspace = true
 log.workspace = true
 thiserror.workspace = true

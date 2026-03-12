@@ -1,22 +1,11 @@
 use crate::Children;
-use rupa_core::{Component, VNode, Vec2, ViewCore, Id, Signal, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners};
-use rupa_vnode::{Style, Color, Theme, Variant, Scale, Accessibility, TextAlign, Attributes};
+use rupa_core::{Component, VNode, VElement, ViewCore, Id, Signal};
+use rupa_vnode::{Style, Theme, Variant, Scale, Accessibility, Attributes};
 use crate::style::modifiers::base::Stylable;
-use taffy::prelude::*;
 use std::sync::{RwLockWriteGuard, Arc};
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub enum ButtonSize { Xs, Sm, #[default] Md, Lg, Xl, Xl2, Xl3, Xl4, Xl5, Xl6 }
-
-impl From<Scale> for ButtonSize {
-    fn from(s: Scale) -> Self {
-        match s {
-            Scale::Xs => ButtonSize::Xs, Scale::Sm => ButtonSize::Sm, Scale::Md => ButtonSize::Md,
-            Scale::Lg => ButtonSize::Lg, Scale::Xl => ButtonSize::Xl, Scale::Xl2 => ButtonSize::Xl2,
-            _ => ButtonSize::Md,
-        }
-    }
-}
 
 /// A standard interactive button.
 pub struct Button {
@@ -25,7 +14,7 @@ pub struct Button {
     pub variant: Variant,
     pub size: ButtonSize,
     pub disabled: Signal<bool>,
-    pub events: EventListeners,
+    pub on_click: Option<Arc<dyn Fn(rupa_vnode::UIEvent) + Send + Sync>>,
     pub accessibility: Accessibility,
     pub view: Arc<ViewCore>,
 }
@@ -36,7 +25,6 @@ impl Button {
         let view = Arc::new(ViewCore::new());
         let variant = Variant::Primary;
         
-        // Apply initial theme color
         view.style().background.color = Some(Theme::variant(variant.clone()));
 
         Self {
@@ -45,7 +33,7 @@ impl Button {
             variant,
             size: ButtonSize::Md,
             disabled: Signal::new(false),
-            events: EventListeners::default(),
+            on_click: None,
             accessibility: Accessibility::default(),
             view,
         }
@@ -57,8 +45,8 @@ impl Button {
         Self { variant: v, ..self }
     }
 
-    pub fn on_click(mut self, f: impl Fn(&mut UIEvent) + Send + Sync + 'static) -> Self { 
-        self.events.on_click = Some(Arc::new(f)); 
+    pub fn on_click(mut self, f: impl Fn(rupa_vnode::UIEvent) + Send + Sync + 'static) -> Self { 
+        self.on_click = Some(Arc::new(f)); 
         self 
     }
 
@@ -74,68 +62,20 @@ impl Stylable for Button {
 
 impl Component for Button {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::element("button")
+        let mut node = VNode::element("button")
             .with_key(self.id.clone())
             .with_style(self.view.style.read().unwrap().clone())
-            .with_child(VNode::text(self.label.clone()))
-    }
+            .with_child(VNode::text(self.label.clone()));
 
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let mut style = self.view.style().to_taffy();
-        style.display = taffy::Display::Flex;
-        
-        // Size-based padding fallback if not set manually
-        if self.view.style.read().unwrap().padding.is_zero() {
-            let p = match self.size {
-                ButtonSize::Xs => 4.0, ButtonSize::Sm => 6.0, ButtonSize::Md => 8.0, _ => 12.0,
-            };
-            style.padding = rupa_vnode::Spacing::all(p).to_taffy();
+        if let Some(ref handler) = self.on_click {
+            let h = handler.clone();
+            node = node.with_handler(move |e| h(e));
         }
 
-        let node = taffy.new_leaf(style).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        self.view.clear_dirty();
         node
-    }
-
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style = self.view.style.read().unwrap();
-        
-        if let Some(color) = style.background.color.clone() { 
-            renderer.draw_rect(
-                global_pos.x + layout.location.x, 
-                global_pos.y + layout.location.y, 
-                layout.size.width, 
-                layout.size.height, 
-                color.to_rgba(), 
-                style.rounding.nw
-            ); 
-        }
-
-        let text_color = if self.disabled.get() { [0.5, 0.5, 0.5, 1.0] } else { [1.0, 1.0, 1.0, 1.0] };
-        // Center text horizontally and vertically roughly
-        renderer.draw_text(&self.label, global_pos.x + layout.location.x + 8.0, global_pos.y + layout.location.y + 4.0, layout.size.width - 16.0, 14.0, text_color, TextAlign::Left);
-    }
-
-    fn on_click(&self, event: &mut UIEvent) {
-        if !self.disabled.get() {
-            if let Some(ref cb) = self.events.on_click { (cb)(event); }
-        }
-    }
-
-    fn on_release(&self, event: &mut UIEvent) {
-        if let Some(ref cb) = self.events.on_release { (cb)(event); }
     }
 }
 
@@ -148,7 +88,7 @@ pub struct CloseButton {
 impl CloseButton {
     pub fn new() -> Self {
         let view = Arc::new(ViewCore::new());
-        view.style().background.color = Some(Color::Rgba(1.0, 0.0, 0.0, 1.0));
+        view.style().background.color = Some(rupa_vnode::Color::Rgba(1.0, 0.0, 0.0, 1.0));
         Self { id: Id::next().to_string(), view }
     }
 }
@@ -157,31 +97,12 @@ impl Stylable for CloseButton { fn get_style_mut(&self) -> RwLockWriteGuard<'_, 
 
 impl Component for CloseButton {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     fn render(&self) -> VNode {
         VNode::element("button")
             .with_key(self.id.clone())
             .with_style(self.view.style.read().unwrap().clone())
             .with_child(VNode::text("×"))
-    }
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-    fn layout(&self, taffy: &mut TaffyTree<()>, _measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_leaf(self.view.style().to_taffy()).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        node
-    }
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, _is_group_hovered: bool, global_pos: Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let style = self.view.style.read().unwrap();
-        if let Some(color) = style.background.color.clone() { 
-            renderer.draw_rect(global_pos.x + layout.location.x, global_pos.y + layout.location.y, layout.size.width, layout.size.height, color.to_rgba(), 4.0);
-        }
-        renderer.draw_text("×", global_pos.x + layout.location.x + 4.0, global_pos.y + layout.location.y + 2.0, layout.size.width, 14.0, [1.0, 1.0, 1.0, 1.0], TextAlign::Left);
     }
 }
 
@@ -212,7 +133,8 @@ impl<'a> Component for ButtonGroup<'a> {
     fn children(&self) -> Vec<&dyn Component> { self.children.as_refs() }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     fn render(&self) -> VNode {
-        VNode::Element(rupa_vnode::VElement { handlers: Default::default(), 
+        VNode::Element(rupa_vnode::VElement { 
+            handlers: Default::default(), 
             tag: "button-group".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),
@@ -220,21 +142,5 @@ impl<'a> Component for ButtonGroup<'a> {
             children: self.children.render_all(),
             key: Some(self.id.clone()),
         })
-    }
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-    fn layout(&self, taffy: &mut TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<NodeId>) -> NodeId {
-        let node = taffy.new_with_children(self.view.style().to_taffy(), &[]).unwrap();
-        self.view.set_node(SceneNode::from(node));
-        let child_nodes = self.children.layout_all(taffy, measurer);
-        taffy.set_children(node, &child_nodes).unwrap();
-        node
-    }
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &TaffyTree<()>, node: NodeId, is_group_hovered: bool, global_pos: Vec2) {
-        let style_ref = self.view.style.read().unwrap();
-        self.children.paint_all(renderer, taffy, node, is_group_hovered || style_ref.is_group, global_pos, 0);
     }
 }

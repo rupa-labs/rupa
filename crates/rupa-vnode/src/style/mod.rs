@@ -16,6 +16,7 @@ pub mod motion;
 pub mod sizing;
 pub mod spacing;
 pub mod style;
+pub mod svg;
 pub mod theme;
 pub mod types;
 pub mod typography;
