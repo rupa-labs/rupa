@@ -1,10 +1,9 @@
-use rupa_core::{Component, VNode, ViewCore, Id, Signal, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
+use rupa_core::{Component, VNode, ViewCore, Id, Signal};
 use rupa_ui::elements::{VStack, Text, Button};
 use rupa_engine::App;
 use rupa_terminal::{TerminalRunner, Console};
-use rupa_tui::components::List;
 use rupa_engine::platform::runner::PlatformRunner;
-use rupa_signals::Effect;
+use rupa_signals::batch;
 use std::sync::Arc;
 use clap::{Parser, Subcommand};
 use crate::templates::{Scaffolder, TemplateType};
@@ -66,185 +65,111 @@ struct CreateWizard {
     selected_template: Signal<Option<usize>>,
     error_msg: Signal<String>,
     view: Arc<ViewCore>,
-    children: Signal<Vec<Arc<dyn Component>>>,
-    _effect: Arc<Effect>,
 }
 
 impl CreateWizard {
     pub fn new() -> Self {
-        let stage = Signal::new(WizardStage::Welcome);
-        let project_name = Signal::new("my-rupa-app".to_string());
-        let selected_template = Signal::new(None);
-        let error_msg = Signal::new("".to_string());
-        
-        let initial_view: Arc<dyn Component> = Arc::new(VStack::new()
-            .child(Box::new(Text::new("🎨 RUPA FRAMEWORK")))
-            .child(Box::new(Text::new("The Artisan's Choice for Multi-platform Excellence.")))
-            .child(Box::new(Button::new("Begin Crafting →").on_click({
-                let stage = stage.clone();
-                move |_| stage.set(WizardStage::NameInput)
-            })))
-        );
-        let children_sig = Signal::new(vec![initial_view]);
-        
-        let wizard_state = (
-            stage.clone(), 
-            project_name.clone(), 
-            selected_template.clone(), 
-            error_msg.clone(),
-            children_sig.clone()
-        );
-        
-        let effect = Effect::new(move || {
-            let (stage, project_name, selected_template, error_msg, children) = wizard_state.clone();
-            let current_stage = stage.get();
-            
-            // Update active component based on stage
-            match current_stage {
-                WizardStage::Welcome => {
-                    // Already set in new()
-                }
-                WizardStage::NameInput => {
-                    children.set(vec![Arc::new(VStack::new()
-                        .gap(12.0)
-                        .child(Box::new(Text::new("PROJECT SIGNATURE")))
-                        .child(Box::new(Text::new(format!("Name: '{}'", project_name.get()))))
-                        .child(Box::new(Button::new("Confirm Signature →").on_click({
-                            let stage = stage.clone();
-                            move |_| stage.set(WizardStage::TemplateSelection)
-                        })))
-                    )]);
-                }
-                WizardStage::TemplateSelection => {
-                    children.set(vec![Arc::new(VStack::new()
-                        .gap(12.0)
-                        .child(Box::new(Text::new("CHOOSE YOUR PALETTE")))
-                        .child(Box::new(List::new(vec![
-                            "Showroom (Zero Bloat - Default)",
-                            "Native Power (Desktop)",
-                            "Web Excellence (Web/SSR)",
-                            "Terminal Arts (TUI)",
-                            "Composite (UI Library)"
-                        ]).on_submit({
-                            let stage = stage.clone();
-                            let selected = selected_template.clone();
-                            move |idx| {
-                                selected.set(Some(idx));
-                                stage.set(WizardStage::Scaffolding);
-                            }
-                        })))
-                    )]);
-                }
-                WizardStage::Scaffolding => {
-                    children.set(vec![Arc::new(Text::new("CRAFTING..."))]);
-                    
-                    if let Some(idx) = selected_template.get() {
-                        let name = project_name.get();
-                        let template = match idx {
-                            0 => TemplateType::ZeroBloat,
-                            1 => TemplateType::Desktop,
-                            2 => TemplateType::Web,
-                            3 => TemplateType::Tui,
-                            _ => TemplateType::Library,
-                        };
-
-                        match Scaffolder::craft(&name, template) {
-                            Ok(_) => stage.set(WizardStage::Finished),
-                            Err(e) => {
-                                error_msg.set(e.to_string());
-                                stage.set(WizardStage::Error);
-                            }
-                        }
-                    }
-                }
-                WizardStage::Finished => {
-                    children.set(vec![Arc::new(VStack::new()
-                        .child(Box::new(Text::new("PROJECT READY!")))
-                        .child(Box::new(Text::new(format!("Run: cd {} && cargo run", project_name.get()))))
-                    )]);
-                }
-                WizardStage::Error => {
-                    children.set(vec![Arc::new(VStack::new()
-                        .child(Box::new(Text::new("CRAFTING FAILED")))
-                        .child(Box::new(Text::new(format!("Error: {}", error_msg.get()))))
-                    )]);
-                }
-            }
-        });
-
         Self {
             id: Id::next().to_string(),
-            stage,
-            project_name,
-            selected_template,
-            error_msg,
+            stage: Signal::new(WizardStage::Welcome),
+            project_name: Signal::new("my-rupa-app".to_string()),
+            selected_template: Signal::new(None),
+            error_msg: Signal::new("".to_string()),
             view: Arc::new(ViewCore::new()),
-            children: children_sig,
-            _effect: Arc::new(effect),
         }
     }
 }
 
 impl Component for CreateWizard {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { 
-        // We need to return references that live as long as the Component trait method call.
-        // The objects are owned by the Signal's internal Arc<RwLock<Vec<Arc<dyn Component>>>>.
-        // In a single-threaded layout/paint pass, this is generally safe.
-        let children = self.children.get();
-        // This is a common pattern in Rupa for dynamic children: 
-        // they are managed as trait objects wrapped in Arc.
-        unsafe { std::mem::transmute::<Vec<&dyn Component>, Vec<&dyn Component>>(
-            children.iter().map(|c| c.as_ref()).collect()
-        )}
-    }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
 
     fn render(&self) -> VNode {
-        VNode::element("div")
-            .with_style(self.view.style().clone())
-            .with_key(self.id.clone())
-    }
-
-    fn get_node(&self) -> Option<SceneNode> { self.view.get_node() }
-    fn set_node(&self, node: SceneNode) { self.view.set_node(node); }
-    fn is_dirty(&self) -> bool { self.view.is_dirty() }
-    fn mark_dirty(&self) { self.view.mark_dirty(); }
-    fn clear_dirty(&self) { self.view.clear_dirty(); }
-
-    fn layout(&self, taffy: &mut taffy::prelude::TaffyTree<()>, measurer: &dyn TextMeasurer, _parent: Option<taffy::prelude::NodeId>) -> taffy::prelude::NodeId {
-        let node = taffy.new_with_children(self.view.style().to_taffy(), &[]).unwrap();
-        self.view.set_node(SceneNode::from(node));
+        let current_stage = self.stage.get();
         
-        let children = self.children();
-        let child_nodes: Vec<_> = children.iter().map(|c| c.layout(taffy, measurer, Some(node))).collect();
-        taffy.set_children(node, &child_nodes).unwrap();
-        
-        node
-    }
+        let root = match current_stage {
+            WizardStage::Welcome => {
+                let stage = self.stage.clone();
+                VStack::new()
+                    .child(Text::new("🎨 RUPA FRAMEWORK"))
+                    .child(Text::new("The Artisan's Choice for Multi-platform Excellence."))
+                    .child(Button::new("Begin Crafting →").on_click(move |_| stage.set(WizardStage::NameInput)))
+            }
+            WizardStage::NameInput => {
+                let stage = self.stage.clone();
+                let name = self.project_name.get();
+                VStack::new()
+                    .child(Text::new("PROJECT SIGNATURE"))
+                    .child(Text::new(format!("Name: '{}'", name)))
+                    .child(Button::new("Confirm Signature →").on_click(move |_| stage.set(WizardStage::TemplateSelection)))
+            }
+            WizardStage::TemplateSelection => {
+                let stage = self.stage.clone();
+                let selected = self.selected_template.clone();
+                
+                let mut list = VStack::new().child(Text::new("CHOOSE YOUR PALETTE"));
+                
+                let templates = vec![
+                    "Showroom (Zero Bloat - Default)",
+                    "Native Power (Desktop)",
+                    "Web Excellence (Web/SSR)",
+                    "Terminal Arts (TUI)",
+                    "Composite (UI Library)"
+                ];
 
-    fn paint(&self, renderer: &mut dyn Renderer, taffy: &taffy::prelude::TaffyTree<()>, node: taffy::prelude::NodeId, is_group_hovered: bool, global_pos: rupa_base::Vec2) {
-        let layout = taffy.layout(node).unwrap();
-        let pos = global_pos + rupa_base::Vec2::new(layout.location.x, layout.location.y);
-        
-        for child in self.children() {
-            child.paint(renderer, taffy, node, is_group_hovered, pos);
-        }
-    }
-}
+                for (idx, name) in templates.into_iter().enumerate() {
+                    let stage = stage.clone();
+                    let selected = selected.clone();
+                    list = list.child(Button::new(name).on_click(move |_| {
+                        batch(|| {
+                            selected.set(Some(idx));
+                            stage.set(WizardStage::Scaffolding);
+                        });
+                    }));
+                }
+                
+                list
+            }
+            WizardStage::Scaffolding => {
+                // Background work trigger
+                let stage = self.stage.clone();
+                let error_msg = self.error_msg.clone();
+                let project_name = self.project_name.get();
+                let template_idx = self.selected_template.get().unwrap_or(0);
+                
+                std::thread::spawn(move || {
+                    let template = match template_idx {
+                        0 => TemplateType::ZeroBloat,
+                        1 => TemplateType::Desktop,
+                        2 => TemplateType::Web,
+                        3 => TemplateType::Tui,
+                        _ => TemplateType::Library,
+                    };
 
-impl Clone for CreateWizard {
-    fn clone(&self) -> Self {
-        Self {
-            id: self.id.clone(),
-            stage: self.stage.clone(),
-            project_name: self.project_name.clone(),
-            selected_template: self.selected_template.clone(),
-            error_msg: self.error_msg.clone(),
-            view: self.view.clone(),
-            children: self.children.clone(),
-            _effect: self._effect.clone(),
-        }
+                    match Scaffolder::craft(&project_name, template) {
+                        Ok(_) => stage.set(WizardStage::Finished),
+                        Err(e) => {
+                            error_msg.set(e.to_string());
+                            stage.set(WizardStage::Error);
+                        }
+                    }
+                });
+
+                VStack::new().child(Text::new("CRAFTING..."))
+            }
+            WizardStage::Finished => {
+                VStack::new()
+                    .child(Text::new("PROJECT READY!"))
+                    .child(Text::new(format!("Run: cd {} && cargo run", self.project_name.get())))
+            }
+            WizardStage::Error => {
+                VStack::new()
+                    .child(Text::new("CRAFTING FAILED"))
+                    .child(Text::new(format!("Error: {}", self.error_msg.get())))
+            }
+        };
+
+        root.render()
     }
 }
 
@@ -292,7 +217,7 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
                     Console::text(format!("📄 Processing {}...", name));
 
                     let content = std::fs::read_to_string(&path).unwrap();
-                    let vnode = rupa_md::MarkdownEngine::parse(&content);
+                    let vnode = rupa_md::Engine::parse(&content, None);
                     let html = rupa_server::HtmlRenderer::render_vnode(&vnode);
 
                     let output_path = dist_dir.join(format!("{}.html", name));
