@@ -41,7 +41,7 @@ impl TerminalRunner {
             let new_vnode = root.render();
 
             // 2. Reconcile (Identify Changes)
-            let patches = reconcile(&self.last_vnode, &new_vnode, None, 0);
+            let _patches = reconcile(&self.last_vnode, &new_vnode, None, 0);
             
             // 3. Update Taffy Tree (For Layout & Hit Testing)
             // Note: In a matured engine, the reconciler generates patches that 
@@ -57,7 +57,8 @@ impl TerminalRunner {
 
             // 4. Paint the VNode tree
             self.renderer.clear_screen();
-            Self::paint_vnode(&mut self.renderer, &new_vnode, &core.scene.layout_engine.taffy, layout_root, Vec2::zero());
+            let focused_id = core.focused_id.clone();
+            Self::paint_vnode(&mut self.renderer, &new_vnode, &core.scene.layout_engine.taffy, layout_root, Vec2::zero(), focused_id.as_deref());
             self.renderer.present();
 
             self.last_vnode = new_vnode;
@@ -71,38 +72,52 @@ impl TerminalRunner {
         taffy: &TaffyTree<()>,
         layout_node: NodeId,
         global_pos: Vec2,
+        focused_id: Option<&str>,
     ) {
         let layout = taffy.layout(layout_node).unwrap();
         let pos = global_pos + Vec2::new(layout.location.x, layout.location.y);
 
         match node {
             VNode::Element(el) => {
+                let is_focused = el.key.as_deref() == focused_id && focused_id.is_some();
+                
                 // Draw Background
-                if let Some(ref color) = el.style.background.color {
-                    let rgba: [f32; 4] = color.to_rgba();
+                let mut color = el.style.background.color.as_ref().map(|c| c.to_rgba());
+                
+                if is_focused {
+                    color = Some([0.2, 0.6, 1.0, 1.0]); // Highlight blue
+                }
+
+                if let Some(rgba) = color {
                     renderer.draw_rect(pos.x, pos.y, layout.size.width, layout.size.height, rgba, 0.0);
                 }
 
-                if el.style.border.width != 0.0 {
-                    renderer.draw_outline(pos.x, pos.y, layout.size.width, layout.size.height, [0.5, 0.5, 0.5, 1.0]);
+                if el.style.border.width != 0.0 || is_focused {
+                    let border_color = if is_focused { [0.0, 1.0, 1.0, 1.0] } else { [0.5, 0.5, 0.5, 1.0] };
+                    renderer.draw_outline(pos.x, pos.y, layout.size.width, layout.size.height, border_color);
+                }
+
+                if is_focused && el.handlers.on_click.is_some() {
+                     // Draw a focus cursor
+                     renderer.draw_text(">", pos.x - 2.0, pos.y, 1.0, 1.0, [0.0, 1.0, 1.0, 1.0], rupa_core::vnode::TextAlign::Left);
                 }
 
                 let taffy_children = taffy.children(layout_node).unwrap();
                 for (i, child) in el.children.iter().enumerate() {
                     if let Some(child_layout_node) = taffy_children.get(i) {
-                        Self::paint_vnode(renderer, child, taffy, *child_layout_node, pos);
+                        Self::paint_vnode(renderer, child, taffy, *child_layout_node, pos, focused_id);
                     }
                 }
             }
             VNode::Text(text) => {
-                let color = [1.0, 1.0, 1.0, 1.0];
+                let color = [1.0, 1.0, 1.0, 1.0]; // Default white for TUI text
                 renderer.draw_text(text, pos.x, pos.y, layout.size.width, 1.0, color, rupa_core::vnode::TextAlign::Left);
             }
             VNode::Fragment(children) => {
                 let taffy_children = taffy.children(layout_node).unwrap();
                 for (i, child) in children.iter().enumerate() {
                     if let Some(child_layout_node) = taffy_children.get(i) {
-                        Self::paint_vnode(renderer, child, taffy, *child_layout_node, pos);
+                        Self::paint_vnode(renderer, child, taffy, *child_layout_node, pos, focused_id);
                     }
                 }
             }
@@ -152,6 +167,32 @@ impl TerminalRunner {
         let mut focused_id = core.focused_id.take();
         let mut hovered_path = std::mem::take(&mut core.hovered_path);
         let event_listeners = core.event_listeners.clone();
+
+        // TUI Focus Management Hack for Wizard
+        if let InputEvent::Key { key, .. } = &event {
+            let clickable_ids = Self::find_clickable_ids(&self.last_vnode);
+            if !clickable_ids.is_empty() {
+                let mut current_idx = focused_id.as_ref()
+                    .and_then(|id| clickable_ids.iter().position(|c| c == id))
+                    .unwrap_or(0);
+
+                match key {
+                    rupa_core::events::KeyCode::ArrowDown | rupa_core::events::KeyCode::Tab => {
+                        current_idx = (current_idx + 1) % clickable_ids.len();
+                        focused_id = Some(clickable_ids[current_idx].clone());
+                        core.focused_id = focused_id.clone(); // Force sync
+                        return; // Consume event
+                    }
+                    rupa_core::events::KeyCode::ArrowUp => {
+                        current_idx = (current_idx + clickable_ids.len() - 1) % clickable_ids.len();
+                        focused_id = Some(clickable_ids[current_idx].clone());
+                        core.focused_id = focused_id.clone();
+                        return;
+                    }
+                    _ => {}
+                }
+            }
+        }
         
         InputDispatcher::dispatch(
             event,
@@ -172,6 +213,29 @@ impl TerminalRunner {
         core.pointer_capture = pointer_capture;
         core.focused_id = focused_id;
         core.hovered_path = hovered_path;
+    }
+
+    fn find_clickable_ids(node: &VNode) -> Vec<String> {
+        let mut ids = Vec::new();
+        match node {
+            VNode::Element(el) => {
+                if el.handlers.on_click.is_some() {
+                    if let Some(ref key) = el.key {
+                        ids.push(key.clone());
+                    }
+                }
+                for child in &el.children {
+                    ids.extend(Self::find_clickable_ids(child));
+                }
+            }
+            VNode::Fragment(children) => {
+                for child in children {
+                    ids.extend(Self::find_clickable_ids(child));
+                }
+            }
+            _ => {}
+        }
+        ids
     }
 }
 

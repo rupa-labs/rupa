@@ -6,6 +6,8 @@ use serde::{Serialize, Deserialize};
 pub enum UIEvent {
     Pointer(PointerEvent),
     Key(KeyEvent),
+    /// A generic keyboard interaction (e.g. Enter key triggering a button).
+    Keyboard,
     Focus(bool),
 }
 
