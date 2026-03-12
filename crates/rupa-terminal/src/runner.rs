@@ -182,6 +182,7 @@ impl PlatformRunner for TerminalRunner {
         let mut out = std::io::stdout();
         enable_raw_mode().map_err(|e| Error::Platform(format!("Failed to enable raw mode: {}", e)))?;
         out.execute(EnterAlternateScreen).unwrap();
+        out.execute(event::EnableMouseCapture).unwrap();
         out.execute(Hide).unwrap();
         
         register_redraw_proxy(Box::new(|| {}));
@@ -222,6 +223,38 @@ impl PlatformRunner for TerminalRunner {
                             modifiers 
                         });
                     }
+                    Event::Mouse(mouse) => {
+                        let pos = Vec2::new(mouse.column as f32, mouse.row as f32);
+                        
+                        // Always update cursor position first
+                        self.dispatch_event(InputEvent::PointerMove { position: pos });
+
+                        match mouse.kind {
+                            event::MouseEventKind::Down(btn) => {
+                                let button = match btn {
+                                    event::MouseButton::Left => rupa_core::events::PointerButton::Primary,
+                                    event::MouseButton::Right => rupa_core::events::PointerButton::Secondary,
+                                    event::MouseButton::Middle => rupa_core::events::PointerButton::Auxiliary,
+                                };
+                                self.dispatch_event(InputEvent::PointerButton { 
+                                    button, 
+                                    state: rupa_core::events::ButtonState::Pressed, 
+                                });
+                            }
+                            event::MouseEventKind::Up(btn) => {
+                                let button = match btn {
+                                    event::MouseButton::Left => rupa_core::events::PointerButton::Primary,
+                                    event::MouseButton::Right => rupa_core::events::PointerButton::Secondary,
+                                    event::MouseButton::Middle => rupa_core::events::PointerButton::Auxiliary,
+                                };
+                                self.dispatch_event(InputEvent::PointerButton { 
+                                    button, 
+                                    state: rupa_core::events::ButtonState::Released, 
+                                });
+                            }
+                            _ => {}
+                        }
+                    }
                     Event::Resize(w, h) => {
                         self.renderer.core.logical_size = Vec2::new(w as f32, h as f32);
                     }
@@ -231,6 +264,7 @@ impl PlatformRunner for TerminalRunner {
         }
 
         out.execute(Show).unwrap();
+        out.execute(event::DisableMouseCapture).unwrap();
         out.execute(LeaveAlternateScreen).unwrap();
         disable_raw_mode().unwrap();
         Ok(())
