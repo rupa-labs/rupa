@@ -59,9 +59,11 @@ impl TerminalRenderer {
     }
 }
 
+use unicode_width::UnicodeWidthStr;
+
 impl TextMeasurer for TerminalRenderer {
     fn measure(&self, text: &str, _size: f32) -> Vec2 {
-        Vec2::new(text.len() as f32, 1.0)
+        Vec2::new(text.width() as f32, 1.0)
     }
 }
 

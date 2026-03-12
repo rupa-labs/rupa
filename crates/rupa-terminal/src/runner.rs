@@ -11,6 +11,7 @@ use crossterm::{
 };
 use std::time::Duration;
 use taffy::prelude::*;
+use unicode_width::UnicodeWidthStr;
 
 pub struct TerminalRunner {
     pub core: SharedPlatformCore,
@@ -74,6 +75,11 @@ impl TerminalRunner {
     ) {
         let layout = taffy.layout(layout_node).unwrap();
         let pos = global_pos + Vec2::new(layout.location.x, layout.location.y);
+        
+        let rx = pos.x.round();
+        let ry = pos.y.round();
+        let rw = layout.size.width.round();
+        let rh = layout.size.height.round();
 
         match node {
             VNode::Element(el) => {
@@ -97,7 +103,7 @@ impl TerminalRunner {
                 }
 
                 if let Some(rgba) = color {
-                    renderer.draw_rect(pos.x, pos.y, layout.size.width, layout.size.height, rgba, 0.0);
+                    renderer.draw_rect(rx, ry, rw, rh, rgba, 0.0);
                 }
 
                 // Border logic
@@ -107,17 +113,17 @@ impl TerminalRunner {
                     } else { 
                         [0.3, 0.3, 0.3, 1.0] 
                     };
-                    renderer.draw_outline(pos.x, pos.y, layout.size.width, layout.size.height, border_color);
+                    renderer.draw_outline(rx, ry, rw, rh, border_color);
                 }
 
                 // Focus Indicators
                 if is_focused {
                     if is_input {
                         // Vertical bar for input focus
-                        renderer.draw_text("┃", pos.x - 1.0, pos.y, 1.0, 1.0, [1.0, 1.0, 0.0, 1.0], rupa_core::vnode::TextAlign::Left);
+                        renderer.draw_text("┃", rx - 1.0, ry, 1.0, 1.0, [1.0, 1.0, 0.0, 1.0], rupa_core::vnode::TextAlign::Left);
                     } else if el.handlers.on_click.is_some() {
                         // Classic arrow for button focus
-                        renderer.draw_text(">", pos.x - 2.0, pos.y, 1.0, 1.0, [0.0, 1.0, 1.0, 1.0], rupa_core::vnode::TextAlign::Left);
+                        renderer.draw_text(">", rx - 2.0, ry, 1.0, 1.0, [0.0, 1.0, 1.0, 1.0], rupa_core::vnode::TextAlign::Left);
                     }
                 }
 
@@ -125,7 +131,7 @@ impl TerminalRunner {
                 if is_input {
                     let val = el.attributes.get("value").cloned().unwrap_or_default();
                     let display_text = if is_focused { format!("{}_", val) } else { val };
-                    renderer.draw_text(&display_text, pos.x + 1.0, pos.y, layout.size.width - 2.0, 1.0, [1.0, 1.0, 1.0, 1.0], rupa_core::vnode::TextAlign::Left);
+                    renderer.draw_text(&display_text, rx + 1.0, ry, rw - 2.0, 1.0, [1.0, 1.0, 1.0, 1.0], rupa_core::vnode::TextAlign::Left);
                 }
 
                 let taffy_children = taffy.children(layout_node).unwrap();
@@ -137,7 +143,7 @@ impl TerminalRunner {
             }
             VNode::Text(text) => {
                 let color = inherited_color.unwrap_or([1.0, 1.0, 1.0, 1.0]);
-                renderer.draw_text(text, pos.x, pos.y, layout.size.width, 1.0, color, rupa_core::vnode::TextAlign::Left);
+                renderer.draw_text(text, rx, ry, rw, 1.0, color, rupa_core::vnode::TextAlign::Left);
             }
             VNode::Fragment(children) => {
                 let taffy_children = taffy.children(layout_node).unwrap();
@@ -171,7 +177,7 @@ impl TerminalRunner {
             }
             VNode::Text(text) => {
                 let mut style = taffy::prelude::Style::default();
-                style.size.width = Dimension::Length(text.len() as f32);
+                style.size.width = Dimension::Length(text.width() as f32);
                 style.size.height = Dimension::Length(1.0);
                 taffy.new_leaf(style).unwrap()
             }

@@ -16,3 +16,4 @@ rupa-vnode.workspace = true
 rupa-base.workspace = true
 rupa-ui.workspace = true
 taffy.workspace = true
+unicode-width = "0.1"
