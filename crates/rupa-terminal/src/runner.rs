@@ -55,7 +55,7 @@ impl TerminalRunner {
             // 4. Paint the VNode tree
             self.renderer.clear_screen();
             let focused_id = core.focused_id.clone();
-            Self::paint_vnode(&mut self.renderer, &new_vnode, &core.scene.layout_engine.taffy, layout_root, Vec2::zero(), focused_id.as_deref());
+            Self::paint_vnode(&mut self.renderer, &new_vnode, &core.scene.layout_engine.taffy, layout_root, Vec2::zero(), focused_id.as_deref(), None);
             self.renderer.present();
 
             self.last_vnode = new_vnode;
@@ -70,6 +70,7 @@ impl TerminalRunner {
         layout_node: NodeId,
         global_pos: Vec2,
         focused_id: Option<&str>,
+        inherited_color: Option<[f32; 4]>,
     ) {
         let layout = taffy.layout(layout_node).unwrap();
         let pos = global_pos + Vec2::new(layout.location.x, layout.location.y);
@@ -79,6 +80,9 @@ impl TerminalRunner {
                 let is_focused = el.key.as_deref() == focused_id && focused_id.is_some();
                 let is_input = el.tag == "input";
                 
+                // Determine typography color
+                let mut text_color = el.style.typography.color.as_ref().map(|c| c.to_rgba()).or(inherited_color);
+
                 // Draw Background
                 let mut color = el.style.background.color.as_ref().map(|c| c.to_rgba());
                 
@@ -88,6 +92,7 @@ impl TerminalRunner {
                         color = Some([0.1, 0.1, 0.15, 1.0]); // Deep dark for input
                     } else {
                         color = Some([0.2, 0.6, 1.0, 1.0]); // Highlight blue for buttons
+                        text_color = Some([1.0, 1.0, 1.0, 1.0]); // Force white text on focused buttons
                     }
                 }
 
@@ -126,19 +131,19 @@ impl TerminalRunner {
                 let taffy_children = taffy.children(layout_node).unwrap();
                 for (i, child) in el.children.iter().enumerate() {
                     if let Some(child_layout_node) = taffy_children.get(i) {
-                        Self::paint_vnode(renderer, child, taffy, *child_layout_node, pos, focused_id);
+                        Self::paint_vnode(renderer, child, taffy, *child_layout_node, pos, focused_id, text_color);
                     }
                 }
             }
             VNode::Text(text) => {
-                let color = [1.0, 1.0, 1.0, 1.0];
+                let color = inherited_color.unwrap_or([1.0, 1.0, 1.0, 1.0]);
                 renderer.draw_text(text, pos.x, pos.y, layout.size.width, 1.0, color, rupa_core::vnode::TextAlign::Left);
             }
             VNode::Fragment(children) => {
                 let taffy_children = taffy.children(layout_node).unwrap();
                 for (i, child) in children.iter().enumerate() {
                     if let Some(child_layout_node) = taffy_children.get(i) {
-                        Self::paint_vnode(renderer, child, taffy, *child_layout_node, pos, focused_id);
+                        Self::paint_vnode(renderer, child, taffy, *child_layout_node, pos, focused_id, inherited_color);
                     }
                 }
             }
