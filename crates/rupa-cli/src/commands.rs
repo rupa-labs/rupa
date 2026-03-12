@@ -23,6 +23,9 @@ enum Commands {
     Create {
         /// Name of the project
         name: Option<String>,
+        /// Template to use (skips wizard if name is also provided)
+        #[arg(short, long)]
+        template: Option<String>,
     },
     /// Build the project for production (Static Site Generation).
     Build,
@@ -177,7 +180,32 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
-        Some(Commands::Create { name }) => {
+        Some(Commands::Create { name, template }) => {
+            // Non-interactive flow
+            if let (Some(project_name), Some(template_str)) = (&name, &template) {
+                let template_type = match template_str.to_lowercase().as_str() {
+                    "desktop" | "showroom" => TemplateType::Desktop,
+                    "web" => TemplateType::Web,
+                    "tui" | "terminal" => TemplateType::Tui,
+                    "library" => TemplateType::Library,
+                    _ => {
+                        Console::error(format!("Unknown template type: '{}'. Valid types: desktop, web, terminal, library", template_str));
+                        return Ok(());
+                    }
+                };
+
+                Console::info(format!("Crafting project '{}' using {} template...", project_name, template_str));
+                match Scaffolder::craft(project_name, template_type) {
+                    Ok(_) => {
+                        Console::success("Project successfully crafted!");
+                        Console::text(format!("Run: cd {} && cargo run", project_name));
+                    },
+                    Err(e) => Console::error(format!("Crafting failed: {}", e)),
+                }
+                return Ok(());
+            }
+
+            // Interactive Wizard flow
             Console::info("Initializing Artisan Wizard...");
             let wizard = CreateWizard::new();
 
