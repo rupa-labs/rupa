@@ -2,55 +2,61 @@
 resolver = "2"
 
 members = [
-    "crates/rupa-core",
-    "crates/rupa-ui",
-    "crates/rupa-engine",
-    "crates/rupa-macros",
-    "crates/rupa",
-    "crates/rupa-desktop",
-    "crates/rupa-web",
-    "crates/rupa-server",
-    "crates/rupa-tui",
-    "crates/rupa-mobile",
+    # Tier 1: Atoms
+    "crates/rupa-base",
     "crates/rupa-signals",
     "crates/rupa-vnode",
+    "crates/rupa-motion",
     "crates/rupa-broadcast",
     "crates/rupa-store",
     "crates/rupa-net",
-    "crates/rupa-motion",
-    "crates/rupa-router",
-    "crates/rupa-i18n",
-    "crates/rupa-assets",
-    "crates/rupa-a11y",
     "crates/rupa-auth",
-    "crates/rupa-forms",
+    "crates/rupa-assets",
+    "crates/rupa-i18n",
+    "crates/rupa-queue",
     "crates/rupa-context",
     "crates/rupa-telemetry",
+    "crates/rupa-forms",
     "crates/rupa-canvas",
-    "crates/rupa-terminal",
-    "crates/rupa-test",
-    "crates/rupa-queue",
-    "crates/rupa-base",
-
-    "crates/rupa-md",
+    "crates/rupa-a11y",
     "crates/rupa-console",
+    "crates/rupa-test",
+
+    # Tier 2: Composites
+    "crates/rupa-core",
+    "crates/rupa-engine",
+    "crates/rupa-ui",
+    "crates/rupa-md",
+    "crates/rupa-router",
+    "crates/rupa-tui",
+    "crates/rupa-macros",
+
+    # Tier 3: Showrooms
+    "crates/rupa",
+    "crates/rupa-desktop",
     "crates/rupa-terminal",
+    "crates/rupa-web",
+    "crates/rupa-server",
+    "crates/rupa-mobile",
     "crates/rupa-headless",
-    "crates/rupa-docs",
-    "crates/rupa-fullstack",
     "crates/rupa-hybrid",
+    "crates/rupa-fullstack",
+
+    # Tooling
+    "crates/rupa-cli",
+    "crates/rupa-docs",
 ]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
 authors = ["Reas Vyn <reasvyn@gmail.com>"]
-description = "A modular meta-framework, cross-platform and multi-purpose for Rust artisans. Built with an Atomic Materials & Composite Assemblies architecture."
+description = "A modular meta-framework, cross-platform and multi-purpose for Rust artisans. Built with the Atoms and Composites architectural model."
 license = "MIT"
 repository = "https://github.com/rupa-labs/rupa"
 
 [workspace.dependencies]
-# Atomic Materials (Tier 1)
+# Tier 1: Atoms
 rupa-base = { path = "crates/rupa-base" }
 rupa-signals = { path = "crates/rupa-signals" }
 rupa-vnode = { path = "crates/rupa-vnode" }
@@ -70,8 +76,9 @@ rupa-canvas = { path = "crates/rupa-canvas" }
 rupa-queue = { path = "crates/rupa-queue" }
 rupa-md = { path = "crates/rupa-md" }
 rupa-console = { path = "crates/rupa-console" }
+rupa-test = { path = "crates/rupa-test" }
 
-# Composite Assemblies (Tier 2)
+# Tier 2: Composites
 rupa-core = { path = "crates/rupa-core" }
 rupa-ui = { path = "crates/rupa-ui" }
 rupa-engine = { path = "crates/rupa-engine" }
@@ -84,7 +91,7 @@ rupa-docs = { path = "crates/rupa-docs" }
 rupa-fullstack = { path = "crates/rupa-fullstack" }
 rupa-hybrid = { path = "crates/rupa-hybrid" }
 
-# Artisan Showrooms (Tier 3)
+# Tier 3: Showrooms
 rupa = { path = "crates/rupa" }
 rupa-desktop = { path = "crates/rupa-desktop" }
 rupa-terminal = { path = "crates/rupa-terminal" }
@@ -92,7 +99,6 @@ rupa-headless = { path = "crates/rupa-headless" }
 
 # Developer Tooling
 rupa-cli = { path = "crates/rupa-cli" }
-rupa-test = { path = "crates/rupa-test" }
 
 # Third party (Centralized for maintenance)
 log = "0.4"
