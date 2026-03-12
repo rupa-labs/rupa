@@ -47,6 +47,12 @@ enum Commands {
         #[arg(long)]
         to: Option<String>,
     },
+    /// Clear terminal session, terminal cache, and project application cache.
+    Clear {
+        /// Also perform a deep clean (removes target directory).
+        #[arg(long)]
+        deep: bool,
+    },
     /// Display version information about Rupa CLI and Engine.
     Version,
 }
@@ -364,6 +370,51 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
             }
+        }
+        Some(Commands::Clear { deep }) => {
+            Console::info("Purifying artisan environment...");
+            
+            // 1. Terminal Session Reset
+            print!("\x1B[2J\x1B[H"); 
+
+            // 2. Local Project Cache
+            let local_targets = vec![".rupa_storage", "dist"];
+            for target in local_targets {
+                if std::path::Path::new(target).exists() {
+                    if let Err(e) = std::fs::remove_dir_all(target) {
+                        Console::error(format!("  - Failed to purge {}: {}", target, e));
+                    } else {
+                        Console::text(format!("  - Purged local artifact: {}", target));
+                    }
+                }
+            }
+
+            // 3. Deep Clean
+            if deep {
+                if std::path::Path::new("target").exists() {
+                    Console::info("Removing heavy build artifacts (target/)...");
+                    if let Err(e) = std::fs::remove_dir_all("target") {
+                        Console::error(format!("  - Failed to purge target/: {}", e));
+                    } else {
+                        Console::text("  - Purged build artifacts: target/");
+                    }
+                }
+            }
+
+            // 4. Global Cache
+            let home = std::env::var("HOME").or_else(|_| std::env::var("USERPROFILE"));
+            if let Ok(home_path) = home {
+                let rupa_cache = std::path::Path::new(&home_path).join(".rupa").join("cache");
+                if rupa_cache.exists() {
+                    if let Err(e) = std::fs::remove_dir_all(&rupa_cache) {
+                        Console::error(format!("  - Failed to purge global cache: {}", e));
+                    } else {
+                        Console::text("  - Purged global session cache.");
+                    }
+                }
+            }
+
+            Console::success("Environment purified successfully.");
         }
         Some(Commands::Version) | None => {
             Console::draw_box("RUPA FRAMEWORK", vec![
