@@ -25,9 +25,12 @@ Rupa provides specialized, zero-boilerplate entry points for specific business n
 - **Rupa Desktop**: Pre-assembled for native GPU applications.
 - **Rupa Web**: Optimized for WASM and modern frontend development.
 - **Rupa Server**: Built for high-performance SSR and Backend services.
-- **Rupa CLI App**: Specialized for interactive terminal tools (TUI).
+- **Rupa Terminal**: Specialized for interactive terminal tools (TUI) and CLIs.
 - **Rupa Mobile**: Targeted at native Android and iOS experiences.
+- **Rupa Headless**: Optimized for logic-only automation and testing.
+- **Rupa Hybrid**: Unified bridge for Web and Native interoperability.
 - **Rupa Full-Stack**: The comprehensive all-in-one universal bundle.
+- **Rupa CLI**: Aesthetic developer tool for project scaffolding and management.
 - **Industrial Layout Engine**: Powered by **Taffy**, providing full support for Flexbox and CSS Grid layouts.
 - **Interactive Event System**: Full support for **Hit-Testing** and event dispatching (Click, Hover, Drag, Scroll, Touch) linked directly to the layout engine.
 - **Artisan Color System**: Native support for **OKLCH** color space for perceptually uniform aesthetics and precise theme control.

@@ -1,7 +1,14 @@
+//! # Rupa Docs 📚
+//!
+//! Interactive documentation builder and viewer for the Rupa Framework. 
+//! This crate acts as an internal Tooling application to showcase 
+//! the framework's capabilities across all rendering targets.
+
 use rupa::prelude::*;
 
-/// Fungsi utama untuk membangun UI Dokumentasi Rupa.
-/// Kode ini akan dijalankan di Desktop (GPU), Terminal (TUI), maupun Web (DOM).
+/// The main entry point for building the Rupa Documentation UI.
+/// This component is designed to be executed across Desktop (GPU), 
+/// Terminal (TUI), and Web (DOM) showrooms.
 pub fn docs_app() -> impl Component {
     VStack::new()
         .style((p(20.0), gap(10.0), bg_primary()))

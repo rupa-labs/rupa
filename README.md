@@ -1,6 +1,6 @@
 # Rupa Framework 🎨
 
-**Rupa Framework** is a **modular meta-framework, cross-platform and multi-purpose**, engineered for Rust artisans. It is built as a highly decoupled ecosystem of **Atomic Materials & Composite Assembly Assemblies**, allowing you to use it as a complete high-level solution or as a collection of specialized standalone tools for any target.
+**Rupa Framework** is a **modular meta-framework, cross-platform and multi-purpose**, engineered for Rust artisans. It is built on the **Atoms and Composites** architecture—a unique 3-tier hexagonal model that ensures extreme decoupling and fine-grained scalability.
 
 ---
 
@@ -8,9 +8,9 @@
 
 Rupa Framework is designed for developers who demand the perfect balance between **Semantic Structure**, **Fine-Grained Reactivity**, and **Industry-Standard Modularity**.
 
-- **Atomic Materials:** Independent low-level building blocks like `rupa-signals` (reactivity) and `rupa-vnode` (design DNA).
-- **Composite Assembly Assemblies:** High-level systems that orchestrate multiple atomic materials, such as `rupa-ui` (components) and `rupa-engine` (native rendering).
-- **Artisan Showrooms:** Ready-to-use specialized artisan showrooms like `rupa-desktop`, `rupa-web`, or `rupa-server`.
+- **Tier 1: Atoms (The Materials & Tools — Ports & Invariants):** Independent low-level building blocks like `rupa-signals` (reactivity) and `rupa-vnode` (design DNA).
+- **Tier 2: Composites (The Master’s Craft — Kernel & Orchestrator):** High-level systems that orchestrate multiple Atoms, such as `rupa-ui` (components) and `rupa-engine` (native rendering).
+- **Tier 3: Showrooms (The Finished Showroom — Adapters & Infrastructure):** Ready-to-use specialized artisan showrooms like `rupa-desktop`, `rupa-web`, or `rupa-server`.
 
 ---
 
@@ -78,7 +78,7 @@ fn main() {
 
 ## 🛠️ Project Structure
 
-- `crates/rupa-*`: The core ecosystem (Atomic Materials & Composite Assembly Assemblies).
+- `crates/rupa-*`: The core ecosystem (Atoms & Composites).
 - `docs/`: In-depth architectural guides and standards.
 - `examples/`: Multi-platform implementation demos.
 

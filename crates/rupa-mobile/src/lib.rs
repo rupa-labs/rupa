@@ -1,3 +1,9 @@
+//! # Rupa Mobile 📱
+//!
+//! The Mobile Showroom for the Rupa Framework. This crate provides the 
+//! **Adapters & Infrastructure** (Tier 3) to run Rupa applications 
+//! natively on iOS and Android using Winit and specific NDK bindings.
+
 pub mod infra;
 
 pub use rupa_core::events::InputEvent;
@@ -18,6 +24,7 @@ pub enum MobileLifecycle {
 pub struct MobileHardware;
 
 impl MobileHardware {
+    /// Triggers the device haptic motor.
     pub fn vibrate(duration_ms: u32) {
         log::info!("Rupa Mobile: Vibrate for {}ms", duration_ms);
     }

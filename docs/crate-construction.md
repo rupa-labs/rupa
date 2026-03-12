@@ -8,24 +8,20 @@ This document defines the mandatory standards for creating, splitting, and maint
 
 We categorize crates into three distinct tiers to ensure strict boundaries and prevent "God Crate" bloat.
 
-### 1.1 Atomic Materials (Tier 1)
+### 1.1 Tier 1: Atomic Materials (The Materials & Tools — Ports & Invariants)
 Atomic Materials are the smallest functional units of the framework.
-*   **Format:** `rupa-<noun>` (e.g., `rupa-signals`, `rupa-store`).
-*   **Responsibility:** Single, specialized domain.
-*   **Dependencies:** Must only depend on other Atomic Materials or minimal 3rd-party crates.
-*   **Platform:** Must be 100% platform-agnostic.
+*   **Artisan Identity:** **The Materials & Tools**. Raw materials and sharp chisels.
+*   **Technical Identity:** **Ports & Invariants**. Single specialized domains, 100% platform-agnostic.
 
-### 1.2 Composite Assembly Assemblies (Tier 2)
-Composite Assembly Assemblies assemble multiple Atomic Materials into high-level functional modules.
-*   **Format:** `rupa-<domain>-core` (e.g., `rupa-server-core`, `rupa-web-core`).
-*   **Responsibility:** Technical systems that bridge atomic materials to platform-specific needs.
-*   **Boundary:** Should not leak internal Atomic Material APIs unless necessary.
+### 1.2 Tier 2: Composite Assemblies (The Master’s Craft — Kernel & Orchestrator)
+Composite Assemblies assemble multiple Atomic Materials into high-level functional modules.
+*   **Artisan Identity:** **The Master’s Craft**. The specialized joinery and assembly logic.
+*   **Technical Identity:** **Kernel & Orchestrator**. Agnostic technical systems bridging materials to platform needs.
 
-### 1.3 Artisan Showrooms (Tier 3)
+### 1.3 Tier 3: Artisan Showrooms (The Finished Showroom — Adapters & Infrastructure)
 Artisan Showrooms pre-assembled for specific business use cases.
-*   **Format:** `rupa-<target>` (e.g., `rupa-desktop`, `rupa-server`).
-*   **Responsibility:** Zero-boilerplate entry points for final users.
-*   **Dependencies:** Combines specific composite assembly assemblies and atomic materials.
+*   **Artisan Identity:** **The Finished Showroom**. Polished works displayed for the world.
+*   **Technical Identity:** **Adapters & Infrastructure**. Zero-boilerplate target-specific entry points.
 
 ---
 

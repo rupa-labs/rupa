@@ -65,14 +65,18 @@ impl Component for Button {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
+        let is_disabled = self.disabled.get();
         let mut node = VNode::element("button")
             .with_key(self.id.clone())
             .with_style(self.view.style.read().unwrap().clone())
+            .with_attr("disabled", if is_disabled { "true" } else { "false" })
             .with_child(VNode::text(self.label.clone()));
 
-        if let Some(ref handler) = self.on_click {
-            let h = handler.clone();
-            node = node.with_handler(move |e| h(e));
+        if !is_disabled {
+            if let Some(ref handler) = self.on_click {
+                let h = handler.clone();
+                node = node.with_handler(move |e| h(e));
+            }
         }
 
         node

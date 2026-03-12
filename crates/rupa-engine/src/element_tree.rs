@@ -41,7 +41,7 @@ impl ElementTree {
     /// Prints a visual representation of the tree to the log.
     pub fn debug_dump(root: &dyn Component, depth: usize) {
         let indent = "  ".repeat(depth);
-        log::debug!("{}[{}] {}", indent, root.id(), std::any::type_name::<Self>());
+        log::debug!("{}[{}]", indent, root.id());
         for child in root.children() {
             Self::debug_dump(child, depth + 1);
         }

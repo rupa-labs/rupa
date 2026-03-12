@@ -1,12 +1,30 @@
+//! # Rupa Macros 🛠️
+//!
+//! Procedural macros for the Rupa Framework. This crate provides 
+//! the **Composites** for automating boilerplate in components, forms, 
+//! and reactive state management.
+
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput, Data, Fields};
 
+/// Attribute macro to mark a struct as a Rupa Component.
+///
+/// Currently acts as a marker, but will be expanded to automate 
+/// the `Component` trait implementation and reactive dependency tracking.
 #[proc_macro_attribute]
 pub fn component(_attr: TokenStream, item: TokenStream) -> TokenStream {
     item
 }
 
+/// Derive macro for the `Form` trait in `rupa-forms`.
+///
+/// Automatically generates the `fields()` mapping for a struct, 
+/// allowing it to be used with the Rupa Form Validation engine.
+///
+/// # Panics
+///
+/// Panics if applied to a non-struct type.
 #[proc_macro_derive(Form)]
 pub fn derive_form(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -32,7 +50,7 @@ pub fn derive_form(input: TokenStream) -> TokenStream {
                 _ => quote! { std::collections::HashMap::new() },
             }
         }
-        _ => panic!("Form derive macro only supports structs"),
+        _ => panic!("Form derive macro only supports structs with named fields"),
     };
 
     let expanded = quote! {

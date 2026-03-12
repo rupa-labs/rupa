@@ -24,9 +24,9 @@ The system SHALL maintain strict logical isolation across layers:
 *   **Interface Layer**: Delivery mechanisms (HTTP, CLI, UI).
 
 ### 2.2 Hexagonal Architecture (Ports & Adapters)
-*   **Tier 1 (Atoms)**: Act as **Ports** (Contracts/Traits).
-*   **Tier 2 (Composites)**: Act as the **Agnostic Core** (Logic).
-*   **Tier 3 (Showrooms)**: Act as **Adapters** (Platform-specific implementations).
+*   **Tier 1: Atomic Materials (The Materials & Tools)**: Act as **Ports & Invariants** (Contracts/Traits).
+*   **Tier 2: Composite Assemblies (The Master’s Craft)**: Act as the **Kernel & Orchestrator** (Logic).
+*   **Tier 3: Artisan Showrooms (The Finished Showroom)**: Act as **Adapters & Infrastructure** (Platform-specific implementations).
 
 ---
 

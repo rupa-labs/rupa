@@ -1,4 +1,11 @@
-// --- Atomic Materials (Tier 1) ---
+//! # Rupa Framework 🎨
+//!
+//! The Universal Facade for the Rupa Framework. 
+//! This crate provides a unified, ergonomic entry point that bundles 
+//! all **Atoms** (Tier 1), **Composites** (Tier 2), and **Showrooms** (Tier 3) 
+//! into a single dependency for rapid artisan development.
+
+// --- Tier 1: Atoms (The Materials & Tools) ---
 pub use rupa_signals as signals;
 pub use rupa_vnode as vnode;
 pub use rupa_store as store;
@@ -8,7 +15,7 @@ pub use rupa_i18n as i18n;
 pub use rupa_motion as motion;
 pub use rupa_assets as assets;
 
-// --- Composite Assemblies (Tier 2) ---
+// --- Tier 2: Composites (The Master's Craft) ---
 pub use rupa_core as core;
 pub use rupa_ui as ui;
 pub use rupa_engine as engine;

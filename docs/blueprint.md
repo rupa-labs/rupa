@@ -1,6 +1,6 @@
 # Rupa Framework Architectural Blueprint 🏛️
 
-This document defines the structural integrity, dependency hierarchy, and execution flow of the **Rupa Framework**, a **modular meta-framework, cross-platform and multi-purpose**. It serves as the authoritative map for all engineering activities, ensuring compliance with the **ISO-IEC-12207-GEM-2026** governance.
+This document defines the structural integrity, dependency hierarchy, and execution flow of the **Rupa Framework**, based on the **Atoms and Composites** architectural model.
 
 ---
 
@@ -14,14 +14,15 @@ Every architectural decision in Rupa MUST be defensible under these three pillar
 
 ---
 
-## 2. Tiered Hexagonal Architecture (The Macro View)
+## 2. Atoms and Composites (The Macro View)
 
-Rupa Framework is organized into three layers of responsibility, following the **Ports and Adapters** model to achieve *zero-coupling* between core logic and infrastructure.
+Rupa Framework is organized into three tiers, following the **Ports and Adapters** model to achieve *zero-coupling* between core logic and infrastructure.
 
 ```mermaid
 graph TD
-    subgraph Tier_3 [Tier 3: Artisan Showrooms - THE ADAPTERS]
+    subgraph Tier_3 [Tier 3: Showrooms - THE FINISHED SHOWROOM]
         direction TB
+        sub_3[Adapters & Infrastructure]
         rupa[rupa / Universal Facade]
         desktop[rupa-desktop / WGPU]
         web[rupa-web / WASM]
@@ -29,19 +30,26 @@ graph TD
         mobile[rupa-mobile / Native]
         server[rupa-server / SSR]
         fullstack[rupa-fullstack / Hybrid]
+        headless[rupa-headless / Logic]
+        hybrid[rupa-hybrid / Interop]
         cli[rupa-cli / Tooling]
     end
 
-    subgraph Tier_2 [Tier 2: Composite Assemblies - THE CORE]
+    subgraph Tier_2 [Tier 2: Composites - THE MASTER'S CRAFT]
         direction TB
+        sub_2[Kernel & Orchestrator]
         kernel[rupa-engine / Agnostic Kernel]
         core[rupa-core / Reconciler]
         ui[rupa-ui / Agnostic Components]
         md[rupa-md / Markdown Engine]
+        router[rupa-router / Navigation]
+        tui[rupa-tui / TUI Orchestrator]
+        macros[rupa-macros / Proc Macros]
     end
 
-    subgraph Tier_1 [Tier 1: Atomic Materials - THE PORTS & DNA]
+    subgraph Tier_1 [Tier 1: Atoms - THE MATERIALS & TOOLS]
         direction LR
+        sub_1[Ports & Invariants]
         signals[rupa-signals / DNA]
         vnode[rupa-vnode / DNA]
         ports[Infra Ports: auth / store / net / i18n / broadcast / queue / telemetry / a11y]
@@ -62,22 +70,24 @@ graph TD
 
 ## 3. Sub-System Definitions & Responsibilities
 
-### 3.1 The DNA & Ports (Tier 1)
+### 3.1 Tier 1: Atoms (The Materials & Tools — Ports & Invariants)
 *   **The DNA**: `rupa-signals` (Fine-grained reactivity) and `rupa-vnode` (Universal UI language).
 *   **The Ports**: Foundational traits that define *what* the system can do.
     *   `auth::Service`, `store::Store`, `net::Client`, `broadcast::Broadcaster`.
 *   **Standard Materials**: `rupa-base` (Types), `rupa-motion` (Animation), `rupa-test` (TDD Support).
 
-### 3.2 The Core Kernel (Tier 2)
+### 3.2 Tier 2: Composites (The Master’s Craft — Kernel & Orchestrator)
 *   **The Brain**: `rupa-core`. Manages the virtual tree, diffing algorithm, and action dispatching.
 *   **The Orchestrator**: `rupa-engine`. Manages the universal application lifecycle (`App`).
 *   **The Toolkit**: `rupa-ui` (Platform-agnostic semantic components) and `rupa-md` (Content engine).
+*   **The Support**: `rupa-router` (Navigation), `rupa-tui` (Terminal orchestration), and `rupa-macros` (Proc macros).
 
-### 3.3 The Showroom Adapters (Tier 3)
+### 3.3 Tier 3: Showrooms (The Finished Showroom — Adapters & Infrastructure)
 *   **Platform Targets**: 
-    *   `rupa-desktop` (GPU), `rupa-terminal` (ANSI), `rupa-web` (Browser).
+    *   `rupa-desktop` (GPU), `rupa-terminal` (Crossterm), `rupa-web` (Browser).
     *   `rupa-mobile` (Android/iOS), `rupa-server` (SSR/API).
-*   **Hybrid Solutions**: `rupa-fullstack` manages hydration between server and client.
+*   **Agnostic Targets**: `rupa-headless` (Logic-only automation).
+*   **Hybrid Solutions**: `rupa-fullstack` (Hydration) and `rupa-hybrid` (Web/Native Interop).
 *   **Artisan Tools**: `rupa-cli` for scaffolding and developer experience.
 *   **Universal Facade**: The `rupa` crate provides a unified entry point for all features.
 
@@ -129,21 +139,21 @@ sequenceDiagram
 
 ---
 
-## 6. Modular Pipeline Workflows (The Modular Choice)
+## 6. Atoms and Composites Workflows (The Modular Choice)
 
-Rupa Framework adapts its execution pipeline based on the target application. Below are the visual representations of how Atomic Materials and Composite Assemblies are assembled for different purposes.
+Rupa Framework adapts its execution pipeline based on the target application.
 
 ### 6.1 Native Pipeline (Desktop & Mobile)
 Focused on high-performance GPU/TUI rendering with direct hardware access.
 
 ```mermaid
 graph LR
-    subgraph Atoms [Atomic Materials]
+    subgraph Atoms [Atoms]
         S[Signals]
         VN[VNode]
     end
     
-    subgraph Composites [Composite Assemblies]
+    subgraph Composites [Composites]
         UI[rupa-ui]
         Core[rupa-core]
         Eng[rupa-engine]
@@ -178,7 +188,7 @@ graph TD
 
 ## 7. Architectural Constraints & Standards
 
-1.  **Strict Layering**: Atomic Materials (Tier 1) must never import from Composite Assemblies (Tier 2).
-2.  **Agnostic Purity**: Foundational Atomic Materials must remain 100% free of OS-specific or hardware-specific code.
+1.  **Strict Layering**: Atoms (Tier 1) must never import from Composites (Tier 2).
+2.  **Agnostic Purity**: Foundational Atoms must remain 100% free of OS-specific or hardware-specific code.
 3.  **Serializability**: All data crossing system boundaries (VNodes, Styles, Events) MUST implement `serde`.
 4.  **TDD Driven**: Every sub-system must be independently testable in a headless environment.

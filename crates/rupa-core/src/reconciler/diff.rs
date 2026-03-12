@@ -34,37 +34,31 @@ pub fn reconcile_component(comp: &dyn Component) -> PatchSet {
 
 /// Compares two VNode trees and identifies the minimal set of instructions 
 /// to transform the old tree into the new one.
+///
+/// This is the core algorithm of the Rupa Reconciler, optimized for O(N) 
+/// performance using keyed child matching and hierarchical diffing.
 pub fn reconcile(old: &VNode, new: &VNode, _parent_id: Option<String>, index: usize) -> PatchSet {
     let mut patches = Vec::new();
 
     match (old, new) {
-        (VNode::Element(old_el), VNode::Element(new_el)) if old_el.tag != new_el.tag => {
-            patches.push(Patch::Replace {
-                id: old_el.key.clone().unwrap_or_else(|| format!("{}_{}", old_el.tag, index)),
-                new_node: new.clone(),
-            });
-        }
-
-        (VNode::Element(old_el), VNode::Element(new_el)) => {
+        // 1. Element to Element (Same Tag)
+        (VNode::Element(old_el), VNode::Element(new_el)) if old_el.tag == new_el.tag => {
             let mut changes = Vec::new();
             let el_id = old_el.key.clone().unwrap_or_else(|| format!("{}_{}", old_el.tag, index));
 
-            // 1. Deep Style Diffing (with Motion awareness)
+            // Deep Style & Attribute Diffing
             diff_styles(&old_el.style, &new_el.style, &mut changes);
-
-            // 2. Deep Attribute Diffing
             diff_attributes(&old_el.attributes, &new_el.attributes, &mut changes);
 
             if !changes.is_empty() {
-                // If the element has motion rules, we can wrap the updates later
-                // (Future: specialized animated patches)
                 patches.push(Patch::Update { id: el_id.clone(), changes });
             }
 
-            // 3. Keyed Child Reconciliation
+            // Keyed Child Reconciliation
             reconcile_children(&old_el.children, &new_el.children, Some(el_id), &mut patches);
         }
 
+        // 2. Text to Text
         (VNode::Text(old_txt), VNode::Text(new_txt)) if old_txt != new_txt => {
             patches.push(Patch::Update {
                 id: format!("text_{}", index),
@@ -72,11 +66,32 @@ pub fn reconcile(old: &VNode, new: &VNode, _parent_id: Option<String>, index: us
             });
         }
 
+        // 3. Fragment to Fragment
+        (VNode::Fragment(old_children), VNode::Fragment(new_children)) => {
+            reconcile_children(old_children, new_children, _parent_id, &mut patches);
+        }
+
+        // 4. Component to Component (Same Name)
+        (VNode::Component(old_comp), VNode::Component(new_comp)) if old_comp.name == new_comp.name => {
+            // Components are usually handled by reconcile_component, but if they appear 
+            // inside a tree, we check if props have changed.
+            if old_comp.props != new_comp.props {
+                patches.push(Patch::Replace {
+                    id: format!("comp_{}_{}", old_comp.name, index),
+                    new_node: new.clone(),
+                });
+            }
+        }
+
+        // 5. Fallback: Replace entire sub-tree if types or tags differ
         _ if old != new => {
-            patches.push(Patch::Replace {
-                id: format!("node_{}", index),
-                new_node: new.clone(),
-            });
+            let id = match old {
+                VNode::Element(el) => el.key.clone().unwrap_or_else(|| format!("{}_{}", el.tag, index)),
+                VNode::Text(_) => format!("text_{}", index),
+                VNode::Component(c) => format!("comp_{}_{}", c.name, index),
+                _ => format!("node_{}", index),
+            };
+            patches.push(Patch::Replace { id, new_node: new.clone() });
         }
 
         _ => {}

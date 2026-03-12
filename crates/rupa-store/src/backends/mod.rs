@@ -1,5 +1,5 @@
 pub mod fs;
-pub mod sqlite;
+pub mod placeholder;
 pub mod web;
 pub mod idb;
 

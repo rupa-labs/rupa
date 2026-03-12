@@ -31,8 +31,9 @@ Rupa is not a cage of "best practices"—it is a **launchpad for your ingenuity*
 
 ## 🏗️ Core Pillars
 
-### 1. Modular Meta-Framework (The Blueprint)
-Rupa is designed as a **meta-framework**. Instead of a monolithic library, it provides an ecosystem of independent, low-level **Atomic Materials** and functional **Composite Assembly Assemblies**. This allows it to serve multiple purposes—from UI components to low-level reactivity engines—across any platform.
+### 1. Modular Meta-Framework (The Materials & Tools)
+Rupa is designed as a meta-framework. Instead of a monolithic library, it provides an ecosystem of independent, low-level **Atomic Materials (Tier 1: The Materials & Tools — Ports & Invariants)** and functional **Composite Assemblies (Tier 2: The Master’s Craft — Kernel & Orchestrator)**. This allows it to serve multiple purposes—from UI components to low-level reactivity engines—across any platform target via **Artisan Showrooms (Tier 3: The Finished Showroom — Adapters & Infrastructure)**.
+
 
 ### 2. Utility-First, Semantic-Support
 We believe functional utilities are unmatched for development speed, while semantic structures are essential for long-term scalability.

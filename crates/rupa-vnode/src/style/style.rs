@@ -63,12 +63,16 @@ impl Style {
 
     pub fn w(mut self, val: f32) -> Self { self.sizing.width = Some(val); self }
     pub fn h(mut self, val: f32) -> Self { self.sizing.height = Some(val); self }
-    pub fn w_full(mut self) -> Self { self.sizing.width = Some(100.0); self }
-    pub fn h_full(mut self) -> Self { self.sizing.height = Some(100.0); self }
+    
+    /// Sets width to 100%.
+    pub fn w_full(mut self) -> Self { self.sizing.width = Some(-1.0); self } // -1.0 as convention for 100% in our internal atom
+    /// Sets height to 100%.
+    pub fn h_full(mut self) -> Self { self.sizing.height = Some(-1.0); self }
 
     pub fn bg(mut self, color: Color) -> Self { self.background.color = Some(color); self }
     pub fn rounded(mut self, val: f32) -> Self { self.rounding = Rounding::all(val); self }
 
+    /// Converts the Rupa Style into a Taffy Style for the layout engine.
     pub fn to_taffy(&self) -> taffy::style::Style {
         let mut s = taffy::style::Style::default();
         
@@ -99,14 +103,24 @@ impl Style {
             bottom: length(self.margin.bottom).into(),
         };
 
-        if let Some(w) = self.sizing.width { s.size.width = length(w).into(); }
-        if let Some(h) = self.sizing.height { s.size.height = length(h).into(); }
+        if let Some(w) = self.sizing.width { 
+            s.size.width = if w < 0.0 { Dimension::Percent(1.0) } else { length(w).into() }; 
+        }
+        if let Some(h) = self.sizing.height { 
+            s.size.height = if h < 0.0 { Dimension::Percent(1.0) } else { length(h).into() }; 
+        }
 
         s.flex_direction = match self.flex.flex_direction {
             RupaFlexDirection::Row => FlexDirection::Row,
             RupaFlexDirection::Col => FlexDirection::Column,
             RupaFlexDirection::RowReverse => FlexDirection::RowReverse,
             RupaFlexDirection::ColReverse => FlexDirection::ColumnReverse,
+        };
+
+        // Gaps
+        s.gap = Size {
+            width: length(self.flex.gap),
+            height: length(self.flex.gap),
         };
 
         if let Some(ref align) = self.flex.align_items {

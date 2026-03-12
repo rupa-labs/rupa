@@ -76,6 +76,17 @@ impl<T: Clone + Send + Sync + 'static> Resource<T> {
     pub fn is_loading(&self) -> bool { matches!(self, Resource::Loading) }
     pub fn is_ready(&self) -> bool { matches!(self, Resource::Ready(_)) }
     pub fn is_error(&self) -> bool { matches!(self, Resource::Error(_)) }
+    pub fn is_uninitialized(&self) -> bool { matches!(self, Resource::Uninitialized) }
+
+    /// Returns true if the resource has data (either Ready or Loading while having old data).
+    pub fn has_data(&self) -> bool {
+        matches!(self, Resource::Ready(_))
+    }
+
+    /// Resets the resource to Uninitialized state.
+    pub fn reset(signal: Signal<Self>) {
+        signal.set(Resource::Uninitialized);
+    }
 
     pub fn data(&self) -> Option<&T> {
         match self {

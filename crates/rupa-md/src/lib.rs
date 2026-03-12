@@ -1,18 +1,36 @@
+//! # Rupa Markdown (MD) 📖
+//!
+//! Content-driven engine for the Rupa Framework. This crate provides 
+//! the **Composites** for transforming Markdown/MDX into universal `VNode` trees.
+
 use pulldown_cmark::{Parser, Event, Tag, Options, HeadingLevel};
-use rupa_vnode::{VNode, VElement, Attributes, Style};
+pub use rupa_vnode::{VNode, VElement, Attributes, Style};
 use std::collections::HashMap;
 
 /// Configuration for the Markdown Engine.
-/// Allows mapping specific tags to custom styles.
+/// 
+/// Enables fine-grained control over how semantic tags are mapped to 
+/// specific visual styles and attributes.
 #[derive(Clone, Default)]
 pub struct Config {
+    /// Custom styles for specific HTML-like tags (e.g., "h1", "p", "a").
     pub tag_styles: HashMap<String, Style>,
+    /// Global style applied to the root fragment container.
+    pub root_style: Style,
 }
 
+/// The central Markdown Orchestrator.
 pub struct Engine;
 
 impl Engine {
-    /// Parses a markdown string into a VNode tree using an optional configuration.
+    /// Parses a markdown string into a platform-agnostic `VNode` tree.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rupa_md::Engine;
+    /// let vnode = Engine::parse("# Hello Rupa", None);
+    /// ```
     pub fn parse(content: &str, config: Option<&Config>) -> VNode {
         let mut options = Options::empty();
         options.insert(Options::ENABLE_STRIKETHROUGH);
@@ -116,5 +134,35 @@ impl Engine {
         }
 
         VNode::Fragment(root_children)
+    }
+}
+
+/// A mock helper for testing Markdown rendering in headless environments.
+pub struct MockContent;
+
+impl MockContent {
+    /// Generates a simple VNode fragment for testing structural expectations.
+    pub fn simple_h1(text: &str) -> VNode {
+        VNode::fragment(vec![
+            VNode::element("h1").with_child(VNode::text(text))
+        ])
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_markdown_parsing() {
+        let node = Engine::parse("# Rupa", None);
+        if let VNode::Fragment(children) = node {
+            assert_eq!(children.len(), 1);
+            if let VNode::Element(ref el) = children[0] {
+                assert_eq!(el.tag, "h1");
+            }
+        } else {
+            panic!("Should be a fragment");
+        }
     }
 }

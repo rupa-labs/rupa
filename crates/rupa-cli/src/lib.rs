@@ -1,3 +1,9 @@
+//! # Rupa CLI 🛠️
+//!
+//! Aesthetic command-line tooling and project initializer for the Rupa Framework. 
+//! This crate provides the developer experience (DX) utilities to scaffold, 
+//! build, and manage Rupa projects across different showrooms.
+
 pub mod commands;
 pub mod templates;
 pub mod bundler;

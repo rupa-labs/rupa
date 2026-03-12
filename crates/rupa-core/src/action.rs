@@ -5,7 +5,12 @@ use std::sync::Arc;
 use rupa_broadcast::{Bus as BroadcastBus, Broadcaster};
 
 /// A trait for any data structure that represents an Artisan Action.
-pub trait Action: Serialize + DeserializeOwned + Any + Send + Sync + Clone {}
+pub trait Action: Serialize + DeserializeOwned + Any + Send + Sync + Clone {
+    /// Returns a unique identifier for this action instance (for tracing).
+    fn id(&self) -> String {
+        rupa_base::Id::next().to_string()
+    }
+}
 
 /// The logic that executes a specific Action.
 pub trait Handler<A: Action>: Send + Sync {
@@ -26,6 +31,7 @@ impl Bus {
 
     /// Dispatches an action to all registered handlers.
     pub async fn dispatch<A: Action>(&self, action: A) {
+        log::debug!("[ACTION] Dispatching: {} [{}]", std::any::type_name::<A>(), action.id());
         let channel = self.inner.channel::<A>(std::any::type_name::<A>());
         channel.dispatch(action).await;
     }

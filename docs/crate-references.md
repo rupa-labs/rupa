@@ -1,10 +1,10 @@
 # Crate References 📚
 
-This is the official registry of all crates in the Rupa Framework, organized by their structural tier. Each crate acts as a **Port** or **Adapter** in our Hexagonal Architecture.
+This is the official registry of all crates in the Rupa Framework, organized by the **Atoms and Composites** architectural tiers. Each crate acts as a **Port** or **Adapter** in our Hexagonal Architecture.
 
 ---
 
-## 🧱 1. Atomic Materials (The DNA & Ports)
+## 🧱 1. Tier 1: Atoms (The Materials & Tools — Ports & Invariants)
 Low-level, platform-agnostic crates that handle single responsibilities.
 
 | Crate | Purpose | Detailed Docs |
@@ -30,8 +30,8 @@ Low-level, platform-agnostic crates that handle single responsibilities.
 
 ---
 
-## 🛠️ 2. Composite Assemblies (The Core)
-Orchestrates Atomic Materials into functional systems.
+## 🛠️ 2. Tier 2: Composites (The Master’s Craft — Kernel & Orchestrator)
+Orchestrates Atoms into functional systems.
 
 | Crate | Purpose | Detailed Docs |
 | :--- | :--- | :--- |
@@ -41,16 +41,33 @@ Orchestrates Atomic Materials into functional systems.
 | **`rupa-md`** | Markdown & MDX engine. | [View Docs](./crates/rupa-md.md) |
 | **`rupa-router`** | Reactive navigation system. | [View Docs](./crates/rupa-router.md) |
 | **`rupa-tui`** | Terminal UI orchestration. | [View Docs](./crates/rupa-tui.md) |
+| **`rupa-macros`** | Procedural macros for component generation and attributes. | [View Docs](./crates/rupa-macros.md) |
 
 
 ---
-
-## 🏪 3. Artisan Showrooms (The Adapters)
+## 🏪 3. Tier 3: Showrooms (The Finished Showroom — Adapters & Infrastructure)
 Platform-specific entry points and implementations.
 
-| Crate | Purpose |
-| :--- | :--- |
-| **`rupa-desktop`** | GPU rendering via WGPU & Winit. |
-| **`rupa-terminal`** | Interactive CLI & TUI facade. |
-| **`rupa-web`** | Browser rendering via WASM. |
-| **`rupa`** | The Universal Facade (All-in-one). |
+| Crate | Purpose | Detailed Docs |
+| :--- | :--- | :--- |
+| **`rupa-desktop`** | GPU rendering via WGPU & Winit. | [View Docs](./crates/rupa-desktop.md) |
+| **`rupa-terminal`** | Interactive CLI & TUI facade. | [View Docs](./crates/rupa-terminal.md) |
+| **`rupa-web`** | Browser rendering via WASM. | [View Docs](./crates/rupa-web.md) |
+| **`rupa-server`** | Backend showroom for SSR and SSG. | [View Docs](./crates/rupa-server.md) |
+| **`rupa-mobile`** | Native mobile showroom for Android and iOS. | [View Docs](./crates/rupa-mobile.md) |
+| **`rupa-fullstack`** | Unified showroom for hybrid hydration and full-stack development. | [View Docs](./crates/rupa-fullstack.md) |
+| **`rupa-headless`** | Logic-only showroom for background tasks and automated tests. | [View Docs](./crates/rupa-headless.md) |
+| **`rupa-hybrid`** | Interoperability showroom between Web and Native environments. | [View Docs](./crates/rupa-hybrid.md) |
+| **`rupa`** | The Universal Facade (All-in-one). | [View Docs](./crates/rupa.md) |
+
+---
+
+## 🛠️ 4. Developer Tooling
+Tools for scaffolding, documentation, and artisan experience.
+
+| Crate | Purpose | Detailed Docs |
+| :--- | :--- | :--- |
+| **`rupa-cli`** | Aesthetic command-line tool and project initializer. | [View Docs](./crates/rupa-cli.md) |
+| **`rupa-docs`** | Interactive documentation builder and viewer for Rupa. | [View Docs](./crates/rupa-docs.md) |
+| **`rupa-test`** | (Tier 1) Testing utilities for TDD. | [View Docs](./crates/rupa-test.md) |
+

@@ -1,32 +1,40 @@
+//! # Rupa Web 🌐
+//!
+//! The Web Showroom for the Rupa Framework. This crate provides the 
+//! **Adapters & Infrastructure** (Tier 3) to render Rupa applications 
+//! in the browser via WebAssembly (WASM) and the DOM.
+
 use wasm_bindgen::prelude::*;
 
+/// The WASM entry point for a Rupa Web Application.
 #[wasm_bindgen]
 pub struct RupaApp {
-    // Mesin reaktivitas yang dibagikan ke JS
+    // The reactive engine state shared with JS
 }
 
 #[wasm_bindgen]
 impl RupaApp {
+    /// Initializes the Rupa Web Application and sets up panic hooks.
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
         console_error_panic_hook::set_once();
         Self {}
     }
 
-    /// Membuat "Signal" dari JS.
-    /// JS bisa memanggil: const count = app.create_signal(0);
+    /// Creates a Rupa Signal from JavaScript.
+    /// JS can call: `const count = app.create_signal(0);`
     pub fn create_signal(&self, value: JsValue) -> Result<JsValue, JsValue> {
-        // Logika pembuatan Signal Rust yang bisa dibaca JS
+        // Rust Signal creation logic readable by JS
         Ok(value)
     }
 
-    /// Mengirim event ke komponen Rupa di WASM.
+    /// Dispatches an event to the Rupa components in WASM.
     pub fn dispatch_event(&self, event_json: String) {
         log::info!("Rupa Framework: Event received from JS: {}", event_json);
     }
 }
 
-// Helper untuk integrasi Web Components (Masa Depan)
+/// Helpers for Web Components integration (Future Feature).
 pub mod custom_elements {
-    // Jembatan untuk mendaftarkan Rupa sebagai <rupa-element />
+    // Bridge for registering Rupa as a <rupa-element />
 }

@@ -1,30 +1,62 @@
-# `rupa-signals` ⚡
+# `rupa-signals` 🧬
 
-**The Reactive DNA.** This crate provides the foundational primitives for fine-grained reactivity in the Rupa Framework.
+**The Heartbeat of Rupa.** This crate provides the foundational **Atoms** for fine-grained reactivity, serving as the reactive DNA for the entire framework.
 
-## 🛠️ Key Features
+---
 
-- **`Signal<T>`**: A thread-safe, reactive state container.
-- **`Memo<T>`**: Derived state that only recomputes when dependencies change.
-- **`Effect`**: Automatic side-effect execution triggered by signal changes.
-- **`Runtime`**: A thread-local orchestration engine for tracking dependencies.
+## 🏛️ Architectural Role
+- **Tier**: Tier 1 (Atoms)
+- **Identity**: The Materials & Tools (Ports & Invariants)
+- **3S Compliance**: 
+    - **Secure (S1)**: Thread-local `Runtime` ensures state isolation and prevents cross-thread reactive leakage.
+    - **Sustain (S2)**: High-fidelity Rustdoc with usage examples for every primitive.
+    - **Scalable (S3)**: Zero-cost tracking overhead and lazy `Memo` evaluation.
+
+## 🛠️ Key Primitives
+
+| Primitive | Purpose | Features |
+| :--- | :--- | :--- |
+| **`Signal<T>`** | Reactive state container. | Thread-safe, Serde support, Atomic IDs. |
+| **`Memo<T>`** | Derived reactive value. | Lazy evaluation, dependency tracking, Serde support. |
+| **`Effect`** | Reactive side-effect. | Automatic re-run on dependency change. |
+| **`batch`** | Batch multiple updates. | Prevents redundant effect execution. |
+| **`untrack`** | Non-reactive read. | Reads signal value without establishing dependency. |
 
 ## 🚀 Usage
 
 ```rust
-use rupa_signals::{Signal, Memo, Effect};
+use rupa_signals::{Signal, Memo, Effect, batch, untrack};
 
-// 1. Create a Signal
-let count = Signal::new(0);
+// 1. Define reactive state (Atoms)
+let count = Signal::new(10);
+let name = Signal::new("Artisan".to_string());
 
-// 2. Create a Memo (Derived State)
-let double = Memo::new(move || count.get() * 2);
-
-// 3. Create an Effect (Side Effect)
-Effect::new(move || {
-    println!("Count is: {}, Double is: {}", count.get(), double.get());
+// 2. Derive state (Lazy & Cached)
+let greeting = Memo::new({
+    let name = name.clone();
+    move || format!("Hello, {}!", name.get())
 });
 
-// 4. Update the state
-count.set(5); // Automatically triggers the effect
+// 3. Side Effects (Automatic)
+Effect::new({
+    let greeting = greeting.clone();
+    let count = count.clone();
+    move || {
+        println!("{}, Count is: {}", greeting.get(), count.get());
+    }
+});
+
+// 4. Batched Updates (Atomic)
+batch(|| {
+    count.set(20);
+    name.set("Master".to_string());
+}); // Effect runs only ONCE here
+
+// 5. Untracked Read
+let silent_val = untrack(|| count.get());
 ```
+
+## 🧪 Testing & Reliability
+- **TDD Driven**: Comprehensive test suite covering circular dependencies, batching, and `untrack` behavior.
+- **Cross-Thread**: Verified safe state mutation across thread boundaries using `Arc` and `RwLock`.
+- **Serializability**: Every Signal and Memo can be serialized/deserialized for persistence (see `rupa-store`).

@@ -43,6 +43,12 @@ impl App {
         self
     }
 
+    /// Registers a plugin to extend the application's capabilities.
+    pub fn plugin(mut self, plugin: impl crate::plugin::Plugin + 'static) -> Self {
+        plugin.build(&mut self);
+        self
+    }
+
     pub fn action<A: Action + 'static>(self, name: impl Into<String>, handler: impl Handler<A> + 'static) -> Self {
         {
             let mut core = self.core.write().unwrap();

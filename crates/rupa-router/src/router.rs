@@ -18,17 +18,20 @@ impl Router {
         
         let current_state = Memo::new(move || {
             let path = history_clone.current();
-            let state = RouteState {
-                path: path.clone(),
-                params: std::collections::HashMap::new(),
-            };
-
+            
             for route in &routes_inner {
-                if route.path == path {
-                    return state;
+                if let Some(params) = match_route(&route.path, &path) {
+                    return RouteState {
+                        path: path.clone(),
+                        params,
+                    };
                 }
             }
-            state
+            
+            RouteState {
+                path: path.clone(),
+                params: std::collections::HashMap::new(),
+            }
         });
 
         Arc::new(Self {
@@ -37,6 +40,33 @@ impl Router {
             current_state,
         })
     }
+
+    /// Navigates back to the previous entry in history.
+    pub fn back(&self) {
+        self.history.back();
+    }
+...
+}
+
+fn match_route(pattern: &str, path: &str) -> Option<std::collections::HashMap<String, String>> {
+    let mut params = std::collections::HashMap::new();
+    let p_parts: Vec<&str> = pattern.split('/').filter(|s| !s.is_empty()).collect();
+    let u_parts: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
+
+    if p_parts.len() != u_parts.clone().len() {
+        return None;
+    }
+
+    for (p, u) in p_parts.into_iter().zip(u_parts) {
+        if p.starts_with(':') {
+            params.insert(p[1..].to_string(), u.to_string());
+        } else if p != u {
+            return None;
+        }
+    }
+
+    Some(params)
+}
 
     pub fn render(&self) -> VNode {
         let state = self.current_state.get();

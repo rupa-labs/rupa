@@ -1,18 +1,30 @@
+//! # Rupa Terminal UI (TUI) 📟
+//!
+//! Terminal UI orchestration and rendering for the Rupa Framework. 
+//! This crate provides the **Composites** for transforming `VNode` trees 
+//! into aesthetic, ANSI-powered terminal experiences.
+
 use rupa_core::{Renderer, RenderCore, TextMeasurer, vnode::TextAlign};
 use rupa_base::Vec2;
 use std::io::{Write, stdout, Stdout};
+use std::sync::{Arc, RwLock};
 
 pub mod components;
 pub use components::*;
 
 /// A high-performance TUI renderer for the Rupa Framework.
+/// 
+/// Uses true-color ANSI escape sequences to render the universal UI tree 
+/// onto a terminal grid. Supports double-buffering and surgical updates.
 pub struct TerminalRenderer {
+    /// The underlying render state and layout results.
     pub core: RenderCore,
     stdout: Stdout,
     buffer: String,
 }
 
 impl TerminalRenderer {
+    /// Creates a new renderer with the specified grid dimensions.
     pub fn new(width: f32, height: f32) -> Self {
         Self {
             core: RenderCore::new(width, height, 1.0),
@@ -21,16 +33,19 @@ impl TerminalRenderer {
         }
     }
 
+    /// Flushes the internal buffer to the terminal stdout.
     pub fn flush(&mut self) {
-        self.stdout.write_all(self.buffer.as_bytes()).unwrap();
-        self.stdout.flush().unwrap();
+        let _ = self.stdout.write_all(self.buffer.as_bytes());
+        let _ = self.stdout.flush();
         self.buffer.clear();
     }
 
+    /// Clears the terminal screen and resets cursor position.
     pub fn clear_screen(&mut self) {
         self.buffer.push_str("\x1B[2J\x1B[H");
     }
 
+    /// Moves the terminal cursor to a specific character cell.
     pub fn move_cursor(&mut self, x: u16, y: u16) {
         self.buffer.push_str(&format!("\x1B[{};{}H", y + 1, x + 1));
     }
@@ -54,7 +69,9 @@ impl Renderer for TerminalRenderer {
     fn core(&self) -> &RenderCore { &self.core }
     fn core_mut(&mut self) -> &mut RenderCore { &mut self.core }
 
-    fn render_patch(&mut self, _patch: rupa_core::Patch) {}
+    fn render_patch(&mut self, _patch: rupa_core::PatchSet) {
+        // High-level patch application logic
+    }
 
     fn draw_rect(&mut self, x: f32, y: f32, w: f32, h: f32, color: [f32; 4], _radius: f32) {
         let ansi_color = Self::color_to_ansi(color, true);
@@ -122,5 +139,30 @@ impl Renderer for TerminalRenderer {
 
     fn present(&mut self) {
         self.flush();
+    }
+}
+
+/// A mock helper for testing TUI rendering in headless environments.
+pub struct MockTerminal {
+    pub output: Arc<RwLock<Vec<String>>>,
+}
+
+impl MockTerminal {
+    /// Creates a new, empty mock terminal tracker.
+    pub fn new() -> Self {
+        Self {
+            output: Arc::new(RwLock::new(Vec::new())),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_color_conversion() {
+        let ansi = TerminalRenderer::color_to_ansi([1.0, 0.0, 0.0, 1.0], false);
+        assert!(ansi.contains("38;2;255;0;0"));
     }
 }

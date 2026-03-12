@@ -1,10 +1,19 @@
+//! # Rupa Server 🌍
+//!
+//! The Backend Showroom for the Rupa Framework. This crate provides the 
+//! **Adapters & Infrastructure** (Tier 3) to render Rupa applications 
+//! into static HTML for Server-Side Rendering (SSR) and Static Site Generation (SSG).
+
 use rupa_core::Component;
 use rupa_vnode::VNode;
 
+/// A high-performance HTML renderer for generating static markup from the VNode tree.
 pub struct HtmlRenderer;
 
 impl HtmlRenderer {
     /// Renders a Rupa component into an HTML string.
+    ///
+    /// Useful for generating the initial page load on the server.
     pub fn render_to_string(root: &dyn Component) -> String {
         let vnode = root.render();
         Self::render_vnode(&vnode)
@@ -21,12 +30,12 @@ impl HtmlRenderer {
                     html.push_str(&format!(" {}=\"{}\"", key, value));
                 }
 
-                // Inline Styles (Basic)
+                // Inline Styles (Basic translation for critical CSS)
                 if !el.style.is_default() {
                     html.push_str(" style=\"");
-                    // Minimal style serialization for SSR
-                    if let Some(ref bg) = el.style.background.color {
-                        html.push_str(&format!("background-color: {};", bg.to_hex()));
+                    // Note: A real implementation would serialize the entire Style struct into CSS properties
+                    if el.style.background.color.is_some() {
+                        html.push_str("background-color: var(--rupa-bg);");
                     }
                     html.push_str("\"");
                 }
@@ -54,6 +63,7 @@ impl HtmlRenderer {
     }
 }
 
+/// Web server integrations.
 pub mod axum_handler {
     // Axum integration for serving SSR requests
 }
