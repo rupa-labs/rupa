@@ -1,6 +1,6 @@
 use rupa_core::{Component, VNode, VElement, ViewCore, Id, Signal};
 use rupa_vnode::{Style, Theme, Attributes};
-use crate::style::modifiers::base::Stylable;
+use crate::style::modifiers::Stylable;
 use std::sync::{RwLockWriteGuard, Arc};
 
 // --- LABEL ---

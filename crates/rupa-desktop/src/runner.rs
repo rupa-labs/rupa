@@ -34,6 +34,7 @@ impl PlatformRunner for DesktopRunner {
         // Use newer winit API pattern if possible, or fallback to simple one
         // For this maturation, we fix the known missing imports.
         
+        #[allow(deprecated)]
         event_loop.run(move |event, elwt| {
             elwt.set_control_flow(ControlFlow::Wait);
 

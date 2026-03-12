@@ -1,6 +1,6 @@
 use rupa_core::{Component, VNode, ViewCore, Id};
 use rupa_vnode::Style;
-use crate::style::modifiers::base::Stylable;
+use crate::style::modifiers::Stylable;
 use crate::primitives::Flex;
 use std::sync::{RwLockWriteGuard, Arc};
 

@@ -1,7 +1,7 @@
-pub mod div;
-pub mod flex;
-pub mod grid;
-pub mod overlay;
+mod div;
+mod flex;
+mod grid;
+mod overlay;
 
 pub use div::Div;
 pub use flex::Flex;

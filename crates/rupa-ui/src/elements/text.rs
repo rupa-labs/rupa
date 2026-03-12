@@ -1,6 +1,6 @@
 use rupa_core::{Component, VNode, ViewCore, Id, Signal};
 use rupa_vnode::Style;
-use crate::style::modifiers::base::Stylable;
+use crate::style::modifiers::Stylable;
 use std::sync::{RwLockWriteGuard, Arc};
 
 pub struct TextLogic {

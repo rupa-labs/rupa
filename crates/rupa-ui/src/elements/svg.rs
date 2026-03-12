@@ -1,6 +1,6 @@
 use rupa_core::{Component, VNode, VElement, ViewCore, Id};
 use rupa_vnode::{Style, Attributes};
-use crate::style::modifiers::base::Stylable;
+use crate::style::modifiers::Stylable;
 use std::sync::{RwLockWriteGuard, Arc};
 
 // --- SVG ---

@@ -1,5 +1,5 @@
 use rupa_core::{Component, VNode, ViewCore, Id, Signal, UIEvent, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
-use rupa_ui::elements::{VStack, Text};
+use rupa_ui::elements::*;
 use taffy::prelude::*;
 use std::sync::Arc;
 
