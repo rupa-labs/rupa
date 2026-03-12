@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::Path;
+use std::sync::Arc;
 use rupa_base::Error;
 
 /// Defines the project templates available for scaffolding.
@@ -16,16 +17,28 @@ pub struct Scaffolder;
 
 impl Scaffolder {
     /// Creates a new project structure on the disk.
-    pub fn craft(project_name: &str, template: TemplateType) -> Result<(), Error> {
+    pub fn craft(
+        project_name: &str, 
+        template: TemplateType, 
+        progress: Option<Arc<dyn Fn(f32, &str) + Send + Sync>>
+    ) -> Result<(), Error> {
         let root = Path::new(project_name);
         
+        let report = |val: f32, msg: &str| {
+            if let Some(ref p) = progress {
+                p(val, msg);
+            }
+        };
+
         if root.exists() {
             return Err(Error::Platform(format!("Directory '{}' already exists.", project_name)));
         }
 
+        report(0.1, "Initializing directory structure...");
         // 1. Create base directory structure
         Self::create_dirs(root)?;
         
+        report(0.3, "Generating manifest (Cargo.toml)...");
         // 2. Generate Cargo.toml
         let cargo_toml = match template {
             TemplateType::ZeroBloat => Self::showroom_cargo(project_name, &["desktop"]),
@@ -36,22 +49,26 @@ impl Scaffolder {
         };
         fs::write(root.join("Cargo.toml"), cargo_toml).map_err(|e| Error::Platform(e.to_string()))?;
 
+        report(0.5, "Crafting artisan entry points (main.rs)...");
         // 3. Generate src/main.rs
         let main_rs = Self::generate_main(&template);
         fs::write(root.join("src/main.rs"), main_rs).map_err(|e| Error::Platform(e.to_string()))?;
 
+        report(0.7, "Assembling components...");
         // 4. Generate src/components/mod.rs and src/components/app.rs
         if !matches!(template, TemplateType::Library) {
             fs::write(root.join("src/components/mod.rs"), "pub mod app;\npub use app::AppRoot;\n").unwrap();
             fs::write(root.join("src/components/app.rs"), Self::generate_app_component()).unwrap();
         }
 
+        report(0.9, "Finalizing environment (.gitignore, GEMINI.md)...");
         // 5. Generate .gitignore
         fs::write(root.join(".gitignore"), "/target\nCargo.lock\n.rupa_storage\n").unwrap();
 
         // 6. Generate GEMINI.md (Standard Compliance)
         fs::write(root.join("GEMINI.md"), Self::generate_gemini_md(project_name)).unwrap();
 
+        report(1.0, "Crafting complete!");
         Ok(())
     }
 

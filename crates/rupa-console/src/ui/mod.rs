@@ -18,6 +18,4 @@ impl Console {
 
     pub fn draw_line() { Layout::draw_line(); }
     pub fn draw_box(title: &str, lines: Vec<String>) { Layout::draw_box(title, lines); }
-
-    pub fn draw_progress(label: &str, current: f32, max: f32) { Progress::draw_bar(label, current, max); }
 }

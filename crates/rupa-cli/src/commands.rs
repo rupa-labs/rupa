@@ -2,6 +2,7 @@ use rupa_core::{Component, VNode, ViewCore, Id, Signal};
 use rupa_ui::elements::{VStack, Text, Button};
 use rupa_engine::App;
 use rupa_terminal::{TerminalRunner, Console};
+use rupa_console::Progress;
 use rupa_engine::platform::runner::PlatformRunner;
 use rupa_signals::batch;
 use std::sync::Arc;
@@ -68,6 +69,7 @@ struct CreateWizard {
     selected_template: Signal<Option<usize>>,
     error_msg: Signal<String>,
     view: Arc<ViewCore>,
+    progress: Progress,
 }
 
 impl CreateWizard {
@@ -79,6 +81,7 @@ impl CreateWizard {
             selected_template: Signal::new(None),
             error_msg: Signal::new("".to_string()),
             view: Arc::new(ViewCore::new()),
+            progress: Progress::new("Crafting"),
         }
     }
 }
@@ -140,6 +143,10 @@ impl Component for CreateWizard {
                 let project_name = self.project_name.get();
                 let template_idx = self.selected_template.get().unwrap_or(0);
                 
+                // Clone signals for the thread
+                let p_val = self.progress.value.clone();
+                let p_label = self.progress.label.clone();
+                
                 std::thread::spawn(move || {
                     let template = match template_idx {
                         0 => TemplateType::ZeroBloat,
@@ -149,8 +156,17 @@ impl Component for CreateWizard {
                         _ => TemplateType::Library,
                     };
 
-                    match Scaffolder::craft(&project_name, template) {
-                        Ok(_) => stage.set(WizardStage::Finished),
+                    let p_callback = Arc::new(move |val, msg: &str| {
+                        p_val.set(val);
+                        p_label.set(msg.to_string());
+                    });
+
+                    match Scaffolder::craft(&project_name, template, Some(p_callback)) {
+                        Ok(_) => {
+                            // Give user a moment to see 100%
+                            std::thread::sleep(std::time::Duration::from_millis(500));
+                            stage.set(WizardStage::Finished);
+                        },
                         Err(e) => {
                             error_msg.set(e.to_string());
                             stage.set(WizardStage::Error);
@@ -158,7 +174,9 @@ impl Component for CreateWizard {
                     }
                 });
 
-                VStack::new().child(Text::new("CRAFTING..."))
+                VStack::new()
+                    .child(Text::new("ARTISAN AT WORK"))
+                    .child(self.progress.clone())
             }
             WizardStage::Finished => {
                 VStack::new()
@@ -195,7 +213,12 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
                 };
 
                 Console::info(format!("Crafting project '{}' using {} template...", project_name, template_str));
-                match Scaffolder::craft(project_name, template_type) {
+                
+                let p_callback = Arc::new(move |val: f32, msg: &str| {
+                    println!("  [{:>3.0}%] {}", val * 100.0, msg);
+                });
+
+                match Scaffolder::craft(project_name, template_type, Some(p_callback)) {
                     Ok(_) => {
                         Console::success("Project successfully crafted!");
                         Console::text(format!("Run: cd {} && cargo run", project_name));
