@@ -85,6 +85,7 @@ impl TerminalRunner {
             VNode::Element(el) => {
                 let is_focused = el.key.as_deref() == focused_id && focused_id.is_some();
                 let is_input = el.tag == "input";
+                let is_button = el.tag == "button" || el.handlers.on_click.is_some();
                 
                 // Determine typography color
                 let mut text_color = el.style.typography.color.as_ref().map(|c| c.to_rgba()).or(inherited_color);
@@ -92,13 +93,14 @@ impl TerminalRunner {
                 // Draw Background
                 let mut color = el.style.background.color.as_ref().map(|c| c.to_rgba());
                 
-                // Artisan Focus Styling
+                // Artisan Focus Styling (Subtle & Semantic)
                 if is_focused {
                     if is_input {
-                        color = Some([0.1, 0.1, 0.15, 1.0]); // Deep dark for input
-                    } else {
-                        color = Some([0.2, 0.6, 1.0, 1.0]); // Highlight blue for buttons
-                        text_color = Some([1.0, 1.0, 1.0, 1.0]); // Force white text on focused buttons
+                        color = Some([0.05, 0.05, 0.1, 1.0]); // Very deep dark
+                    } else if is_button {
+                        // Subtle highlight instead of solid blue
+                        color = Some([0.1, 0.3, 0.5, 1.0]); 
+                        text_color = Some([1.0, 1.0, 1.0, 1.0]);
                     }
                 }
 
@@ -109,9 +111,9 @@ impl TerminalRunner {
                 // Border logic
                 if el.style.border.width != 0.0 || is_focused {
                     let border_color = if is_focused { 
-                        if is_input { [1.0, 1.0, 0.0, 1.0] } else { [0.0, 1.0, 1.0, 1.0] } 
+                        if is_input { [1.0, 1.0, 0.0, 1.0] } else { [0.0, 0.8, 1.0, 1.0] } 
                     } else { 
-                        [0.3, 0.3, 0.3, 1.0] 
+                        [0.2, 0.2, 0.2, 1.0] 
                     };
                     renderer.draw_outline(rx, ry, rw, rh, border_color);
                 }
@@ -119,10 +121,8 @@ impl TerminalRunner {
                 // Focus Indicators
                 if is_focused {
                     if is_input {
-                        // Vertical bar for input focus
                         renderer.draw_text("┃", rx - 1.0, ry, 1.0, 1.0, [1.0, 1.0, 0.0, 1.0], rupa_core::vnode::TextAlign::Left);
-                    } else if el.handlers.on_click.is_some() {
-                        // Classic arrow for button focus
+                    } else if is_button {
                         renderer.draw_text(">", rx - 2.0, ry, 1.0, 1.0, [0.0, 1.0, 1.0, 1.0], rupa_core::vnode::TextAlign::Left);
                     }
                 }
@@ -142,7 +142,7 @@ impl TerminalRunner {
                 }
             }
             VNode::Text(text) => {
-                let color = inherited_color.unwrap_or([1.0, 1.0, 1.0, 1.0]);
+                let color = inherited_color.unwrap_or([0.9, 0.9, 0.9, 1.0]);
                 renderer.draw_text(text, rx, ry, rw, 1.0, color, rupa_core::vnode::TextAlign::Left);
             }
             VNode::Fragment(children) => {
@@ -287,61 +287,68 @@ impl PlatformRunner for TerminalRunner {
 
     fn run(mut self) -> Result<(), Error> {
         let mut out = std::io::stdout();
+        
+        // 1. Initial State Setup
         enable_raw_mode().map_err(|e| Error::Platform(format!("Failed to enable raw mode: {}", e)))?;
         out.execute(EnterAlternateScreen).unwrap();
         out.execute(Hide).unwrap();
         
         register_redraw_proxy(Box::new(|| {}));
 
-        loop {
-            if rupa_motion::GLOBAL_TIMELINE.tick() { }
-            self.handle_redraw();
+        // 2. Main Loop
+        let res = (|| {
+            loop {
+                if rupa_motion::GLOBAL_TIMELINE.tick() { }
+                self.handle_redraw();
 
-            if event::poll(Duration::from_millis(32)).unwrap_or(false) {
-                match event::read().unwrap() {
-                    Event::Key(key) => {
-                        if key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL) {
-                            break;
+                if event::poll(Duration::from_millis(32)).unwrap_or(false) {
+                    match event::read().unwrap() {
+                        Event::Key(key) => {
+                            if key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL) {
+                                return Ok(());
+                            }
+                            
+                            let rupa_key = match key.code {
+                                KeyCode::Enter => rupa_core::events::KeyCode::Enter,
+                                KeyCode::Esc => rupa_core::events::KeyCode::Escape,
+                                KeyCode::Up => rupa_core::events::KeyCode::ArrowUp,
+                                KeyCode::Down => rupa_core::events::KeyCode::ArrowDown,
+                                KeyCode::Left => rupa_core::events::KeyCode::ArrowLeft,
+                                KeyCode::Right => rupa_core::events::KeyCode::ArrowRight,
+                                KeyCode::Char(c) => rupa_core::events::KeyCode::Char(c),
+                                KeyCode::Tab => rupa_core::events::KeyCode::Tab,
+                                KeyCode::Backspace => rupa_core::events::KeyCode::Backspace,
+                                _ => rupa_core::events::KeyCode::Unknown,
+                            };
+
+                            let state = rupa_core::events::ButtonState::Pressed;
+                            let modifiers = rupa_core::events::Modifiers {
+                                shift: key.modifiers.contains(KeyModifiers::SHIFT),
+                                ctrl: key.modifiers.contains(KeyModifiers::CONTROL),
+                                alt: key.modifiers.contains(KeyModifiers::ALT),
+                                logo: false,
+                            };
+
+                            self.dispatch_event(InputEvent::Key { 
+                                key: rupa_key, 
+                                state, 
+                                modifiers 
+                            });
                         }
-                        
-                        let rupa_key = match key.code {
-                            KeyCode::Enter => rupa_core::events::KeyCode::Enter,
-                            KeyCode::Esc => rupa_core::events::KeyCode::Escape,
-                            KeyCode::Up => rupa_core::events::KeyCode::ArrowUp,
-                            KeyCode::Down => rupa_core::events::KeyCode::ArrowDown,
-                            KeyCode::Left => rupa_core::events::KeyCode::ArrowLeft,
-                            KeyCode::Right => rupa_core::events::KeyCode::ArrowRight,
-                            KeyCode::Char(c) => rupa_core::events::KeyCode::Char(c),
-                            KeyCode::Tab => rupa_core::events::KeyCode::Tab,
-                            KeyCode::Backspace => rupa_core::events::KeyCode::Backspace,
-                            _ => rupa_core::events::KeyCode::Unknown,
-                        };
-
-                        let state = rupa_core::events::ButtonState::Pressed;
-                        let modifiers = rupa_core::events::Modifiers {
-                            shift: key.modifiers.contains(KeyModifiers::SHIFT),
-                            ctrl: key.modifiers.contains(KeyModifiers::CONTROL),
-                            alt: key.modifiers.contains(KeyModifiers::ALT),
-                            logo: false,
-                        };
-
-                        self.dispatch_event(InputEvent::Key { 
-                            key: rupa_key, 
-                            state, 
-                            modifiers 
-                        });
+                        Event::Resize(w, h) => {
+                            self.renderer.core.logical_size = Vec2::new(w as f32, h as f32);
+                        }
+                        _ => {}
                     }
-                    Event::Resize(w, h) => {
-                        self.renderer.core.logical_size = Vec2::new(w as f32, h as f32);
-                    }
-                    _ => {}
                 }
             }
-        }
+        })();
 
+        // 3. Guaranteed Cleanup Logic
         out.execute(Show).unwrap();
         out.execute(LeaveAlternateScreen).unwrap();
-        disable_raw_mode().unwrap();
-        Ok(())
+        let _ = disable_raw_mode();
+        
+        res
     }
 }
