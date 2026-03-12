@@ -1,0 +1,16 @@
+[package]
+name = "rupa-queue"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "A reactive asynchronous task queue for the Rupa Framework."
+repository.workspace = true
+
+[dependencies]
+rupa-signals.workspace = true
+rupa-base.workspace = true
+serde.workspace = true
+async-trait.workspace = true
+tokio = { workspace = true, features = ["rt", "sync"] }
+futures.workspace = true

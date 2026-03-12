@@ -4,37 +4,38 @@ Rupa Framework provides a sophisticated event routing system that bridges raw Op
 
 ---
 
-## 🖱️ Pointer Events
-Triggered by mouse, touch, or stylus interactions.
+## 🖱️ Interaction Types
+Agnostic events translated from raw OS signals.
 
-| Event Type | Logic | Description |
+| Event Type | Properties | Description |
 | :--- | :--- | :--- |
-| `PointerMove` | Bubble | Emitted when the cursor changes position. |
-| `PointerButton` | Bubble | Emitted on click or release (Primary, Secondary, etc.). |
-| `PointerScroll` | Bubble | Emitted when the user scrolls via wheel or trackpad. |
+| `Pointer` | `pos`, `delta`, `button` | Clicks, movements, and scrolling. |
+| `Key` | `key`, `pressed`, `modifiers` | Keyboard input and hotkeys. |
+| `Focus` | `bool` | Element focus and blur events. |
 
 ---
 
-## ⌨️ Keyboard & Text Events
-Focused interactions for productivity and data entry.
+## 🏗️ The `UIEvent` Schema
+Every event handler in a component receives a `UIEvent`.
 
-| Event Type | Logic | Description |
-| :--- | :--- | :--- |
-| `Key` | Priority | Raw key presses (Enter, Escape, Arrows, etc.). |
-| `Ime` | Priority | Support for international and complex characters via `on_text`. |
+### `struct PointerEvent`
+- **`.pos`**: The (x, y) coordinates relative to the component.
+- **`.modifiers`**: Access state of `Shift`, `Ctrl`, `Alt`, and `Meta`.
+- **`.button`**: Identification of `Primary`, `Secondary`, or `Middle` buttons.
 
 ---
 
-## 🏗️ The `UIEvent` Object
-Every event hook in a component receives a mutable reference to a `UIEvent`.
+## ⚡ Event Handlers
+Components store reactive callbacks in the `handlers` field of a `VElement`.
 
-| Property/Method | Purpose |
-| :--- | :--- |
-| `.consume()` | Stops the event from bubbling up to parent components. |
-| `.local_pos` | The (x, y) coordinates relative to the component's top-left. |
-| `.modifiers` | Access the state of Shift, Ctrl, Alt, and Logo keys. |
-| `.request_focus()` | Requests the framework to route future keyboard events here. |
-| `.capture_pointer()` | "Grabs" the cursor for interactions like dragging. |
+```rust
+Button::new("Click Me")
+    .on_click(|event| {
+        if let UIEvent::Pointer(e) = event {
+            println!("Clicked at {:?}", e.pos);
+        }
+    })
+```
 
 ---
 

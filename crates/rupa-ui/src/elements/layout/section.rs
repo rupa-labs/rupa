@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Renderer, TextMeasurer, SceneNode};
 use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
@@ -15,7 +15,7 @@ pub struct Section<'a> {
 impl<'a> Section<'a> {
     pub fn new(title: impl Into<String>) -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             title: title.into(),
             children: Children::new(),
             view: Arc::new(ViewCore::new()),
@@ -35,7 +35,7 @@ impl<'a> Component for Section<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "section".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),

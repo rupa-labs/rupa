@@ -1,7 +1,7 @@
 use rupa_core::{Vec2, Error, Renderer, vnode::VNode};
 use rupa_core::events::InputEvent;
 use rupa_core::events::dispatcher::InputDispatcher;
-use rupa_console::TerminalRenderer;
+use rupa_tui::TerminalRenderer;
 use rupa_engine::platform::{SharedPlatformCore, runner::*, register_redraw_proxy, AppMetadata};
 use crossterm::{
     event::{self, Event, KeyCode, KeyModifiers},

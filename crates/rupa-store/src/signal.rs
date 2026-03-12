@@ -1,43 +1,61 @@
-use rupa_signals::{Signal, Readable};
+use rupa_signals::{Signal, Readable, Effect};
 use crate::store::Store;
-use serde::Serialize;
+use serde::{Serialize, de::DeserializeOwned};
 use std::sync::Arc;
 
 /// A reactive signal that automatically syncs its state to a persistent store.
 pub struct PersistentSignal<T> {
-    key: String,
+    _key: String,
     signal: Signal<T>,
-    store: Arc<dyn Store>,
+    _store: Arc<dyn Store>,
+    _effect: Effect,
 }
 
-impl<T: Serialize + serde::de::DeserializeOwned + Clone + Send + Sync + 'static> PersistentSignal<T> {
+impl<T: Serialize + DeserializeOwned + Clone + Send + Sync + 'static> PersistentSignal<T> {
 
-    /// Creates a new persistent signal. 
-    /// If the key exists in the store, it loads that value. 
-    /// Otherwise, it uses the provided default and saves it.
+    /// Creates a new persistent signal linked to a specific key in the store.
+    /// If the key exists, it loads that value; otherwise, it saves the default.
     pub fn new(key: impl Into<String>, default: T, store: Arc<dyn Store>) -> Self {
         let key = key.into();
         
-        // Attempt to load from store
+        // 1. Initial Load from Store
         let initial_value = if let Ok(Some(bytes)) = store.read(&key) {
             serde_json::from_slice(&bytes).unwrap_or(default)
         } else {
-            // Save default if not found
+            // Initial save if not found
             let bytes = serde_json::to_vec(&default).unwrap_or_default();
             let _ = store.write(&key, &bytes);
             default
         };
 
         let signal = Signal::new(initial_value);
-
-        // TODO: Register a global effect or internal listener to sync on change
-        // For this MVP, we use a manual sync or we can hook into rupa-signals Effect.
         
+        // 2. Setup Automatic Syncing via Effect
+        let s_clone = signal.clone();
+        let store_clone = store.clone();
+        let key_clone = key.clone();
+        
+        let effect = Effect::new(move || {
+            // Track the signal
+            let value = s_clone.get();
+            
+            // Serialize and save to store
+            if let Ok(bytes) = serde_json::to_vec(&value) {
+                let _ = store_clone.write(&key_clone, &bytes);
+            }
+        });
+
         Self {
-            key,
+            _key: key,
             signal,
-            store,
+            _store: store,
+            _effect: effect,
         }
+    }
+
+    /// Returns a reference to the underlying reactive signal.
+    pub fn signal(&self) -> &Signal<T> {
+        &self.signal
     }
 
     pub fn get(&self) -> T {
@@ -45,13 +63,15 @@ impl<T: Serialize + serde::de::DeserializeOwned + Clone + Send + Sync + 'static>
     }
 
     pub fn set(&self, value: T) {
-        self.signal.set(value.clone());
-        let bytes = serde_json::to_vec(&value).unwrap_or_default();
-        let _ = self.store.write(&self.key, &bytes);
-    }
+        self.signal.set(value);
     }
 
-    impl<T: Clone + Send + Sync + 'static + Serialize + serde::de::DeserializeOwned> Readable<T> for PersistentSignal<T> {
+    pub fn update<F>(&self, f: F)
+    where F: FnOnce(&mut T) {
+        self.signal.update(f);
+    }
+}
+
+impl<T: Clone + Send + Sync + 'static + Serialize + DeserializeOwned> Readable<T> for PersistentSignal<T> {
     fn get(&self) -> T { self.get() }
-    }
-
+}

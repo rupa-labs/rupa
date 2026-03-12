@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, ViewCore, generate_id, Signal, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
+use rupa_core::{Component, VNode, ViewCore, Id, Signal, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
 use rupa_ui::elements::{VStack, Text, Button};
 use rupa_engine::App;
 use rupa_terminal::{TerminalRunner, Console};
@@ -173,7 +173,7 @@ impl CreateWizard {
         });
 
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             stage,
             project_name,
             selected_template,

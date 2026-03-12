@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Signal, Renderer, TextMeasurer, SceneNode};
 use rupa_vnode::{Style, Color, Theme, TextAlign, Attributes};
 use crate::style::modifiers::base::Stylable;
 use taffy::prelude::*;
@@ -18,7 +18,7 @@ impl Label {
         let view = Arc::new(ViewCore::new());
         Theme::current().apply_defaults(&mut view.style());
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             text: text.into(),
             view,
         }
@@ -31,7 +31,7 @@ impl Component for Label {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "label".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {
@@ -84,7 +84,7 @@ impl Input {
         let view = Arc::new(ViewCore::new());
         Theme::current().apply_defaults(&mut view.style());
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             value: Signal::new(String::new()),
             placeholder: placeholder.into(),
             view,
@@ -98,7 +98,7 @@ impl Component for Input {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "input".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {
@@ -161,7 +161,7 @@ impl Checkbox {
         let view = Arc::new(ViewCore::new());
         Theme::current().apply_defaults(&mut view.style());
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             checked: Signal::new(false),
             view,
         }
@@ -174,7 +174,7 @@ impl Component for Checkbox {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "checkbox".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {
@@ -235,7 +235,7 @@ impl Switch {
         let view = Arc::new(ViewCore::new());
         Theme::current().apply_defaults(&mut view.style());
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             active: Signal::new(false),
             view,
         }
@@ -248,7 +248,7 @@ impl Component for Switch {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "switch".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {
@@ -309,7 +309,7 @@ impl Radio {
         let view = Arc::new(ViewCore::new());
         Theme::current().apply_defaults(&mut view.style());
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             selected: Signal::new(false),
             view,
         }
@@ -322,7 +322,7 @@ impl Component for Radio {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "radio".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {
@@ -384,7 +384,7 @@ impl Select {
         let view = Arc::new(ViewCore::new());
         Theme::current().apply_defaults(&mut view.style());
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             options: vec![],
             selected_index: Signal::new(None),
             view,
@@ -398,7 +398,7 @@ impl Component for Select {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "select".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {

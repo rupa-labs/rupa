@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, Vec2, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, Vec2, ViewCore, Id, Signal, Renderer, TextMeasurer, SceneNode};
 use rupa_vnode::{Style, Variant};
 use crate::style::modifiers::base::Stylable;
 use taffy::prelude::*;
@@ -17,7 +17,7 @@ pub struct Progress {
 impl Progress {
     pub fn new(value: Signal<f32>) -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             value,
             max: 100.0,
             view: Arc::new(ViewCore::new()),
@@ -71,7 +71,7 @@ pub struct Spinner {
 
 impl Spinner {
     pub fn new() -> Self {
-        Self { id: generate_id(), view: Arc::new(ViewCore::new()) }
+        Self { id: Id::next().to_string(), view: Arc::new(ViewCore::new()) }
     }
 }
 
@@ -115,7 +115,7 @@ pub struct Alert {
 impl Alert {
     pub fn new(message: impl Into<String>, variant: Variant) -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             message: message.into(),
             variant,
             view: Arc::new(ViewCore::new()),
@@ -163,7 +163,7 @@ pub struct Badge {
 impl Badge {
     pub fn new(text: impl Into<String>) -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             text: text.into(),
             view: Arc::new(ViewCore::new()),
         }
@@ -208,7 +208,7 @@ pub struct Skeleton {
 
 impl Skeleton {
     pub fn new() -> Self {
-        Self { id: generate_id(), view: Arc::new(ViewCore::new()) }
+        Self { id: Id::next().to_string(), view: Arc::new(ViewCore::new()) }
     }
 }
 

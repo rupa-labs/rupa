@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, Vec2, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, Vec2, ViewCore, Id, Signal, Renderer, TextMeasurer, SceneNode};
 use rupa_vnode::{Style, Color};
 use crate::style::modifiers::base::Stylable;
 use taffy::prelude::*;
@@ -43,7 +43,7 @@ pub struct Text {
 impl Text {
     pub fn new(content: impl Into<String>) -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             logic: TextLogic { content: Signal::new(content.into()) },
             view: TextView::new(),
         }

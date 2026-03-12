@@ -5,11 +5,11 @@ use once_cell::sync::Lazy;
 use crate::channel::Channel;
 
 /// A thread-safe, multi-channel event bus.
-pub struct BroadcastBus {
+pub struct Bus {
     channels: RwLock<HashMap<String, Arc<dyn Any + Send + Sync>>>,
 }
 
-impl BroadcastBus {
+impl Bus {
     pub fn new() -> Self {
         Self {
             channels: RwLock::new(HashMap::new()),
@@ -17,7 +17,7 @@ impl BroadcastBus {
     }
 
     /// Gets or creates a named channel for a specific event type.
-    pub fn channel<T: Send + Sync + 'static>(&self, name: &str) -> Arc<Channel<T>> {
+    pub fn channel<T: Send + Sync + Clone + 'static>(&self, name: &str) -> Arc<Channel<T>> {
         let mut map = self.channels.write().unwrap();
         let entry = map.entry(name.to_string()).or_insert_with(|| {
             Arc::new(Channel::<T>::new())
@@ -28,7 +28,7 @@ impl BroadcastBus {
 
     /// Global singleton instance for the broadcast bus.
     pub fn global() -> &'static Self {
-        static INSTANCE: Lazy<BroadcastBus> = Lazy::new(BroadcastBus::new);
+        static INSTANCE: Lazy<Bus> = Lazy::new(Bus::new);
         &INSTANCE
     }
 }

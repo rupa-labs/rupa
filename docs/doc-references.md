@@ -150,6 +150,7 @@ Detailed technical specifications for every internal framework module.
 | Module | Description |
 | :--- | :--- |
 | **[Form Engine](./ecosystems/forms.md)** | High-level state management for UI inputs. |
+| **[Job Queues](./ecosystems/job-queues.md)** | Reactive background task orchestration. |
 | **[Reactive Validation](./ecosystems/forms/validation.md)** | Rules and logic for data verification. |
 | **[Global Context](./ecosystems/context.md)** | Dependency injection for the VNode tree. |
 | **[Context Provider](./ecosystems/context/provider.md)** | Injecting data into sub-trees. |

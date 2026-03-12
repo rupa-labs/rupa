@@ -19,6 +19,8 @@ pub trait Subscriber: Send + Sync {
 #[derive(Default)]
 struct Runtime {
     stack: Vec<Weak<dyn Subscriber>>,
+    batch_depth: usize,
+    pending_notifications: Vec<Arc<dyn Subscriber>>,
 }
 
 impl Runtime {
@@ -33,6 +35,31 @@ impl Runtime {
     fn current_context(&self) -> Option<Arc<dyn Subscriber>> {
         self.stack.last().and_then(|w| w.upgrade())
     }
+
+    fn start_batch(&mut self) {
+        self.batch_depth += 1;
+    }
+
+    fn end_batch(&mut self) {
+        self.batch_depth -= 1;
+        if self.batch_depth == 0 {
+            let pending = std::mem::take(&mut self.pending_notifications);
+            for sub in pending {
+                sub.notify();
+            }
+        }
+    }
+}
+
+/// Executes multiple state updates in a single batch, preventing redundant effects.
+pub fn batch<F, R>(f: F) -> R
+where F: FnOnce() -> R {
+    RUNTIME.with(|rt| {
+        rt.borrow_mut().start_batch();
+        let res = f();
+        rt.borrow_mut().end_batch();
+        res
+    })
 }
 
 /// Run a closure in the context of a subscriber.
@@ -142,9 +169,20 @@ impl<T: Clone + Send + Sync> Signal<T> {
             alive
         };
 
-        for sub in subs {
-            sub.notify();
-        }
+        RUNTIME.with(|rt| {
+            let mut runtime = rt.borrow_mut();
+            if runtime.batch_depth > 0 {
+                for sub in subs {
+                    if !runtime.pending_notifications.iter().any(|p| Arc::ptr_eq(p, &sub)) {
+                        runtime.pending_notifications.push(sub);
+                    }
+                }
+            } else {
+                for sub in subs {
+                    sub.notify();
+                }
+            }
+        });
     }
 }
 

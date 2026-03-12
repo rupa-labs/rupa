@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Signal, Renderer, TextMeasurer, SceneNode};
 use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
@@ -21,7 +21,7 @@ pub struct Router<'a> {
 impl<'a> Router<'a> {
     pub fn new() -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             state: RouterState { current_path: Signal::new("/".to_string()) },
             children: Children::new(),
             view: Arc::new(ViewCore::new()),
@@ -35,7 +35,7 @@ impl<'a> Component for Router<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "router".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),

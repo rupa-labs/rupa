@@ -9,5 +9,6 @@ license.workspace = true
 rupa-signals.workspace = true
 rupa-base.workspace = true
 serde.workspace = true
+async-trait.workspace = true
 log.workspace = true
 once_cell = "1.18"

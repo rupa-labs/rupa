@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Renderer, TextMeasurer, SceneNode};
 use rupa_vnode::{Style, Theme, Attributes};
 use crate::style::modifiers::base::Stylable;
 use taffy::prelude::*;
@@ -18,7 +18,7 @@ impl Brand {
         let view = Arc::new(ViewCore::new());
         Theme::current().apply_defaults(&mut view.style());
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             name: name.into(),
             view,
         }
@@ -35,7 +35,7 @@ impl Component for Brand {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "brand".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {

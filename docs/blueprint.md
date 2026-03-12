@@ -14,44 +14,44 @@ Every architectural decision in Rupa MUST be defensible under these three pillar
 
 ---
 
-## 2. Tiered Sub-System Architecture (The Macro View)
+## 2. Tiered Hexagonal Architecture (The Macro View)
 
-Rupa is organized into logical **Sub-Systems** that interact across three tiers based on the **[Artisan Workshop Standard](./architectures/workshop-tiers.md)** design pattern.
+Rupa Framework is organized into three layers of responsibility, following the **Ports and Adapters** model to achieve *zero-coupling* between core logic and infrastructure.
 
 ```mermaid
 graph TD
-    subgraph Tier_3 [Tier 3: Artisan Showrooms]
-        facade[rupa Facade]
-        desktop[rupa-desktop]
-        web[rupa-web]
-        server[rupa-server]
-        tui[rupa-tui]
-        mobile[rupa-mobile]
-        fullstack[rupa-fullstack]
-    end
-
-    subgraph Tier_2 [Tier 2: Composite Assemblies]
+    subgraph Tier_3 [Tier 3: Artisan Showrooms - THE ADAPTERS]
         direction TB
-        ui_sys[UI System - rupa-ui]
-        eng_sys[Execution System - rupa-engine]
-        srv_sys[Server Core - rupa-server-core]
-        web_sys[Web Core - rupa-web-core]
-        mob_sys[Mobile Core - rupa-mobile-core]
-        tool_sys[Tooling System - rupa-cli / rupa-test]
+        rupa[rupa / Universal Facade]
+        desktop[rupa-desktop / WGPU]
+        web[rupa-web / WASM]
+        terminal[rupa-terminal / Crossterm]
+        mobile[rupa-mobile / Native]
+        server[rupa-server / SSR]
+        fullstack[rupa-fullstack / Hybrid]
+        cli[rupa-cli / Tooling]
     end
 
-    subgraph Tier_1 [Tier 1: Atomic Materials]
+    subgraph Tier_2 [Tier 2: Composite Assemblies - THE CORE]
+        direction TB
+        kernel[rupa-engine / Agnostic Kernel]
+        core[rupa-core / Reconciler]
+        ui[rupa-ui / Agnostic Components]
+        md[rupa-md / Markdown Engine]
+    end
+
+    subgraph Tier_1 [Tier 1: Atomic Materials - THE PORTS & DNA]
         direction LR
-        core_sys[Core System - rupa-core]
-        react_sys[Reactive System - rupa-signals]
-        vnode_sys[VNode & DNA - rupa-vnode]
-        infra_sys[Infra: auth / store / net / i18n / assets / motion / context / forms / canvas]
+        signals[rupa-signals / DNA]
+        vnode[rupa-vnode / DNA]
+        ports[Infra Ports: auth / store / net / i18n / broadcast / queue / telemetry / a11y]
+        base[rupa-base / Standard Types]
     end
 
     %% Relationships
-    facade --> Tier_2
-    Tier_2 --> core_sys
-    core_sys --> Tier_1
+    Tier_3 -->|Implements| Tier_1
+    Tier_2 -->|Orchestrates| Tier_1
+    Tier_3 -->|Consumes| Tier_2
     
     style Tier_3 fill:#f9f,stroke:#333,stroke-width:2px
     style Tier_2 fill:#bbf,stroke:#333,stroke-width:2px
@@ -62,47 +62,46 @@ graph TD
 
 ## 3. Sub-System Definitions & Responsibilities
 
-### 3.1 Core & Reactive Systems (The Brain)
-*   **Reactive System (`rupa-signals`)**: The "Nervous System". Handles **[Fine-Grained Updates](./reactivity/fine-grained-updates.md)** via `Signal` and `Memo`.
-*   **VNode & DNA (`rupa-vnode`)**: The "Universal Language". Agnostic virtual tree structure and core style data models.
-*   **Core System (`rupa-core`)**: The "Orchestrator". Manages component lifecycles and **[VNode Reconciliation](./architectures/reconciliation.md)**.
+### 3.1 The DNA & Ports (Tier 1)
+*   **The DNA**: `rupa-signals` (Fine-grained reactivity) and `rupa-vnode` (Universal UI language).
+*   **The Ports**: Foundational traits that define *what* the system can do.
+    *   `auth::Service`, `store::Store`, `net::Client`, `broadcast::Broadcaster`.
+*   **Standard Materials**: `rupa-base` (Types), `rupa-motion` (Animation), `rupa-test` (TDD Support).
 
-### 3.2 UI & Visual Systems (The Body)
-*   **UI System (`rupa-ui`)**: Houses the **UI Component System** (Semantic elements) and **UI Utilities System** (Styling API).
-*   **Motion Engine (`rupa-motion`)**: High-performance VNode interpolation and spring physics.
-*   **Canvas System (`rupa-canvas`)**: Low-level hardware-accelerated drawing and custom shaders.
+### 3.2 The Core Kernel (Tier 2)
+*   **The Brain**: `rupa-core`. Manages the virtual tree, diffing algorithm, and action dispatching.
+*   **The Orchestrator**: `rupa-engine`. Manages the universal application lifecycle (`App`).
+*   **The Toolkit**: `rupa-ui` (Platform-agnostic semantic components) and `rupa-md` (Content engine).
 
-### 3.3 Platform & Execution Systems (The Muscles)
-*   **Native Engines**: `rupa-engine` (GPU/TUI), `rupa-mobile-core`.
-*   **Web Engines**: `rupa-server-core` (SSR), `rupa-web-core` (WASM).
-*   **Tooling**: `rupa-cli` (DevOps), `rupa-test` (QA).
-
-### 3.4 Enterprise Infrastructure Systems (The Foundation)
-*   **Identity (`rupa-auth`)**: Reactive authentication, RBAC, and Team management.
-*   **Persistence (`rupa-store`)**: "Storage as a Signal" bridge for SQLite, FS, and WebStorage.
-*   **Connectivity**: `rupa-net` (Async I/O), `rupa-router` (Navigation), `rupa-i18n` (Voice).
-*   **Management**: `rupa-assets` (Warehouse), `rupa-context` (DI), `rupa-telemetry` (Observability).
+### 3.3 The Showroom Adapters (Tier 3)
+*   **Platform Targets**: 
+    *   `rupa-desktop` (GPU), `rupa-terminal` (ANSI), `rupa-web` (Browser).
+    *   `rupa-mobile` (Android/iOS), `rupa-server` (SSR/API).
+*   **Hybrid Solutions**: `rupa-fullstack` manages hydration between server and client.
+*   **Artisan Tools**: `rupa-cli` for scaffolding and developer experience.
+*   **Universal Facade**: The `rupa` crate provides a unified entry point for all features.
 
 ---
 
 ## 4. Internal Module Architecture (Detailed Mapping)
 
-| Sub-System | Primary Modules | Key Exports |
+| Sub-System | Primary Modules | Key Exports (Ergonomic) |
 | :--- | :--- | :--- |
-| **Core** | `component`, `renderer`, `view`, `events` | `Component`, `Renderer`, `ViewCore` |
+| **Core** | `reconciler`, `renderer`, `view`, `events` | `Core`, `Renderer`, `Patch` |
 | **UI** | `elements`, `primitives`, `style` | `Button`, `Div`, `Theme` |
 | **Signals** | `signal`, `memo`, `effect` | `Signal`, `Memo`, `Effect` |
 | **VNode** | `vnode`, `style/*` | `VNode`, `Style`, `Color` |
-| **Auth** | `identity`, `session`, `rbac`, `teams` | `User`, `Session`, `Role` |
-| **Store** | `store`, `signal`, `backends` | `Store`, `PersistentSignal` |
-| **Net** | `client`, `resource` | `Client`, `Resource`, `fetch` |
-| **Motion** | `spring`, `transition`, `timeline` | `Spring`, `Transition` |
-| **Router** | `router`, `route`, `history` | `Router`, `Route`, `use_route` |
-| **i18n** | `provider`, `dictionary`, `locale` | `I18nProvider`, `t!`, `Locale` |
-| **Assets** | `manager`, `loader`, `cache` | `AssetManager`, `use_asset` |
-| **A11y** | `bridge`, `translate` | `A11yBridge` |
-| **Context** | `provider`, `consumer` | `Provider`, `use_context` |
-| **Telemetry**| `metrics`, `profiler`, `logger` | `Metrics`, `Profiler` |
+| **Auth** | `identity`, `session`, `rbac`, `teams` | `User`, `Status`, `Service`, `Port` |
+| **Store** | `store`, `signal`, `backends` | `Store`, `PersistentSignal`, `Cache` |
+| **Net** | `client`, `resource` | `Client`, `Resource`, `Fetch` |
+| **Motion** | `spring`, `transition`, `timeline` | `Spring`, `Transition`, `Easing` |
+| **i18n** | `provider`, `dictionary`, `locale` | `Provider`, `Translator`, `translate` |
+| **Queue** | `task`, `queue` | `Task`, `Queue`, `Handle` |
+| **Forms** | `validation`, `rules`, `form` | `Form`, `Field`, `Validator` |
+| **A11y** | `bridge`, `node`, `translate` | `Bridge`, `Node`, `Manager` |
+| **Context** | `registry`, `provider` | `Registry`, `use_context` |
+| **Telemetry**| `logger`, `metrics`, `profiler` | `Telemetry`, `Logger`, `Recorder` |
+| **Test** | `headless`, `snapshot` | `Tester`, `Snapshot`, `setup` |
 
 ---
 

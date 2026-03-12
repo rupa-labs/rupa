@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Signal, Renderer, TextMeasurer, SceneNode};
 use rupa_vnode::{Style, Theme, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
@@ -19,7 +19,7 @@ impl<'a> Card<'a> {
         let view = Arc::new(ViewCore::new());
         Theme::current().apply_defaults(&mut view.style());
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             children: Children::new(),
             view,
         }
@@ -38,7 +38,7 @@ impl<'a> Component for Card<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "card".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),
@@ -97,7 +97,7 @@ pub struct Table<'a> {
 impl<'a> Table<'a> {
     pub fn new() -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             headers: vec![],
             rows: vec![],
             view: Arc::new(ViewCore::new()),
@@ -111,7 +111,7 @@ impl<'a> Component for Table<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "table".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),
@@ -154,7 +154,7 @@ pub struct Accordion<'a> {
 impl<'a> Accordion<'a> {
     pub fn new() -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             items: vec![],
             expanded_index: Signal::new(None),
             view: Arc::new(ViewCore::new()),
@@ -168,7 +168,7 @@ impl<'a> Component for Accordion<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "accordion".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),

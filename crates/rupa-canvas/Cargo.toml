@@ -6,7 +6,9 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
+rupa-base.workspace = true
+serde.workspace = true
+log.workspace = true
 rupa-core.workspace = true
 rupa-engine.workspace = true
 wgpu.workspace = true
-log.workspace = true

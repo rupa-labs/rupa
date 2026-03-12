@@ -91,7 +91,7 @@ fn main() {{
 }}
 
 struct MyComponent {{ id: String }}
-impl MyComponent {{ fn new() -> Self {{ Self {{ id: generate_id() }} }} }}
+impl MyComponent {{ fn new() -> Self {{ Self {{ id: Id::next().to_string() }} }} }}
 impl Component for MyComponent {{
     fn id(&self) -> &str {{ &self.id }}
     fn render(&self) -> VNode {{

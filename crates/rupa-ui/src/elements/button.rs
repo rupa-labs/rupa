@@ -1,5 +1,5 @@
 use crate::Children;
-use rupa_core::{Component, VNode, Vec2, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners};
+use rupa_core::{Component, VNode, Vec2, ViewCore, Id, Signal, Renderer, TextMeasurer, SceneNode, UIEvent, EventListeners};
 use rupa_vnode::{Style, Color, Theme, Variant, Scale, Accessibility, TextAlign, Attributes};
 use crate::style::modifiers::base::Stylable;
 use taffy::prelude::*;
@@ -40,7 +40,7 @@ impl Button {
         view.style().background.color = Some(Theme::variant(variant.clone()));
 
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             label,
             variant,
             size: ButtonSize::Md,
@@ -149,7 +149,7 @@ impl CloseButton {
     pub fn new() -> Self {
         let view = Arc::new(ViewCore::new());
         view.style().background.color = Some(Color::Rgba(1.0, 0.0, 0.0, 1.0));
-        Self { id: generate_id(), view }
+        Self { id: Id::next().to_string(), view }
     }
 }
 
@@ -196,7 +196,7 @@ impl<'a> ButtonGroup<'a> {
     pub fn new() -> Self {
         let view = Arc::new(ViewCore::new());
         view.style().flex.flex_direction = rupa_vnode::FlexDirection::Row;
-        Self { id: generate_id(), children: Children::new(), view }
+        Self { id: Id::next().to_string(), children: Children::new(), view }
     }
     pub fn child(mut self, child: Button) -> Self {
         self.children.push(Box::new(child));
@@ -212,7 +212,7 @@ impl<'a> Component for ButtonGroup<'a> {
     fn children(&self) -> Vec<&dyn Component> { self.children.as_refs() }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     fn render(&self) -> VNode {
-        VNode::Element(rupa_vnode::VElement {
+        VNode::Element(rupa_vnode::VElement { handlers: Default::default(), 
             tag: "button-group".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),

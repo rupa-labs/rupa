@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Signal, Renderer, TextMeasurer, SceneNode};
 use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
@@ -23,7 +23,7 @@ pub struct Body<'a> {
 impl<'a> Body<'a> {
     pub fn new() -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             logic: BodyLogic {
                 children: Children::new(),
                 overlays: Signal::new(Vec::new()),
@@ -53,7 +53,7 @@ impl<'a> Component for Body<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
 
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "body".to_string(),
             style: self.view.core.style.read().unwrap().clone(),
             attributes: Attributes::default(),

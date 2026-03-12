@@ -1,23 +1,20 @@
-use std::io::Write;
+pub struct Progress;
 
-/// Standardized progress indicators for the CLI Console.
-pub struct ConsoleProgress;
-
-impl ConsoleProgress {
-    /// Draws a progress bar.
+impl Progress {
     pub fn draw_bar(label: &str, current: f32, max: f32) {
-        let percent = (current / max * 100.0) as u32;
-        let bar_width = 30;
-        let filled = (current / max * bar_width as f32) as usize;
-        let empty = bar_width - filled;
-
-        print!("\r\x1B[36m{}\x1B[0m: [\x1B[32m{}\x1B[90m{}\x1B[0m] {}% ", 
+        let percent = (current / max).clamp(0.0, 1.0);
+        let filled = (percent * 20.0) as usize;
+        let empty = 20 - filled;
+        
+        print!("\r{}: [{}{}] {:.1}%", 
             label, 
             "█".repeat(filled), 
             "░".repeat(empty), 
-            percent
+            percent * 100.0
         );
-        std::io::stdout().flush().unwrap();
-        if current >= max { println!(); }
+        
+        if percent >= 1.0 {
+            println!();
+        }
     }
 }

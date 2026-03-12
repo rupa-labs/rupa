@@ -1,29 +1,37 @@
 use std::sync::{Arc, RwLock};
+use async_trait::async_trait;
+use crate::Broadcaster;
 
 /// A specialized stream for a specific event type.
-pub struct Channel<T> {
-    subscribers: RwLock<Vec<Arc<dyn Fn(&T) + Send + Sync>>>,
+pub struct Channel<T: Send + Sync + Clone + 'static> {
+    subscribers: RwLock<Vec<Arc<dyn Fn(T) + Send + Sync + 'static>>>,
 }
 
-impl<T> Channel<T> {
+impl<T: Send + Sync + Clone + 'static> Channel<T> {
     pub fn new() -> Self {
         Self {
             subscribers: RwLock::new(Vec::new()),
         }
     }
+}
 
-    /// Publishes a message to all active subscribers.
-    pub fn publish(&self, message: T) {
-        let subs = self.subscribers.read().unwrap();
+#[async_trait]
+impl<T: Send + Sync + Clone + 'static> Broadcaster<T> for Channel<T> {
+    /// Dispatches a message to all active subscribers.
+    async fn dispatch(&self, message: T) {
+        let subs = {
+            let s = self.subscribers.read().unwrap();
+            s.clone()
+        };
+        
         for sub in subs.iter() {
-            (sub)(&message);
+            (sub)(message.clone());
         }
     }
 
-    /// Adds a new listener to the channel.
-    pub fn subscribe<F>(&self, f: F) 
-    where F: Fn(&T) + Send + Sync + 'static {
+    /// Subscribes to messages with a callback.
+    fn subscribe(&self, callback: Arc<dyn Fn(T) + Send + Sync + 'static>) {
         let mut subs = self.subscribers.write().unwrap();
-        subs.push(Arc::new(f));
+        subs.push(callback);
     }
 }

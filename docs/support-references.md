@@ -21,16 +21,42 @@ A high-precision 2D vector used for layouts, SVG paths, and pointer coordinates.
 
 ## 🆔 ID Generation
 Universal unique identification system for VNodes and reactive components.
-- **Internal Reference:** `crates/rupa-support/src/id.rs`
+- **Internal Reference:** `crates/rupa-base/src/id.rs`
 
 ### `struct Id`
-A lightweight, serializable 64-bit identifier used to track elements across frame updates and hydration boundaries.
-- **Generation**: Created via the `Id::new()` global generator.
-- **Consistency**: Guaranteed to be unique within a single runtime instance.
+A lightweight, unique 64-bit identifier.
+- **Generation**: Created via `Id::next()`.
+- **String Conversion**: Use `.to_string()` for "rupa-X" format.
 
 ---
 
-## ⚡ Reactivity (Signals)
+## 🎨 Color System
+High-precision color management supporting perceptual uniformity.
+- **Internal Reference:** `crates/rupa-base/src/color.rs`
+
+### `struct Color`
+The standard RGBA color representation.
+
+| Method | Description | Example |
+| :--- | :--- | :--- |
+| `Color::rgba(r, g, b, a)` | Creates a linear RGBA color. | `Color::rgba(1.0, 0.0, 0.0, 1.0)` |
+| `Color::oklch(l, c, h, a)` | Creates a color using OKLCH. | `Color::oklch(0.8, 0.2, 200.0, 1.0)` |
+| `Color::hex(0xRRGGBB)` | Creates a color from Hex. | `Color::hex(0xFF0000)` |
+
+---
+
+## 📐 Math & Geometry
+Foundational types for spatial calculations.
+- **Internal Reference:** `crates/rupa-base/src/vector.rs` & `rect.rs`
+
+### `struct Vec2`
+A 2D vector for layouts and pointer coordinates.
+
+### `struct Rect`
+A rectangle representing layout bounds.
+- **Fields**: `origin: Vec2`, `size: Vec2`.
+- **Methods**: `contains(point)`, `intersects(rect)`, `inset(amount)`.
+
 Fine-grained reactivity system for efficient UI updates.
 - **Internal Reference:** `crates/rupa-signals/src/lib.rs`
 
@@ -42,6 +68,22 @@ A thread-safe reactive primitive that notifies the framework to redraw when its 
 | `Signal::new(val)` | Creates a new signal. | `let count = Signal::new(0);` |
 | `.get()` | Returns a clone of the current value. | `count.get()` |
 | `.set(val)` | Overwrites the value and triggers redraw. | `count.set(10)` |
+
+---
+
+## 📥 Job Queues (Tasks)
+Reactive asynchronous task management.
+- **Internal Reference:** `crates/rupa-queue/src/lib.rs`
+- **Detailed Guide:** [Job Queues](./ecosystems/job-queues.md)
+
+### `struct AsyncQueue`
+Manages background tasks with concurrency control.
+
+| Method | Description |
+| :--- | :--- |
+| `AsyncQueue::new(concurrency)` | Creates a new queue. |
+| `.push(task)` | Adds a task to the queue. |
+| `.tasks()` | Returns a reactive list of tasks. |
 
 ---
 

@@ -1,6 +1,7 @@
 pub mod style;
 
 pub use style::*;
+pub use style::motion_mod as motion;
 use serde::{Serialize, Deserialize};
 
 /// The Universal UI Node of the Rupa Framework.
@@ -24,7 +25,11 @@ pub struct VElement {
     pub tag: String,
     pub style: Style,
     pub attributes: Attributes,
-    pub motion: Option<Motion>,
+    
+    #[serde(skip)]
+    pub handlers: EventHandlers,
+    
+    pub motion: Option<motion_mod::Motion>,
     pub children: Vec<VNode>,
     pub key: Option<String>,
 }
@@ -42,6 +47,7 @@ impl VNode {
             tag: tag.into(),
             style: Style::default(),
             attributes: Attributes::default(),
+            handlers: EventHandlers::default(),
             motion: None,
             children: Vec::new(),
             key: None,
@@ -63,7 +69,14 @@ impl VNode {
         self
     }
 
-    pub fn with_motion(mut self, motion: Motion) -> Self {
+    pub fn with_handler(mut self, handler: impl Fn(UIEvent) + Send + Sync + 'static) -> Self {
+        if let VNode::Element(ref mut el) = self {
+            el.handlers.on_click = Some(std::sync::Arc::new(handler));
+        }
+        self
+    }
+
+    pub fn with_motion(mut self, motion: motion_mod::Motion) -> Self {
         if let VNode::Element(ref mut el) = self {
             el.motion = Some(motion);
         }

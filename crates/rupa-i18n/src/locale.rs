@@ -13,4 +13,14 @@ impl Locale {
             region: region.into(),
         }
     }
+
+    pub fn to_string(&self) -> String {
+        format!("{}-{}", self.language, self.region)
+    }
+}
+
+impl Default for Locale {
+    fn default() -> Self {
+        Self::new("en", "US")
+    }
 }

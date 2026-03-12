@@ -8,8 +8,11 @@ license.workspace = true
 [dependencies]
 rupa-core.workspace = true
 rupa-signals.workspace = true
+rupa-queue.workspace = true
 rupa-base.workspace = true
 serde.workspace = true
 log.workspace = true
 thiserror.workspace = true
 futures.workspace = true
+async-trait.workspace = true
+tokio = { workspace = true, features = ["rt", "macros"] }

@@ -1,16 +1,32 @@
-use rupa_core::Component;
-use rupa_vnode::VNode;
+use rupa_signals::Signal;
+use rupa_context::{Registry, with_registry};
+use std::sync::Arc;
 
-/// A virtual environment for running Rupa components without graphical output.
-pub struct Tester;
+/// A headless environment for testing reactive logic and components.
+pub struct Tester {
+    pub registry: Arc<Registry>,
+}
 
 impl Tester {
     pub fn new() -> Self {
-        Self
+        Self {
+            registry: Arc::new(Registry::new()),
+        }
     }
 
-    /// Captures the virtual tree of a component.
-    pub fn render(&self, component: &dyn Component) -> VNode {
-        component.render()
+    /// Runs a closure within the test context.
+    pub fn run<F, R>(&self, f: F) -> R
+    where F: FnOnce() -> R {
+        with_registry(self.registry.clone(), f)
+    }
+
+    /// Verifies that a signal changes as expected.
+    pub fn assert_signal<T, F>(&self, signal: Signal<T>, action: F, expected: T)
+    where 
+        T: PartialEq + std::fmt::Debug + Clone + Send + Sync + 'static,
+        F: FnOnce(&Signal<T>)
+    {
+        action(&signal);
+        assert_eq!(signal.get(), expected);
     }
 }

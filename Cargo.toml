@@ -27,9 +27,11 @@ members = [
     "crates/rupa-context",
     "crates/rupa-telemetry",
     "crates/rupa-canvas",
-    "crates/rupa-cli",
+    "crates/rupa-terminal",
     "crates/rupa-test",
+    "crates/rupa-queue",
     "crates/rupa-base",
+
     "crates/rupa-md",
     "crates/rupa-console",
     "crates/rupa-terminal",
@@ -65,6 +67,7 @@ rupa-forms = { path = "crates/rupa-forms" }
 rupa-context = { path = "crates/rupa-context" }
 rupa-telemetry = { path = "crates/rupa-telemetry" }
 rupa-canvas = { path = "crates/rupa-canvas" }
+rupa-queue = { path = "crates/rupa-queue" }
 rupa-md = { path = "crates/rupa-md" }
 rupa-console = { path = "crates/rupa-console" }
 

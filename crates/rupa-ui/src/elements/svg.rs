@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Renderer, TextMeasurer, SceneNode};
 use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use taffy::prelude::*;
@@ -16,7 +16,7 @@ pub struct Svg {
 impl Svg {
     pub fn new(content: impl Into<String>) -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             content: content.into(),
             view: Arc::new(ViewCore::new()),
         }
@@ -29,7 +29,7 @@ impl Component for Svg {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "svg".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {
@@ -75,7 +75,7 @@ pub struct Icon {
 impl Icon {
     pub fn new(name: impl Into<String>) -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             name: name.into(),
             view: Arc::new(ViewCore::new()),
         }
@@ -87,7 +87,7 @@ impl Component for Icon {
     fn children(&self) -> Vec<&dyn Component> { vec![] }
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "icon".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: {

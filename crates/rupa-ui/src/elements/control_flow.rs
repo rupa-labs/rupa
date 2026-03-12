@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, ViewCore, generate_id, Signal, Renderer, TextMeasurer, SceneNode, Vec2};
+use rupa_core::{Component, VNode, ViewCore, Id, Signal, Renderer, TextMeasurer, SceneNode, Vec2};
 use taffy::prelude::*;
 use std::sync::Arc;
 
@@ -23,7 +23,7 @@ pub struct Show<'a> {
 impl<'a> Show<'a> {
     pub fn new(condition: Signal<bool>, child: impl Component + 'a) -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             logic: ShowLogic { condition, fallback: VNode::Empty },
             view: ShowView { core: Arc::new(ViewCore::new()) },
             child: Box::new(child),
@@ -87,7 +87,7 @@ pub struct ForEach<'a, T> {
 impl<'a, T: 'static + Send + Sync + Clone> ForEach<'a, T> {
     pub fn new(items: Signal<Vec<T>>, template: impl Fn(&T) -> Box<dyn Component + 'a> + Send + Sync + 'static) -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             logic: ForEachLogic { items },
             view: ForEachView { core: Arc::new(ViewCore::new()) },
             template: Arc::new(template),

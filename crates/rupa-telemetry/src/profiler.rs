@@ -1,8 +1,8 @@
-/// Tracing and profiling for the reactive graph.
-pub struct Profiler;
-
-impl Profiler {
-    pub fn trace_render(_name: &str) {
-        // Placeholder for tracing logic
-    }
+/// A Port for execution profiling.
+pub trait Profiler: Send + Sync {
+    /// Starts a named profiling span.
+    fn start_span(&self, name: &str);
+    
+    /// Ends the current span.
+    fn end_span(&self, name: &str);
 }

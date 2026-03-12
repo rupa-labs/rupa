@@ -1,37 +1,35 @@
 use std::collections::HashMap;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 
-/// A thread-safe cache for binary resources.
+/// Thread-safe asset cache.
 pub struct Cache {
-    data: RwLock<HashMap<String, Vec<u8>>>,
+    data: Arc<RwLock<HashMap<String, Vec<u8>>>>,
 }
 
 impl Cache {
     pub fn new() -> Self {
-        Self { data: RwLock::new(HashMap::new()) }
+        Self {
+            data: Arc::new(RwLock::new(HashMap::new())),
+        }
     }
 
-    /// Insert a resource into the cache.
-    pub fn insert(&self, key: String, value: Vec<u8>) {
-        let mut data = self.data.write().unwrap();
-        data.insert(key, value);
+    pub fn get(&self, path: &str) -> Option<Vec<u8>> {
+        let map = self.data.read().unwrap();
+        map.get(path).cloned()
     }
 
-    /// Retrieve a resource from the cache.
-    pub fn get(&self, key: &str) -> Option<Vec<u8>> {
-        let data = self.data.read().unwrap();
-        data.get(key).cloned()
+    pub fn insert(&self, path: impl Into<String>, data: Vec<u8>) {
+        let mut map = self.data.write().unwrap();
+        map.insert(path.into(), data);
     }
 
-    /// Check if a resource exists in the cache.
-    pub fn contains(&self, key: &str) -> bool {
-        let data = self.data.read().unwrap();
-        data.contains_key(key)
-    }
-
-    /// Clear all resources from the cache.
     pub fn clear(&self) {
-        let mut data = self.data.write().unwrap();
-        data.clear();
+        let mut map = self.data.write().unwrap();
+        map.clear();
+    }
+
+    pub fn remove(&self, path: &str) {
+        let mut map = self.data.write().unwrap();
+        map.remove(path);
     }
 }

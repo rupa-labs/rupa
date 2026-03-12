@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, ViewCore, generate_id, Signal, UIEvent, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
+use rupa_core::{Component, VNode, ViewCore, Id, Signal, UIEvent, renderer::{Renderer, TextMeasurer}, scene::SceneNode};
 use rupa_ui::elements::{VStack, Text};
 use taffy::prelude::*;
 use std::sync::Arc;
@@ -15,7 +15,7 @@ pub struct List {
 impl List {
     pub fn new(options: Vec<impl Into<String>>) -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             options: options.into_iter().map(|s| s.into()).collect(),
             selected_index: Signal::new(0),
             view: Arc::new(ViewCore::new()),

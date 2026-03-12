@@ -1,13 +1,11 @@
 pub mod store;
 pub mod signal;
-pub mod backends;
 pub mod encryption;
+pub mod backends;
 
 pub use store::Store;
 pub use signal::PersistentSignal;
+pub use backends::fs::FileSystemStore;
 
-/// Automatically initializes the best storage backend for the current platform.
-pub fn auto_init() -> Box<dyn Store> {
-    // Placeholder for platform-specific logic
-    todo!("Automatic storage initialization not yet implemented")
-}
+#[cfg(target_arch = "wasm32")]
+pub use backends::web::WebStorageStore;

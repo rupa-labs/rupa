@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Renderer, TextMeasurer, SceneNode};
 use rupa_vnode::{Style, Attributes};
 
 use crate::style::modifiers::base::Stylable;
@@ -34,7 +34,7 @@ pub struct Overlay<'a> {
 impl<'a> Overlay<'a> {
     pub fn new() -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             logic: OverlayLogic { children: Children::new() },
             view: OverlayView::new(),
         }
@@ -52,7 +52,7 @@ impl<'a> Component for Overlay<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "overlay".to_string(),
             style: self.view.core.style.read().unwrap().clone(),
             attributes: Attributes::default(),

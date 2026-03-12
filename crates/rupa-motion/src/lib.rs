@@ -1,8 +1,12 @@
 pub mod spring;
 pub mod timeline;
+pub mod easing;
+pub mod transition;
 
 pub use spring::Spring;
 pub use timeline::{Timeline, GLOBAL_TIMELINE};
+pub use easing::Easing;
+pub use transition::{Transition, TransitionConfig};
 
 /// Trait for types that can be animated/interpolated.
 pub trait Animatable: Clone + Send + Sync + 'static {
@@ -21,5 +25,11 @@ impl Animatable for rupa_base::Vec2 {
             self.x + (other.x - self.x) * t,
             self.y + (other.y - self.y) * t
         )
+    }
+}
+
+impl Animatable for rupa_base::Color {
+    fn interpolate(&self, other: &Self, t: f32) -> Self {
+        self.lerp(*other, t)
     }
 }

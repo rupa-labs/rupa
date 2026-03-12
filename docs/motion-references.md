@@ -8,34 +8,35 @@ Motion is part of the Rupa Framework DNA. This document details how to create fl
 Animations in Rupa Framework are applied via styling modifiers. A `Motion` object defines how a property should transition between states.
 
 ### Transition Types
-| Type | Description |
-| :--- | :--- |
-| **Linear** | Consistent speed throughout the transition. |
-| **EaseIn / EaseOut** | Smooth acceleration or deceleration. |
-| **Spring** | Physics-based motion with bounce and stiffness. |
+| Type | Logic | Description |
+| :--- | :--- | :--- |
+| **`Transition`** | Duration-based | Animates values over time using `Easing` curves. |
+| **`Spring`** | Physics-based | Realistic motion with `mass`, `stiffness`, and `damping`. |
+
+### Easing Functions
+Support for standard curves: `Linear`, `Quad`, `Cubic`, `Expo`, `Back`, `Elastic` (In, Out, InOut).
 
 ---
 
 ## 🛠️ Usage Patterns
 
-### 1. Simple Transitions
-Apply a motion modifier to a component to animate property changes.
+### 1. Duration-based Transitions
+Apply a motion modifier to a component using `TransitionConfig`.
 
 ```rust
-Text::new("Hover me")
-    .style(hover(bg(Color::Blue)))
-    .style(motion(Duration::from_millis(300), Easing::InOut))
+Text::new("Fade Me")
+    .transition(Duration::from_millis(300), Easing::CubicInOut)
 ```
 
-### 2. Reactive Animations
-Link animations directly to `Signal` updates. When the signal changes, the UI transitions smoothly to the new state.
+### 2. Spring Animations
+Physics-based reactive animations linked to `Signal` updates.
 
 ```rust
 let width = Signal::new(100.0);
 
 Div::new()
     .w(width.get())
-    .style(motion(Duration::from_millis(500), Easing::Spring))
+    .spring() // Default spring config
 ```
 
 ---

@@ -1,63 +1,53 @@
 # Crate References 📚
 
-This is the official registry of all crates in the Rupa Framework monorepo, organized by their structural tier using our **Clean Naming Convention** (No Suffixes).
+This is the official registry of all crates in the Rupa Framework, organized by their structural tier. Each crate acts as a **Port** or **Adapter** in our Hexagonal Architecture.
 
 ---
 
-## 🧱 1. Atomic Materials (Low-Level Units)
+## 🧱 1. Atomic Materials (The DNA & Ports)
+Low-level, platform-agnostic crates that handle single responsibilities.
 
-Independent crates handling single responsibilities.
-
-| Crate Name | Tier | Purpose |
+| Crate | Purpose | Detailed Docs |
 | :--- | :--- | :--- |
-| **`rupa-base`** | Atomic | Foundation utilities, math (Vec2), and common Errors. |
-| **`rupa-signals`** | Atomic | The fine-grained reactivity engine. |
-| **`rupa-vnode`** | Atomic | Universal UI DNA and Style data models. |
-| **`rupa-motion`** | Atomic | Physics-based animation engine (Springs/Transitions). |
-| **`rupa-console`** | Atomic | Low-level terminal infrastructure (ANSI, Raw Mode). |
-| **`rupa-md`** | Atomic | Markdown & MDX parsing engine. |
-| **`rupa-store`** | Atomic | Persistence system (SQLite, WebStorage). |
-| **`rupa-net`** | Atomic | Reactive network I/O. |
-| **`rupa-assets`** | Atomic | Binary resource pipeline (loading/caching). |
-| **`rupa-auth`** | Atomic | Identity, RBAC, and session management. |
-| **`rupa-i18n`** | Atomic | Internationalization and cultural formatting. |
+| **`rupa-signals`** | Fine-grained reactivity engine. | [View Docs](./crates/rupa-signals.md) |
+| **`rupa-vnode`** | UI Contract & Style models. | [View Docs](./crates/rupa-vnode.md) |
+| **`rupa-base`** | Foundational types (Color, Vec2, Id). | [View Docs](./crates/rupa-base.md) |
+| **`rupa-motion`** | Animation & Physics engine. | [View Docs](./crates/rupa-motion.md) |
+| **`rupa-context`** | Dependency Injection system. | [View Docs](./crates/rupa-context.md) |
+| **`rupa-forms`** | Form objects & Validation rules. | [View Docs](./crates/rupa-forms.md) |
+| **`rupa-auth`** | Identity & Session management. | [View Docs](./crates/rupa-auth.md) |
+| **`rupa-assets`** | Resource loading & caching. | [View Docs](./crates/rupa-assets.md) |
+| **`rupa-i18n`** | Internationalization & Translation. | [View Docs](./crates/rupa-i18n.md) |
+| **`rupa-net`** | Async I/O & Network resources. | [View Docs](./crates/rupa-net.md) |
+| **`rupa-store`** | Persistent state & storage backends. | [View Docs](./crates/rupa-store.md) |
+| **`rupa-broadcast`** | Global reactive event bus. | [View Docs](./crates/rupa-broadcast.md) |
+| **`rupa-queue`** | Background task orchestration. | [View Docs](./crates/rupa-queue.md) |
+| **`rupa-telemetry`** | Observability (Logs, Metrics, Profiling). | [View Docs](./crates/rupa-telemetry.md) |
+| **`rupa-test`** | Testing utilities for TDD. | [View Docs](./crates/rupa-test.md) |
+| **`rupa-a11y`** | Accessibility Ports & Semantics. | [View Docs](./crates/rupa-a11y.md) |
+| **`rupa-console`** | Low-level terminal infrastructure. | [View Docs](./crates/rupa-console.md) |
+| **`rupa-canvas`** | Low-level drawing ports. | [View Docs](./crates/rupa-canvas.md) |
 
 ---
 
-## 🛠️ 2. Composite Assemblies (The Engines)
+## 🛠️ 2. Composite Assemblies (The Core)
+Orchestrates Atomic Materials into functional systems.
 
-Logical systems that orchestrate materials into functional engines.
-
-| Crate Name | Tier | Purpose |
-| :--- | :--- | :--- |
-| **`rupa-core`** | Composite | The heart: Reconciler, Layout, and Action Bus. |
-| **`rupa-engine`** | Composite | The Agnostic Kernel: Lifecycle and Plugin orchestration. |
-| **`rupa-ui`** | Composite | Agnostic semantic UI components (Buttons, Forms). |
-| **`rupa-tui`** | Composite | Terminal-optimized UI components. |
-
----
-
-## 🏪 3. Artisan Showrooms (The Platforms)
-
-The "Physical Body" of the framework for specific hardware or targets.
-
-| Crate Name | Tier | Target |
-| :--- | :--- | :--- |
-| **`rupa-desktop`** | Showroom | High-performance Native GUI (WGPU). |
-| **`rupa-web`** | Showroom | Browser-based WASM & DOM rendering. |
-| **`rupa-server`** | Showroom | Backend SSR & Static Site Generation. |
-| **`rupa-mobile`** | Showroom | Native Android & iOS experiences. |
-| **`rupa-terminal`** | Showroom | Interactive Terminal Applications. |
-| **`rupa-cli`** | Showroom | Developer Tooling (Scaffolding, Build). |
-| **`rupa`** | Showroom | The Universal Facade (All-in-one). |
+| Crate | Purpose |
+| :--- | :--- |
+| **`rupa-core`** | Reconciliation engine & Action Bus. |
+| **`rupa-engine`** | The Agnostic Kernel (App Lifecycle). |
+| **`rupa-ui`** | High-level semantic UI system. |
+| **`rupa-md`** | Markdown & MDX engine. |
 
 ---
 
-## 🚀 Usage
+## 🏪 3. Artisan Showrooms (The Adapters)
+Platform-specific entry points and implementations.
 
-Artisans typically depend on the `rupa` facade and enable features as needed:
-
-```toml
-[dependencies]
-rupa = { git = "...", features = ["desktop", "web"] }
-```
+| Crate | Purpose |
+| :--- | :--- |
+| **`rupa-desktop`** | GPU rendering via WGPU & Winit. |
+| **`rupa-terminal`** | Interactive CLI & TUI facade. |
+| **`rupa-web`** | Browser rendering via WASM. |
+| **`rupa`** | The Universal Facade (All-in-one). |

@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, scene::SceneNode};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Renderer, TextMeasurer, scene::SceneNode};
 use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
@@ -17,7 +17,7 @@ impl<'a> Div<'a> {
         let view = Arc::new(ViewCore::new());
         view.style().flex.flex_direction = rupa_vnode::FlexDirection::Col;
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             children: Children::new(),
             view,
         }
@@ -36,7 +36,7 @@ impl<'a> Component for Div<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "div".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),

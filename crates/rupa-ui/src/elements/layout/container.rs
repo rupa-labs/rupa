@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer, SceneNode};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Renderer, TextMeasurer, SceneNode};
 use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
@@ -15,7 +15,7 @@ pub struct Container<'a> {
 impl<'a> Container<'a> {
     pub fn new() -> Self {
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             children: Children::new(),
             view: Arc::new(ViewCore::new()),
         }
@@ -34,7 +34,7 @@ impl<'a> Component for Container<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "container".to_string(),
             style: self.view.style.read().unwrap().clone(),
             attributes: Attributes::default(),

@@ -1,7 +1,11 @@
 pub mod vector;
-pub mod error;
+pub mod color;
+pub mod rect;
 pub mod id;
+pub mod error;
 
 pub use vector::Vec2;
-pub use error::Error;
-pub use id::generate_id;
+pub use color::Color;
+pub use rect::Rect;
+pub use id::Id;
+pub use error::{Error, Result, DiagnosticCenter};

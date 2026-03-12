@@ -1,4 +1,4 @@
-use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, generate_id, Renderer, TextMeasurer};
+use rupa_core::{Component, VNode, VElement, Vec2, ViewCore, Id, Renderer, TextMeasurer};
 use rupa_vnode::{Style, Attributes};
 use crate::style::modifiers::base::Stylable;
 use crate::elements::Children;
@@ -26,7 +26,7 @@ impl<'a> Grid<'a> {
         let view = GridView { core };
         
         Self {
-            id: generate_id(),
+            id: Id::next().to_string(),
             logic: GridLogic { children: Children::new() },
             view,
         }
@@ -44,7 +44,7 @@ impl<'a> Component for Grid<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.core.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
+        VNode::Element(VElement { handlers: Default::default(), 
             tag: "grid".to_string(),
             style: self.view.core.style.read().unwrap().clone(),
             attributes: Attributes::default(),
