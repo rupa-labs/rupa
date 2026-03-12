@@ -10,6 +10,9 @@ pub trait Bridge: Send + Sync {
     
     /// Notifies the OS that a specific node has been focused.
     fn focus_node(&self, id: &str);
+
+    /// Commands the OS Screen Reader to announce a message.
+    fn announce(&self, message: &str);
 }
 
 /// A handle to the active accessibility bridge.

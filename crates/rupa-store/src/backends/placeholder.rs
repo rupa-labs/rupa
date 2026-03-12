@@ -15,4 +15,10 @@ impl Store for SqliteStore {
     fn delete(&self, _key: &str) -> Result<(), Error> {
         Err(Error::Unsupported("SqliteStore not yet implemented".into()))
     }
+    fn clear(&self) -> Result<(), Error> {
+        Err(Error::Unsupported("SqliteStore not yet implemented".into()))
+    }
+    fn keys(&self) -> Result<Vec<String>, Error> {
+        Err(Error::Unsupported("SqliteStore not yet implemented".into()))
+    }
 }

@@ -1,4 +1,4 @@
-use rupa_signals::{Memo, Readable};
+use rupa_signals::Memo;
 use crate::route::{Route, RouteState};
 use crate::history::History;
 use rupa_vnode::VNode;
@@ -45,7 +45,16 @@ impl Router {
     pub fn back(&self) {
         self.history.back();
     }
-...
+
+    pub fn render(&self) -> VNode {
+        let state = self.current_state.get();
+        for route in &self.routes {
+            if let Some(_) = match_route(&route.path, &state.path) {
+                return (route.component)(state);
+            }
+        }
+        VNode::Empty
+    }
 }
 
 fn match_route(pattern: &str, path: &str) -> Option<std::collections::HashMap<String, String>> {
@@ -53,7 +62,7 @@ fn match_route(pattern: &str, path: &str) -> Option<std::collections::HashMap<St
     let p_parts: Vec<&str> = pattern.split('/').filter(|s| !s.is_empty()).collect();
     let u_parts: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
 
-    if p_parts.len() != u_parts.clone().len() {
+    if p_parts.len() != u_parts.len() {
         return None;
     }
 
@@ -66,15 +75,4 @@ fn match_route(pattern: &str, path: &str) -> Option<std::collections::HashMap<St
     }
 
     Some(params)
-}
-
-    pub fn render(&self) -> VNode {
-        let state = self.current_state.get();
-        for route in &self.routes {
-            if route.path == state.path {
-                return (route.component)(state);
-            }
-        }
-        VNode::Empty
-    }
 }

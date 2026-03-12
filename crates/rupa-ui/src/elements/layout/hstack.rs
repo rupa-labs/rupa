@@ -12,7 +12,7 @@ pub struct HStack<'a> {
 
 impl<'a> HStack<'a> {
     pub fn new() -> Self {
-        let mut inner = Flex::new();
+        let inner = Flex::new();
         inner.view.style().flex.flex_direction = rupa_vnode::FlexDirection::Row;
         Self {
             id: Id::next().to_string(),

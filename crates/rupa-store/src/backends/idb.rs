@@ -15,4 +15,10 @@ impl Store for IndexedDbStore {
     fn delete(&self, _key: &str) -> Result<(), Error> {
         Err(Error::Unsupported("IndexedDbStore not yet implemented".into()))
     }
+    fn clear(&self) -> Result<(), Error> {
+        Err(Error::Unsupported("IndexedDbStore not yet implemented".into()))
+    }
+    fn keys(&self) -> Result<Vec<String>, Error> {
+        Err(Error::Unsupported("IndexedDbStore not yet implemented".into()))
+    }
 }

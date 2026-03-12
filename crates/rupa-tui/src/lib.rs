@@ -69,7 +69,7 @@ impl Renderer for TerminalRenderer {
     fn core(&self) -> &RenderCore { &self.core }
     fn core_mut(&mut self) -> &mut RenderCore { &mut self.core }
 
-    fn render_patch(&mut self, _patch: rupa_core::PatchSet) {
+    fn render_patch(&mut self, _patch: rupa_core::Patch) {
         // High-level patch application logic
     }
 

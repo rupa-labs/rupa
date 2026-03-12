@@ -58,8 +58,12 @@ impl Bridge for MockBridge {
         *self.last_announcement.write().unwrap() = Some(message.to_string());
     }
 
-    fn update_tree(&self, _nodes: &HashMap<String, Node>) {
+    fn update_tree(&self, _nodes: HashMap<String, Node>) {
         // Mock tree update
+    }
+
+    fn focus_node(&self, _id: &str) {
+        // Mock focus
     }
 }
 

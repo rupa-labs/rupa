@@ -11,4 +11,8 @@ impl Attributes {
     pub fn insert(&mut self, key: impl Into<String>, value: impl Into<String>) {
         self.map.insert(key.into(), value.into());
     }
+
+    pub fn get(&self, key: &str) -> Option<&String> {
+        self.map.get(key)
+    }
 }

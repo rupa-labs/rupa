@@ -43,7 +43,7 @@ pub struct MockRouter;
 impl MockRouter {
     /// Creates a fresh router with memory-based history for testing.
     pub fn new() -> Arc<Router> {
-        Arc::new(Router::new(vec![], Box::new(MemoryHistory::new())))
+        Router::new(vec![], Arc::new(MemoryHistory::new("/")))
     }
 }
 

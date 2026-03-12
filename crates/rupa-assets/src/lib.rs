@@ -55,6 +55,7 @@ pub struct MockLoader {
 
 #[async_trait]
 impl Loader for MockLoader {
+    fn can_handle(&self, _path: &str) -> bool { true }
     async fn load(&self, _path: &str) -> Result<Vec<u8>, Error> {
         Ok(self.response.read().unwrap().clone())
     }

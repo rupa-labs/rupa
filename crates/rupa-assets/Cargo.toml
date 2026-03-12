@@ -15,4 +15,7 @@ async-trait.workspace = true
 image.workspace = true
 log.workspace = true
 thiserror.workspace = true
-tokio = { workspace = true, features = ["sync"] }
+tokio = { workspace = true, features = ["sync", "rt", "macros"] }
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["macros", "rt"] }

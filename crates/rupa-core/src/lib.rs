@@ -37,6 +37,7 @@ pub type Port = Arc<dyn Renderer>;
 /// A mock implementation of the Renderer for TDD and headless testing.
 pub struct MockRenderer {
     pub patches_received: Arc<RwLock<Vec<Patch>>>,
+    pub core: RenderCore,
 }
 
 impl MockRenderer {
@@ -44,14 +45,31 @@ impl MockRenderer {
     pub fn new() -> Self {
         Self {
             patches_received: Arc::new(RwLock::new(Vec::new())),
+            core: RenderCore::new(800.0, 600.0, 1.0),
         }
     }
 }
 
-impl Renderer for MockRenderer {
-    fn render_patch(&self, patches: PatchSet) {
-        self.patches_received.write().unwrap().extend(patches);
+impl TextMeasurer for MockRenderer {
+    fn measure(&self, text: &str, _size: f32) -> Vec2 {
+        Vec2::new(text.len() as f32 * 10.0, 20.0)
     }
+}
+
+impl Renderer for MockRenderer {
+    fn core(&self) -> &RenderCore { &self.core }
+    fn core_mut(&mut self) -> &mut RenderCore { &mut self.core }
+
+    fn render_patch(&mut self, patch: Patch) {
+        self.patches_received.write().unwrap().push(patch);
+    }
+
+    fn draw_rect(&mut self, _x: f32, _y: f32, _w: f32, _h: f32, _color: [f32; 4], _radius: f32) {}
+    fn draw_text(&mut self, _text: &str, _x: f32, _y: f32, _w: f32, _size: f32, _color: [f32; 4], _align: rupa_vnode::TextAlign) {}
+    fn draw_outline(&mut self, _x: f32, _y: f32, _w: f32, _h: f32, _color: [f32; 4]) {}
+    fn push_clip(&mut self, _x: f32, _y: f32, _w: f32, _h: f32) {}
+    fn pop_clip(&mut self) {}
+    fn present(&mut self) {}
 }
 
 #[cfg(test)]
@@ -60,8 +78,8 @@ mod tests {
 
     #[test]
     fn test_mock_renderer_flow() {
-        let renderer = MockRenderer::new();
-        renderer.render_patch(vec![Patch::Delete { id: "node_1".into() }]);
+        let mut renderer = MockRenderer::new();
+        renderer.render_patch(Patch::Delete { id: "node_1".into() });
         
         let received = renderer.patches_received.read().unwrap();
         assert_eq!(received.len(), 1);

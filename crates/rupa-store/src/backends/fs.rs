@@ -55,4 +55,23 @@ impl Store for FileSystemStore {
             Ok(())
         }
     }
+
+    fn clear(&self) -> Result<(), Error> {
+        fs::remove_dir_all(&self.root_path)
+            .and_then(|_| fs::create_dir_all(&self.root_path))
+            .map_err(|e| Error::Custom(format!("FS Clear Error: {}", e)))
+    }
+
+    fn keys(&self) -> Result<Vec<String>, Error> {
+        let mut keys = Vec::new();
+        for entry in fs::read_dir(&self.root_path).map_err(|e| Error::Custom(format!("FS ReadDir Error: {}", e)))? {
+            let entry = entry.map_err(|e| Error::Custom(format!("FS Entry Error: {}", e)))?;
+            if entry.path().is_file() {
+                if let Some(name) = entry.file_name().to_str() {
+                    keys.push(name.to_string());
+                }
+            }
+        }
+        Ok(keys)
+    }
 }

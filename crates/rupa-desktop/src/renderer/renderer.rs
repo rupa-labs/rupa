@@ -2,9 +2,7 @@ use std::sync::Arc;
 use std::collections::HashMap;
 use wgpu::*;
 use wgpu::util::StagingBelt;
-use rupa_core::{Vec2, Patch, UpdateType};
-use rupa_vnode::TextAlign;
-use crate::renderer::{Renderer as BaseRenderer, RenderCore};
+use rupa_core::{Vec2, Patch, UpdateType, renderer::{Renderer as BaseRenderer, RenderCore, TextMeasurer}, vnode::TextAlign};
 use super::batcher::{Batcher, Vertex};
 use super::texture::Texture;
 use super::text_renderer::TextRenderer;
@@ -108,7 +106,7 @@ impl Renderer {
     }
 }
 
-impl crate::renderer::TextMeasurer for Renderer {
+impl TextMeasurer for Renderer {
     fn measure(&self, text: &str, size: f32) -> Vec2 {
         let mut font_system = glyphon::FontSystem::new(); 
         let tsize = size * self.core.scale_factor;
@@ -135,7 +133,7 @@ impl BaseRenderer for Renderer {
             Patch::Create { node, .. } => {
                 // For simplicity in this artisan implementation, we track by key if available
                 if let rupa_core::VNode::Element(ref el) = node {
-                    if let Some(ref key) = el.key {
+                    if let Some(ref _key) = el.key {
                         // In a real engine, this would allocate Taffy nodes and GPU resources
                         // self.nodes.insert(key.clone(), SceneNode::new(...));
                     }

@@ -1,6 +1,6 @@
 use crate::Children;
-use rupa_core::{Component, VNode, VElement, ViewCore, Id, Signal};
-use rupa_vnode::{Style, Theme, Variant, Scale, Accessibility, Attributes};
+use rupa_core::{Component, VNode, ViewCore, Id, Signal};
+use rupa_vnode::{Style, Theme, Variant, Accessibility, Attributes};
 use crate::style::modifiers::base::Stylable;
 use std::sync::{RwLockWriteGuard, Arc};
 

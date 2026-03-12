@@ -48,7 +48,7 @@ pub fn pl(val: impl Into<Scale>) -> impl StyleModifier {
 
 pub fn gap(val: impl Into<Scale>) -> impl StyleModifier {
     let scale = val.into();
-    move |s: &mut Style| s.flex.gap = scale.value(16.0)
+    move |s: &mut Style| s.flex.gap = Some(scale.value(16.0))
 }
 
 // --- Chaining API ---

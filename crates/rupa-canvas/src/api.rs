@@ -4,6 +4,8 @@ use serde::{Serialize, Deserialize};
 /// Low-level drawing commands for the Canvas Port.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Command {
+    /// Clears the canvas with a solid color.
+    Clear(Color),
     MoveTo(Vec2),
     LineTo(Vec2),
     Rect(Rect, Color),

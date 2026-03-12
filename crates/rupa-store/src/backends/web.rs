@@ -22,6 +22,7 @@ impl Store for WebStorageStore {
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
+            let _ = key;
             Err(Error::Platform("WebStorage only available on WASM".into()))
         }
     }
@@ -51,6 +52,39 @@ impl Store for WebStorageStore {
         #[cfg(not(target_arch = "wasm32"))]
         {
             let _ = key;
+            Err(Error::Platform("WebStorage only available on WASM".into()))
+        }
+    }
+
+    fn clear(&self) -> Result<(), Error> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            let window = web_sys::window().unwrap();
+            let storage = window.local_storage().unwrap().unwrap();
+            storage.clear().map_err(|_| Error::Platform("Clear error".into()))
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            Err(Error::Platform("WebStorage only available on WASM".into()))
+        }
+    }
+
+    fn keys(&self) -> Result<Vec<String>, Error> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            let window = web_sys::window().unwrap();
+            let storage = window.local_storage().unwrap().unwrap();
+            let len = storage.length().map_err(|_| Error::Platform("Length error".into()))?;
+            let mut keys = Vec::new();
+            for i in 0..len {
+                if let Some(key) = storage.key(i).map_err(|_| Error::Platform("Key error".into()))? {
+                    keys.push(key);
+                }
+            }
+            Ok(keys)
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
             Err(Error::Platform("WebStorage only available on WASM".into()))
         }
     }

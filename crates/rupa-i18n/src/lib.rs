@@ -12,7 +12,6 @@ pub use provider::{Provider, Translator};
 pub use locale::Locale;
 use rupa_context::use_context;
 use rupa_signals::Memo;
-use std::sync::Arc;
 
 /// Translates a key into the current language reactively.
 /// 
@@ -42,7 +41,7 @@ pub struct MockTranslator {
 }
 
 impl Translator for MockTranslator {
-    fn translate(&self, key: &str) -> String {
+    fn translate(&self, key: &str, _locale: &Locale) -> String {
         format!("{}:{}", self.language, key)
     }
 }
@@ -51,11 +50,12 @@ impl Translator for MockTranslator {
 mod tests {
     use super::*;
     use rupa_context::provide_context;
+    use std::sync::Arc;
 
     #[test]
     fn test_mock_translation_flow() {
-        let provider = Provider::new(Locale::En);
-        provider.set_translator(Arc::new(MockTranslator { language: "en".into() }));
+        let translator = Arc::new(MockTranslator { language: "en".into() });
+        let provider = Provider::new(Locale::default(), translator);
         
         rupa_context::with_registry(std::sync::Arc::new(rupa_context::Registry::new()), || {
             provide_context(provider);

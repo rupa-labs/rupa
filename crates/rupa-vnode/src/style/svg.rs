@@ -1,4 +1,4 @@
-use rupa_base::{Vec2, Color};
+use rupa_base::Vec2;
 use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

@@ -206,7 +206,6 @@ mod tests {
     use super::*;
     use rupa_vnode::VNode;
     use rupa_vnode::style::Style;
-    use rupa_vnode::Attributes;
 
     #[test]
     fn test_attribute_diffing() {

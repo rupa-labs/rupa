@@ -119,8 +119,8 @@ impl Style {
 
         // Gaps
         s.gap = Size {
-            width: length(self.flex.gap),
-            height: length(self.flex.gap),
+            width: length(self.flex.gap.unwrap_or(0.0)),
+            height: length(self.flex.gap.unwrap_or(0.0)),
         };
 
         if let Some(ref align) = self.flex.align_items {

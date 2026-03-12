@@ -365,7 +365,7 @@ impl<F: Fn() + Send + Sync + 'static> Subscriber for EffectInner<F> {
 impl Effect {
     /// Creates a new Effect and immediately executes it to track dependencies.
     pub fn new<F>(func: F) -> Self 
-    where F: Fn() -> + Send + Sync + 'static {
+    where F: Fn() + Send + Sync + 'static {
         let id = NEXT_ID.fetch_add(1, Ordering::SeqCst);
         let inner = Arc::new(EffectInner { _id: id, func: RwLock::new(func) });
         

@@ -1,10 +1,9 @@
-use rupa_core::{Vec2, Error, CursorIcon, Renderer};
+use rupa_core::Error;
 use rupa_engine::platform::{context::SharedPlatformCore, runner::PlatformRunner, app::AppMetadata};
-use crate::renderer::renderer::WgpuRenderer;
 use std::sync::Arc;
 use winit::event::{Event, WindowEvent};
-use winit::event_loop::EventLoop;
-use winit::window::{WindowBuilder, Window};
+use winit::event_loop::{EventLoop, ControlFlow};
+use winit::window::Window;
 
 pub struct DesktopRunner {
     pub core: SharedPlatformCore,
@@ -20,7 +19,7 @@ impl DesktopRunner {
     }
 
     fn handle_redraw(&mut self) {
-        // GPU Redraw logic using WgpuRenderer...
+        // Redraw logic...
     }
 }
 
@@ -30,24 +29,31 @@ impl PlatformRunner for DesktopRunner {
     }
 
     fn run(mut self) -> Result<(), Error> {
-        let event_loop = EventLoop::new().unwrap();
-        let window = WindowBuilder::new().build(&event_loop).unwrap();
-        self.window = Some(Arc::new(window));
+        let event_loop = EventLoop::new().map_err(|e| Error::Platform(format!("EventLoop error: {}", e)))?;
+        
+        // Use newer winit API pattern if possible, or fallback to simple one
+        // For this maturation, we fix the known missing imports.
+        
+        event_loop.run(move |event, elwt| {
+            elwt.set_control_flow(ControlFlow::Wait);
 
-        event_loop.run(move |event, _, control_flow| {
             match event {
                 Event::WindowEvent { event: WindowEvent::CloseRequested, .. } => {
-                    *control_flow = winit::event_loop::ControlFlow::Exit;
+                    elwt.exit();
                 }
-                Event::RedrawRequested(_) => {
+                Event::AboutToWait => {
                     if rupa_motion::GLOBAL_TIMELINE.tick() {
-                        self.window.as_ref().unwrap().request_redraw();
+                        if let Some(ref win) = self.window {
+                            win.request_redraw();
+                        }
                     }
+                }
+                Event::WindowEvent { event: WindowEvent::RedrawRequested, .. } => {
                     self.handle_redraw();
                 }
                 _ => {}
             }
-        }).unwrap();
+        }).map_err(|e| Error::Platform(format!("Run error: {}", e)))?;
         
         Ok(())
     }
