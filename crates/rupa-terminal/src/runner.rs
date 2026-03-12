@@ -44,9 +44,6 @@ impl TerminalRunner {
             let _patches = reconcile(&self.last_vnode, &new_vnode, None, 0);
             
             // 3. Update Taffy Tree (For Layout & Hit Testing)
-            // Note: In a matured engine, the reconciler generates patches that 
-            // the renderer applies to its internal scene graph. 
-            // For this terminal showroom, we rebuild layout when tree structure changes.
             core.scene.layout_engine.taffy.clear();
             let layout_root = self.build_taffy_from_vnode(&new_vnode, &mut core.scene.layout_engine.taffy);
             
@@ -80,26 +77,50 @@ impl TerminalRunner {
         match node {
             VNode::Element(el) => {
                 let is_focused = el.key.as_deref() == focused_id && focused_id.is_some();
+                let is_input = el.tag == "input";
                 
                 // Draw Background
                 let mut color = el.style.background.color.as_ref().map(|c| c.to_rgba());
                 
+                // Artisan Focus Styling
                 if is_focused {
-                    color = Some([0.2, 0.6, 1.0, 1.0]); // Highlight blue
+                    if is_input {
+                        color = Some([0.1, 0.1, 0.15, 1.0]); // Deep dark for input
+                    } else {
+                        color = Some([0.2, 0.6, 1.0, 1.0]); // Highlight blue for buttons
+                    }
                 }
 
                 if let Some(rgba) = color {
                     renderer.draw_rect(pos.x, pos.y, layout.size.width, layout.size.height, rgba, 0.0);
                 }
 
+                // Border logic
                 if el.style.border.width != 0.0 || is_focused {
-                    let border_color = if is_focused { [0.0, 1.0, 1.0, 1.0] } else { [0.5, 0.5, 0.5, 1.0] };
+                    let border_color = if is_focused { 
+                        if is_input { [1.0, 1.0, 0.0, 1.0] } else { [0.0, 1.0, 1.0, 1.0] } 
+                    } else { 
+                        [0.3, 0.3, 0.3, 1.0] 
+                    };
                     renderer.draw_outline(pos.x, pos.y, layout.size.width, layout.size.height, border_color);
                 }
 
-                if is_focused && el.handlers.on_click.is_some() {
-                     // Draw a focus cursor
-                     renderer.draw_text(">", pos.x - 2.0, pos.y, 1.0, 1.0, [0.0, 1.0, 1.0, 1.0], rupa_core::vnode::TextAlign::Left);
+                // Focus Indicators
+                if is_focused {
+                    if is_input {
+                        // Vertical bar for input focus
+                        renderer.draw_text("┃", pos.x - 1.0, pos.y, 1.0, 1.0, [1.0, 1.0, 0.0, 1.0], rupa_core::vnode::TextAlign::Left);
+                    } else if el.handlers.on_click.is_some() {
+                        // Classic arrow for button focus
+                        renderer.draw_text(">", pos.x - 2.0, pos.y, 1.0, 1.0, [0.0, 1.0, 1.0, 1.0], rupa_core::vnode::TextAlign::Left);
+                    }
+                }
+
+                // Render Input Value with Cursor
+                if is_input {
+                    let val = el.attributes.get("value").cloned().unwrap_or_default();
+                    let display_text = if is_focused { format!("{}_", val) } else { val };
+                    renderer.draw_text(&display_text, pos.x + 1.0, pos.y, layout.size.width - 2.0, 1.0, [1.0, 1.0, 1.0, 1.0], rupa_core::vnode::TextAlign::Left);
                 }
 
                 let taffy_children = taffy.children(layout_node).unwrap();
@@ -110,7 +131,7 @@ impl TerminalRunner {
                 }
             }
             VNode::Text(text) => {
-                let color = [1.0, 1.0, 1.0, 1.0]; // Default white for TUI text
+                let color = [1.0, 1.0, 1.0, 1.0];
                 renderer.draw_text(text, pos.x, pos.y, layout.size.width, 1.0, color, rupa_core::vnode::TextAlign::Left);
             }
             VNode::Fragment(children) => {
@@ -130,6 +151,12 @@ impl TerminalRunner {
             VNode::Element(el) => {
                 let mut style = el.style.to_taffy();
                 if style.size.width == Dimension::Auto { style.size.width = Dimension::Percent(1.0); }
+                if el.tag == "input" {
+                    style.size.height = Dimension::Length(1.0);
+                    style.padding = taffy::prelude::Rect {
+                        left: length(1.0), right: length(1.0), top: length(0.0), bottom: length(0.0)
+                    };
+                }
                 
                 let children: Vec<NodeId> = el.children.iter()
                     .map(|c| self.build_taffy_from_vnode(c, taffy))
@@ -168,34 +195,30 @@ impl TerminalRunner {
         let mut hovered_path = std::mem::take(&mut core.hovered_path);
         let event_listeners = core.event_listeners.clone();
 
-        // TUI Focus Management Hack for Wizard
-        if let InputEvent::Key { key, .. } = &event {
-            let clickable_ids = Self::find_clickable_ids(&self.last_vnode);
-            if !clickable_ids.is_empty() {
-                // If nothing is focused, default to first element
-                if focused_id.is_none() {
-                    focused_id = Some(clickable_ids[0].clone());
-                    core.focused_id = focused_id.clone();
-                }
+        // TUI Focus Management
+        if let InputEvent::Key { key, state, .. } = &event {
+            if *state == rupa_core::events::ButtonState::Pressed {
+                let clickable_ids = Self::find_clickable_ids(&self.last_vnode);
+                if !clickable_ids.is_empty() {
+                    let mut current_idx = focused_id.as_ref()
+                        .and_then(|id| clickable_ids.iter().position(|c| c == id))
+                        .unwrap_or(0);
 
-                let mut current_idx = focused_id.as_ref()
-                    .and_then(|id| clickable_ids.iter().position(|c| c == id))
-                    .unwrap_or(0);
-
-                match key {
-                    rupa_core::events::KeyCode::ArrowDown | rupa_core::events::KeyCode::Tab => {
-                        current_idx = (current_idx + 1) % clickable_ids.len();
-                        focused_id = Some(clickable_ids[current_idx].clone());
-                        core.focused_id = focused_id.clone(); // Force sync
-                        return; // Consume event
+                    match key {
+                        rupa_core::events::KeyCode::ArrowDown | rupa_core::events::KeyCode::Tab => {
+                            current_idx = (current_idx + 1) % clickable_ids.len();
+                            focused_id = Some(clickable_ids[current_idx].clone());
+                            core.focused_id = focused_id.clone();
+                            return;
+                        }
+                        rupa_core::events::KeyCode::ArrowUp => {
+                            current_idx = (current_idx + clickable_ids.len() - 1) % clickable_ids.len();
+                            focused_id = Some(clickable_ids[current_idx].clone());
+                            core.focused_id = focused_id.clone();
+                            return;
+                        }
+                        _ => {}
                     }
-                    rupa_core::events::KeyCode::ArrowUp => {
-                        current_idx = (current_idx + clickable_ids.len() - 1) % clickable_ids.len();
-                        focused_id = Some(clickable_ids[current_idx].clone());
-                        core.focused_id = focused_id.clone();
-                        return;
-                    }
-                    _ => {}
                 }
             }
         }
@@ -225,11 +248,8 @@ impl TerminalRunner {
         let mut ids = Vec::new();
         match node {
             VNode::Element(el) => {
-                let has_handler = el.handlers.on_click.is_some() 
-                    || el.handlers.on_submit.is_some() 
-                    || el.handlers.on_input.is_some();
-
-                if has_handler {
+                // Focusable if it has handlers or is an input
+                if el.handlers.on_click.is_some() || el.handlers.on_input.is_some() || el.tag == "input" {
                     if let Some(ref key) = el.key {
                         ids.push(key.clone());
                     }
