@@ -1,0 +1,15 @@
+use rupa_engine::plugin::Plugin;
+use rupa_engine::App;
+
+pub struct MyArtisanPlugin;
+
+impl Plugin for MyArtisanPlugin {
+    fn name(&self) -> &str { "{{name}}" }
+    fn build(&self, _app: &mut App) {
+        log::info!("Building artisan plugin...");
+    }
+}
+
+fn main() { 
+    println!("Plugin assembly ready."); 
+}

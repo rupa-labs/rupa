@@ -1,5 +1,5 @@
 use rupa_core::{Component, VNode, Id};
-use rupa_vnode::{Style, TextAlign, Spacing};
+use rupa_vnode::{Style, TextAlign, Spacing, types::Unit};
 use crate::style::modifiers::Stylable;
 use crate::elements::Children;
 use std::sync::{RwLockWriteGuard, Arc, RwLock};
@@ -17,8 +17,8 @@ pub struct Fieldset<'a> {
 impl<'a> Fieldset<'a> {
     pub fn new(label: impl Into<String>) -> Self {
         let mut style = Style::default();
-        style.border.width = 1.0;
-        style.padding = Spacing::all(1.0);
+        style.border.width = Unit::Absolute(1.0);
+        style.padding = Spacing::all(Unit::Absolute(1.0));
         
         Self {
             id: Id::next().to_string(),
@@ -42,14 +42,12 @@ impl<'a> Fieldset<'a> {
 }
 
 impl<'a> Component for Fieldset<'a> {
-    fn id(&self) -> &str { &self.id }
-    fn style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     fn children(&self) -> Vec<&dyn Component> { self.children.as_refs() }
     
     fn render(&self) -> VNode {
         VNode::element("fieldset")
-            .with_style(self.style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_children(self.children.render_all())
             .with_key(self.id.clone())
             .with_label(self.label.clone())
@@ -58,5 +56,7 @@ impl<'a> Component for Fieldset<'a> {
 }
 
 impl<'a> Stylable for Fieldset<'a> {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }

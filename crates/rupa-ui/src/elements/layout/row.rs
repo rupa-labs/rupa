@@ -29,10 +29,8 @@ impl<'a> Row<'a> {
 }
 
 impl<'a> Component for Row<'a> {
-    fn id(&self) -> &str { &self.id }
-    fn style(&self) -> Arc<RwLock<Style>> { self.inner.get_style() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
-    fn children(&self) -> Vec<&dyn Component> { self.inner.children() }
+    fn children(&self) -> Vec<&dyn Component> { self.inner.children.as_refs() }
     
     fn render(&self) -> VNode {
         VNode::element("div")
@@ -43,5 +41,7 @@ impl<'a> Component for Row<'a> {
 }
 
 impl<'a> Stylable for Row<'a> {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.inner.get_style() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.inner.get_style_mut() }
 }

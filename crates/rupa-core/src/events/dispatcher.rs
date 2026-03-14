@@ -22,7 +22,6 @@ impl InputDispatcher {
         event_listeners: &[Arc<dyn Fn(&InputEvent) + Send + Sync>],
         debug: bool,
     ) {
-        let taffy = &scene.layout_engine.taffy;
         if debug {
             log::debug!("Dispatching event: {:?}", event);
         }
@@ -35,7 +34,7 @@ impl InputDispatcher {
             InputEvent::Pointer { position, action, button, modifiers } => {
                 *cursor_pos = position;
 
-                if let HitDiscovery::Found(hit) = scene.find_target(root_vnode, taffy, *cursor_pos) {
+                if let HitDiscovery::Found(hit) = scene.find_target(root_vnode, *cursor_pos) {
                     let mut ui_ev = UIEvent::new(hit.local_pos)
                         .with_context(modifiers, button, None);
                     

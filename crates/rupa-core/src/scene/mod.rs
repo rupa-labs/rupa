@@ -1,6 +1,6 @@
 use rupa_base::Vec2;
 use rupa_vnode::VNode;
-use crate::scene::layout::{LayoutEngine, LayoutMode};
+use crate::scene::layout::LayoutEngine;
 
 /// A platform-agnostic handle to a node in the Geometric Scene.
 /// It wraps the internal ID of the layout solver.
@@ -88,7 +88,7 @@ impl SceneCore {
         if !is_inside { return None; }
 
         match root {
-            VNode::Element(el) => {
+            VNode::Element(_el) => {
                 // This part still needs a way to get children SceneNodes from the solver 
                 // but we'll keep it simple for now to demonstrate the architecture.
                 // In a full implementation, the solver would provide child SceneNodes.

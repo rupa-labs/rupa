@@ -29,8 +29,6 @@ impl<'a> Col<'a> {
 }
 
 impl<'a> Component for Col<'a> {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.inner.get_style() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     fn children(&self) -> Vec<&dyn Component> { self.inner.children() }
     
@@ -43,5 +41,7 @@ impl<'a> Component for Col<'a> {
 }
 
 impl<'a> Stylable for Col<'a> {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.inner.get_style() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.inner.get_style_mut() }
 }

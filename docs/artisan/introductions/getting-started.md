@@ -1,70 +1,87 @@
 # Getting Started with Rupa Framework 🚀
 
-Welcome, Artisan! This guide will walk you through setting up your environment and building your first multi-platform application with Rupa.
+Welcome, Artisan! This guide will walk you through setting up your environment and crafting your first multi-platform application using the Rupa Framework. 
+
+Rupa is designed for those who value the **integrity of the craft**. Whether you are building a high-performance desktop suite, a sleek terminal utility, or a modern web experience, Rupa provides the high-quality materials you need to succeed.
 
 ---
 
 ## 🛠️ Prerequisites
 
-Before you begin, ensure you have the following installed on your system:
+Before you enter the workshop, ensure your system has the following tools:
 
-1.  **Rust Toolchain**: Install via [rustup.rs](https://rustup.rs/).
-2.  **System Dependencies** (for Native Desktop rendering):
-    *   **Linux**: `libwayland-dev`, `libx11-dev`, `pkg-config`.
-    *   **macOS/Windows**: Standard C++ build tools.
+1.  **Rust Toolchain**: Rupa requires the latest stable version of Rust. Install it via [rustup.rs](https://rustup.rs/).
+2.  **System Dependencies** (Required for hardware-accelerated Desktop rendering):
+    *   **Linux**: `libwayland-dev`, `libx11-dev`, `pkg-config`, `libfontconfig1-dev`.
+    *   **macOS**: Standard Xcode Command Line Tools.
+    *   **Windows**: Visual Studio Build Tools with C++ support.
 
 ---
 
 ## 🎨 Method 1: The Rupa Wizard (Recommended)
 
-The easiest way to start is using our TUI-powered project initializer.
+The fastest way to scaffold a new project is using our TUI-powered CLI tool. It automates the setup of the **Atoms & Composites** structure for you.
 
-### 1. Install the CLI
+### 1. Install the CLI (Coming Soon)
 ```bash
-cargo install rupa-cli
+# cargo install rupa-cli
 ```
 
 ### 2. Craft a New Project
 ```bash
 rupa create
 ```
-Follow the aesthetic on-screen prompts to choose your project name and template.
+Choose **"Zero Bloat (Pure Logic)"** for a minimal starting point, or **"Native Power"** for a full-featured desktop template.
+ Explore all available [**Project Templates**](./templates/README.md).
+
+Follow the aesthetic on-screen prompts to choose your project name, template (Desktop, TUI, or Full-stack), and initial theme.
 
 ---
 
 ## 📝 Method 2: Manual Setup
 
-If you prefer to understand every piece of your material, follow these steps:
+If you prefer to hand-pick every piece of your material, follow these steps:
 
-### 1. Initialize Cargo
+### 1. Initialize your Workspace
 ```bash
 mkdir my-artisan-app && cd my-artisan-app
 cargo init
 ```
 
-### 2. Add Dependencies
-Add the following to your `Cargo.toml`:
+### 2. Add the Materials
+Add Rupa to your `Cargo.toml`. During the early development phase, we recommend using the Git repository:
 
 ```toml
 [dependencies]
+# For a standard Desktop application
 rupa = { git = "https://github.com/rupa-labs/rupa", features = ["desktop"] }
 ```
 
-### 3. Write Your First Component
-Replace the contents of `src/main.rs`:
+### 3. Write Your First Masterpiece
+Replace the contents of `src/main.rs` with this basic reactive counter:
 
 ```rust
 use rupa::prelude::*;
 
 fn main() {
-    App::new("Hello Rupa")
+    // 1. Define your reactive state
+    let count = Signal::new(0);
+
+    // 2. Build your app using aesthetic Tiers
+    App::new("Artisan Counter")
         .root(
             VStack::new()
-                .p(40.0)
-                .gap(20.0)
+                .p(Step::S4)      // Aesthetic padding
                 .items_center()
-                .child(Box::new(Text::new("Welcome to the Workshop").font_bold()))
-                .child(Box::new(Button::new("Click Me").on_click(|_| println!("Artisan button clicked!"))))
+                .gap(Step::S2)    // Standardized spacing
+                .child(Box::new(Text::new(Memo::new({
+                    let count = count.clone();
+                    move || format!("Current Value: {}", count.get())
+                })).font_bold()))
+                .child(Box::new(Button::new("Increment")
+                    .variant(Variant::Primary)
+                    .on_click(move |_| count.update(|v| *v += 1))
+                ))
         )
         .run();
 }
@@ -74,37 +91,31 @@ fn main() {
 
 ## 🏗️ Core Concepts for Artisans
 
-### 1. The Reactivity Model
-Rupa uses **Fine-Grained Reactivity**. Instead of re-rendering the entire tree, only the specific VNode properties that depend on a `Signal` are updated.
+To master Rupa, you must understand three foundational principles:
 
-### 2. The Tiered Architecture
-- **Tier 1 (Atomic)**: Raw materials like `Signal`, `VNode`, and `Color`.
-- **Tier 2 (Composite)**: Assemblies like `Button`, `VStack`, and `Input`.
-- **Tier 3 (Showroom)**: Complete platform runners like `rupa-desktop`.
+### 1. Fine-Grained Reactivity 🧬
+Rupa doesn't "re-render everything." It uses **Signals** to create a living heartbeat for your UI. When a value changes, only the specific text node or style property that depends on it is updated. This results in extreme performance and predictable behavior.
+- *Learn more in [**Reactivities & Events**](../reactivities/README.md).*
 
-### 3. Platform Agnosticism
-Your code describes **intent** via VNodes. The same `VStack` can be rendered as a GPU primitive, an HTML `div`, or a terminal block depending on which showroom you run it in.
+### 2. The Universal DNA (VNodes) 🌳
+Your components produce **VNodes** (Virtual Nodes). A VNode is a technical description of your intent. It doesn't know about pixels or ANSI characters yet. This decoupling allows your logic to be 100% platform-agnostic and easily testable.
+- *Learn more in [**Component Library**](../components/README.md).*
+
+### 3. Showrooms & Adapters 🏪
+The **Showroom** is where your creation is displayed. By changing the **Adapter**, you can run the exact same logic on the GPU (**Desktop Adapter**), in the terminal (**Terminal Adapter**), or in a browser (**Web Adapter**).
+- *Explore available targets in [**Template References**](./templates/README.md).*
 
 ---
+
 ## 🚀 Next Steps
 
-### Generate a Static Site
-If you have markdown files in `src/pages`, generate your HTML output:
-```bash
-rupa build
-```
+Now that you have your first app running, it's time to dive deeper:
 
-### Run Custom Actions
-Execute internal application logic without the UI:
-```bash
-rupa run my:action
-```
+1.  **Explore Components**: See the full list of available materials in the [**Component References**](../components/README.md).
+2.  **Add Interactivity**: Learn how to handle complex user intents in the [**Event References**](../reactivities/event-references.md).
+3.  **Design your Aesthetic**: Master the [**Theme System**](./templates/README.md) and OKLCH color spaces.
+4.  **Go Full-Stack**: Learn how to build content-driven sites using the [**Markdown Engine**](../ecosystems/README.md).
 
-### Learn More
-- Explore the [**Component References**](./component-references.md) to see available building blocks.
-... (rest of the file) ...
+---
 
-- Learn about [**Motion & Animations**](./ecosystems/motion-engine.md) to make your UI feel alive.
-- Check out the [**Engineering Standards**](./engineering-standards.md) to contribute back to the ecosystem.
-
-Happy Crafting! 🎨
+*Crafting software is a journey of continuous improvement. We are excited to see what you will build with the Rupa Framework.*

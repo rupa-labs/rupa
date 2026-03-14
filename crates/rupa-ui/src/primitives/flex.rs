@@ -32,8 +32,6 @@ impl<'a> Flex<'a> {
 }
 
 impl<'a> Component for Flex<'a> {
-    fn id(&self) -> &str { &self.id }
-    fn style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     fn children(&self) -> Vec<&dyn Component> { self.children.as_refs() }
     
@@ -46,5 +44,7 @@ impl<'a> Component for Flex<'a> {
 }
 
 impl<'a> Stylable for Flex<'a> {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }

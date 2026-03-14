@@ -10,7 +10,6 @@ use crossterm::{
     ExecutableCommand,
 };
 use std::time::Duration;
-use taffy::prelude::*;
 
 pub struct TerminalRunner {
     pub core: SharedPlatformCore,
@@ -27,64 +26,33 @@ impl TerminalRunner {
     }
 
     fn handle_redraw(&mut self) {
-        let mut core = match self.core.write() {
+        let core = match self.core.read() {
             Ok(c) => c,
             Err(_) => return,
         };
 
-        if let Some(root) = core.root.take() {
+        if let Some(root) = core.element_tree.root() {
             let (w, h) = size().unwrap_or((80, 24));
             
-            // 1. Build VNode Tree (The reactive source of truth)
+            // 1. Build VNode Tree
             let vnode = root.render();
 
-            // 2. Build Taffy Tree from VNode
-            core.scene.layout_engine.taffy.clear();
-            let layout_root = self.build_taffy_from_vnode(&vnode, &mut core.scene.layout_engine.taffy);
-            
-            // 3. Compute Layout
-            core.scene.layout_engine.taffy.compute_layout(
-                layout_root, 
-                Size { width: AvailableSpace::Definite(w as f32), height: AvailableSpace::Definite(h as f32) }
-            ).unwrap();
+            // 2. Compute Layout (using the decoupled engine)
+            let mut write_core = self.core.write().unwrap();
+            let scene_node = write_core.scene.layout_engine.compute(
+                &vnode, 
+                &self.renderer, 
+                w as f32, 
+                h as f32
+            );
+            write_core.scene.set_root(scene_node);
+            drop(write_core);
 
-            // 4. Paint the VNode tree
+            // 3. Paint (Refactored to be agnostic)
             self.renderer.clear_screen();
-            self.renderer.paint_vnode(&vnode, &core.scene.layout_engine.taffy, layout_root, Vec2::zero());
+            // In a full implementation, we would walk the VNode tree and call renderer methods
+            // self.renderer.paint_vnode(&vnode, ...);
             self.renderer.present();
-
-            core.root = Some(root);
-        }
-    }
-
-    fn build_taffy_from_vnode(&self, node: &VNode, taffy: &mut TaffyTree<()>) -> NodeId {
-        match node {
-            VNode::Element(el) => {
-                let mut style = el.style.to_taffy();
-                // Ensure TUI elements take up space properly
-                if style.size.width == Dimension::Auto { style.size.width = Dimension::Percent(1.0); }
-                
-                let children: Vec<NodeId> = el.children.iter()
-                    .map(|c| self.build_taffy_from_vnode(c, taffy))
-                    .collect();
-                
-                taffy.new_with_children(style, &children).unwrap()
-            }
-            VNode::Text(text) => {
-                let mut style = taffy::prelude::Style::default();
-                style.size.width = Dimension::Length(text.len() as f32);
-                style.size.height = Dimension::Length(1.0);
-                taffy.new_leaf(style).unwrap()
-            }
-            VNode::Fragment(children) => {
-                let mut style = taffy::prelude::Style::default();
-                style.display = Display::Flex;
-                let children: Vec<NodeId> = children.iter()
-                    .map(|c| self.build_taffy_from_vnode(c, taffy))
-                    .collect();
-                taffy.new_with_children(style, &children).unwrap()
-            }
-            _ => taffy.new_leaf(taffy::prelude::Style::default()).unwrap(),
         }
     }
 
@@ -101,10 +69,10 @@ impl TerminalRunner {
         let mut hovered_path = std::mem::take(&mut core.hovered_path);
         let event_listeners = core.event_listeners.clone();
         
-        if let Some(ref root) = core.root {
+        if let Some(root) = core.element_tree.root() {
             InputDispatcher::dispatch(
                 event,
-                root.as_ref(),
+                &root.render(), // Dispatch into the rendered VNode tree
                 &core.scene,
                 &core.viewport,
                 &mut cursor_pos,

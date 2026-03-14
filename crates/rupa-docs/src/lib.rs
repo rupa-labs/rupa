@@ -4,16 +4,28 @@
 //! This crate acts as an internal Tooling application to showcase 
 //! the framework's capabilities across all rendering targets.
 
-use rupa::prelude::*;
+use rupa_core::{Component, VNode};
+use rupa_ui::prelude::*;
 
-/// The main entry point for building the Rupa Documentation UI.
-/// This component is designed to be executed across Desktop (GPU), 
-/// Terminal (TUI), and Web (DOM) showrooms.
-pub fn docs_app() -> impl Component {
+pub struct DocViewer;
+
+impl DocViewer {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn render_page(title: &str, content: &str) -> VNode {
+        VStack::new()
+            .child(Text::new(title).h1())
+            .child(Text::new(content))
+            .render()
+    }
+}
+
+pub fn showcase_component() -> impl Component {
     VStack::new()
-        .style((p(20.0), gap(10.0), bg_primary()))
-        .child(Text::new("Rupa Framework Documentation")
-            .style(font_bold()))
+        .p(16.0)
+        .child(Text::new("Rupa Documentation Showcase").h2())
         .child(Text::new("The polyglot, full-stack UI framework for Rust artisans."))
         .child(Button::new("Get Started")
             .variant(Variant::Secondary)

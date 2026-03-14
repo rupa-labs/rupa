@@ -21,17 +21,17 @@ impl ThemeSwitcher {
 }
 
 impl Component for ThemeSwitcher {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("theme-switcher")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_key(self.id.clone())
     }
 }
 
 impl Stylable for ThemeSwitcher {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }

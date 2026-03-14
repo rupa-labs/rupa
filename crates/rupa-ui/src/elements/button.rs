@@ -41,7 +41,7 @@ impl<'a> Button<'a> {
     }
 
     pub fn variant(self, v: Variant) -> Self { 
-        self.get_style().write().unwrap().background.color = Some(Theme::variant(v.clone()));
+        self.style.write().unwrap().background.color = Some(Theme::variant(v.clone()));
         Self { variant: v, ..self }
     }
 
@@ -62,18 +62,18 @@ impl<'a> Button<'a> {
 }
 
 impl<'a> Stylable for Button<'a> {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.get_style().write().unwrap() }
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
 impl<'a> Component for Button<'a> {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         let is_disabled = self.disabled.get();
         let mut node = VNode::element("button")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_attr("disabled", if is_disabled { "true" } else { "false" })
             .with_children(self.children.render_all())
             .with_child(VNode::text(self.label.clone()))
@@ -108,15 +108,17 @@ impl CloseButton {
     }
 }
 
-impl Stylable for CloseButton { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.get_style().write().unwrap() } }
-
-impl Component for CloseButton {
+impl Stylable for CloseButton { 
     fn id(&self) -> &str { &self.id }
     fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() } 
+}
+
+impl Component for CloseButton {
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     fn render(&self) -> VNode {
         VNode::element("button")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_child(VNode::text("×"))
             .with_key(self.id.clone())
     }
@@ -148,16 +150,18 @@ impl<'a> ButtonGroup<'a> {
     }
 }
 
-impl<'a> Stylable for ButtonGroup<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.get_style().write().unwrap() } }
-
-impl<'a> Component for ButtonGroup<'a> {
+impl<'a> Stylable for ButtonGroup<'a> { 
     fn id(&self) -> &str { &self.id }
     fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() } 
+}
+
+impl<'a> Component for ButtonGroup<'a> {
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     fn children(&self) -> Vec<&dyn Component> { self.children.as_refs() }
     fn render(&self) -> VNode {
         VNode::element("div")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_children(self.children.render_all())
             .with_key(self.id.clone())
     }

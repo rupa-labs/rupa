@@ -1,0 +1,13 @@
+[package]
+name = "{{name}}"
+version = "0.1.0"
+edition = "2021"
+authors = ["Artisan"]
+description = "A new Rupa material."
+
+[dependencies]
+rupa-base = { git = "https://github.com/rupa-labs/rupa" }
+rupa-signals = { git = "https://github.com/rupa-labs/rupa" }
+serde = { version = "1.0", features = ["derive"] }
+log = "0.4"
+env_logger = "0.10"

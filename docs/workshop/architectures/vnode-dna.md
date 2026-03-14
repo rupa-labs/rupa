@@ -1,56 +1,67 @@
 # VNode Contract System (The DNA) 🌳
 
-The **VNode (Virtual Node)** is the universal language of the Rupa Framework. It is a platform-agnostic, serializable representation of a UI element. Following the **Atoms & Composites** model, VNodes live in Tier 1 as the primary **UI Contract Port**.
+The **VNode (Virtual Node)** is the universal language of the Rupa Framework. It acts as a platform-agnostic, serializable bridge between high-level Artisan logic and low-level physical Adapters.
 
 ---
 
-## 1. The VNode Enum
+## 1. The Core Purpose
 
-A `VNode` can represent several distinct types of UI structures:
+In a meta-framework, components must not be tied to specific rendering technologies. Instead, they describe **intent** by producing a tree of VNodes.
+
+### Key Benefits:
+- **Headless Testing**: Verify UI structure by asserting against VNode trees without a GPU or Window.
+- **Multi-Targeting**: The same VNode can become a WGPU primitive, an ANSI character, or an HTML tag.
+- **Performance**: Enables O(N) "Diffing" and "Patching," ensuring only changed parts of the UI are updated.
+
+---
+
+## 2. The VNode Enum
+
+A `VNode` is a lightweight, serializable structure representing distinct UI types:
 
 | Variant | Technical Role | Description |
 | :--- | :--- | :--- |
 | **`Element`** | Structural | A named element (e.g., `"div"`, `"button"`) with styles, attributes, and children. |
 | **`Text`** | Content | Raw string content to be shaped and rendered. |
-| **`Fragment`** | Logical | A transparent collection of nodes used to group elements without a wrapper. |
+| **`Fragment`** | Logical | A transparent collection of nodes used to group elements. |
 | **`Component`** | Placeholder | A metadata marker for a lazily-resolved Artisan component. |
 | **`Empty`** | Null | A sentinel node used for conditional rendering. |
 
 ---
 
-## 2. VElement Anatomy
+## 3. VElement Anatomy
 
-The `VElement` is the most complex unit of the DNA. It contains everything required for an **Adapter** to manifest it physically:
+The `VElement` contains the metadata required for an **Adapter** to manifest it:
 
-- **Tag**: A semantic string identifying the element type.
-- **Style**: An agnostic `Style` object (Layout, Colors, Borders).
-- **Attributes**: A key-value map for platform-specific properties.
-- **Event Handlers**: Logic-free markers that tell the **Input Dispatcher** to listen for specific intents.
-- **Key**: An optional unique identifier for O(N) reconciliation performance.
-
----
-
-## 3. Agnostic Style Model
-
-The `Style` object within a VNode does not contain physical coordinates. It contains **Rules of Intent**:
-
-- **Flex/Grid Rules**: Described via the **Layout Kernel**, then solved by a **Layout Adapter** (e.g., Taffy).
-- **Colors**: Defined in **OKLCH** space for perceptual uniformity.
-- **Spacing**: Defined in **Artisan Steps** (logical units) that the **Layout Kernel** translates to Pixels or Cells.
+- **Tag**: Semantic identifier (e.g., `"vstack"`, `"button"`).
+- **Style**: Agnostic rules (Flex, Grid, OKLCH Colors).
+- **Attributes**: Platform-specific key-value pairs.
+- **Handlers**: Markers for **Intents** (Submit, Select, Cancel).
+- **Motion**: Declarative physics-based animation rules.
+- **Key**: Unique ID for reconciliation performance.
 
 ---
 
-## 4. The Lifecycle of a VNode
+## 4. The Lifecycle: Build, Diff, Patch
 
-1. **Generation (Tier 2)**: An Artisan component calls `render()`, producing a fresh VNode tree.
-2. **Reconciliation (Tier 2)**: The **Reconciliation Kernel** compares the new tree with the previous one.
-3. **Patching (Tier 2)**: A list of `Patch` instructions is generated.
-4. **Manifestation (Tier 3)**: A **Physical Adapter** (Desktop, Terminal, etc.) consumes the patches and executes the drawing logic.
+```mermaid
+graph TD
+    S[Signal Change] --> C[Component::render]
+    C --> V[New VNode Tree]
+    V --> R[Reconciliation Kernel]
+    R --> |diff with old| P[Patches]
+    P --> A[Physical Adapter]
+    A --> H[Hardware Update]
+```
+
+1. **Generation (Tier 2)**: Components produce a fresh VNode snapshot.
+2. **Reconciliation (Tier 2)**: The Kernel compares snapshots and issues minimal **Patches**.
+3. **Manifestation (Tier 3)**: A **Physical Adapter** executes patches onto the hardware surface.
 
 ---
 
-## 5. Architectural Constraints
+## 5. Architectural Mandates
 
-- **Purity**: VNodes must never contain platform-specific logic (no WGPU meshes, no DOM references).
-- **Serializability**: Every VNode MUST be serializable to JSON to enable SSR and remote rendering protocols.
-- **Immutability**: Once a VNode tree is produced, it is treated as an immutable snapshot of the UI at a specific point in time.
+- **Purity**: No platform-specific logic inside VNodes.
+- **Serializability**: MUST implement `serde` for SSR and Polyglot interoperability.
+- **Immutability**: VNodes are immutable snapshots. Once produced, they are never modified.

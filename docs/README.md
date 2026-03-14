@@ -13,7 +13,7 @@ For developers building applications, interfaces, and systems *using* the Rupa F
 *   **[Getting Started](./artisan/introductions/getting-started.md)**: Build your first Rupa application.
 *   **[Component Library](./artisan/components/README.md)**: UI components, primitives, and styling.
 *   **[Reactivities & Events](./artisan/reactivities/README.md)**: Signals, Memos, and the UI interaction model.
-*   **[Platform Showrooms](./artisan/showrooms/README.md)**: Running on Desktop, Web, or Terminal.
+*   **[Project Templates](./artisan/introductions/templates/README.md)**: Choose your starting material.
 *   **[Ecosystems & Tooling](./artisan/ecosystems/README.md)**: CLI, bundlers, and third-party integrations.
 
 ---

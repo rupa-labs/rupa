@@ -1,0 +1,11 @@
+use rupa::prelude::*;
+mod components;
+
+fn main() {
+    env_logger::init();
+    
+    // Hybrid Interop: Native UI with Embedded Web Content
+    App::new("{{title}} Hybrid")
+        .root(components::AppRoot::new())
+        .run();
+}

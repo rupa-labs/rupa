@@ -26,19 +26,19 @@ impl Progress {
 }
 
 impl Component for Progress {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("progress")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_attr("value", self.value.get().to_string())
             .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Progress {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
@@ -63,18 +63,18 @@ impl Skeleton {
 }
 
 impl Component for Skeleton {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("skeleton")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Skeleton {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
@@ -101,19 +101,19 @@ impl Badge {
 }
 
 impl Component for Badge {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("badge")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_child(VNode::text(self.text.clone()))
             .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Badge {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
@@ -138,18 +138,18 @@ impl Spinner {
 }
 
 impl Component for Spinner {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("spinner")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Spinner {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
@@ -176,18 +176,18 @@ impl Alert {
 }
 
 impl Component for Alert {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("alert")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_child(VNode::text(self.text.clone()))
             .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Alert {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }

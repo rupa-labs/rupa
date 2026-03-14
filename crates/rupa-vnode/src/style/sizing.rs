@@ -1,11 +1,12 @@
 use serde::{Serialize, Deserialize};
+use crate::types::Unit;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Sizing {
-    pub width: Option<f32>,
-    pub height: Option<f32>,
-    pub min_width: Option<f32>,
-    pub min_height: Option<f32>,
-    pub max_width: Option<f32>,
-    pub max_height: Option<f32>,
+    pub width: Option<Unit>,
+    pub height: Option<Unit>,
+    pub min_width: Option<Unit>,
+    pub min_height: Option<Unit>,
+    pub max_width: Option<Unit>,
+    pub max_height: Option<Unit>,
 }

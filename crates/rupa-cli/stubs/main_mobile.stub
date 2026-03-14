@@ -1,0 +1,10 @@
+use rupa::prelude::*;
+mod components;
+
+#[no_mangle]
+pub extern "C" fn main_mobile() {
+    env_logger::init();
+    App::new("{{title}} Mobile")
+        .root(components::AppRoot::new())
+        .run();
+}

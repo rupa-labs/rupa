@@ -1,40 +1,43 @@
 use serde::{Serialize, Deserialize};
-use taffy::prelude::Rect;
-use taffy::style::LengthPercentage;
+use crate::types::Unit;
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+/// # Rupa Spacing 📏
+/// 
+/// Defines the layout spacing (Padding, Margin) for a UI element.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Spacing {
-    pub top: f32,
-    pub right: f32,
-    pub bottom: f32,
-    pub left: f32,
+    pub top: Unit,
+    pub right: Unit,
+    pub bottom: Unit,
+    pub left: Unit,
 }
 
 impl Spacing {
-    pub fn all(val: f32) -> Self {
-        Self { top: val, right: val, bottom: val, left: val }
-    }
-
-    pub fn is_zero(&self) -> bool {
-        self.top == 0.0 && self.right == 0.0 && self.bottom == 0.0 && self.left == 0.0
-    }
-
-    pub fn to_taffy(&self) -> Rect<LengthPercentage> {
-        Rect {
-            left: LengthPercentage::Length(self.left),
-            right: LengthPercentage::Length(self.right),
-            top: LengthPercentage::Length(self.top),
-            bottom: LengthPercentage::Length(self.bottom),
+    pub fn new(top: impl Into<Unit>, right: impl Into<Unit>, bottom: impl Into<Unit>, left: impl Into<Unit>) -> Spacing {
+        Self { 
+            top: top.into(), 
+            right: right.into(), 
+            bottom: bottom.into(), 
+            left: left.into() 
         }
     }
-}
 
-pub trait IntoSpacing {
-    fn into_spacing(self) -> Spacing;
-}
+    pub fn all(val: impl Into<Unit>) -> Self {
+        let u = val.into();
+        Self { top: u.clone(), right: u.clone(), bottom: u.clone(), left: u }
+    }
 
-impl IntoSpacing for f32 {
-    fn into_spacing(self) -> Spacing {
-        Spacing::all(self)
+    pub fn x(mut self, val: impl Into<Unit>) -> Self {
+        let u = val.into();
+        self.left = u.clone();
+        self.right = u;
+        self
+    }
+
+    pub fn y(mut self, val: impl Into<Unit>) -> Self {
+        let u = val.into();
+        self.top = u.clone();
+        self.bottom = u;
+        self
     }
 }

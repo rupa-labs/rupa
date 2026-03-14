@@ -1,4 +1,4 @@
-use rupa_vnode::{Style, Display, Position, AlignItems, JustifyContent, Scale};
+use rupa_vnode::{Style, Display, Position, AlignItems, JustifyContent, Unit};
 use rupa_vnode::style::grid::{GridTrack, GridLine};
 
 use super::base::{StyleModifier, Stylable};
@@ -28,10 +28,12 @@ pub fn rows(n: u16) -> impl StyleModifier {
     }
 }
 
-pub fn grid_gap(val: f32) -> impl StyleModifier {
+pub fn grid_gap(val: impl Into<Unit>) -> impl StyleModifier {
+    let unit = val.into();
     move |s: &mut Style| {
-        s.grid.column_gap = val;
-        s.grid.row_gap = val;
+        let v = unit.resolve(4.0); // TUI base 1.0, GUI base 4.0/8.0? Using 4.0 as default for now
+        s.grid.column_gap = v;
+        s.grid.row_gap = v;
     }
 }
 
@@ -109,10 +111,10 @@ pub fn items_stretch() -> impl StyleModifier {
     move |s: &mut Style| s.flex.align_items = Some(AlignItems::Stretch)
 }
 
-pub fn gap(val: impl Into<Scale>) -> impl StyleModifier {
-    let scale = val.into();
+pub fn gap(val: impl Into<Unit>) -> impl StyleModifier {
+    let unit = val.into();
     move |s: &mut Style| {
-        let v = scale.value(16.0);
+        let v = unit.resolve(4.0);
         s.flex.gap = Some(v);
         s.grid.column_gap = v;
         s.grid.row_gap = v;
@@ -154,7 +156,7 @@ pub trait ChainedLayout: Stylable {
     fn grid(self) -> Self { self.style(grid()) }
     fn cols(self, n: u16) -> Self { self.style(cols(n)) }
     fn rows(self, n: u16) -> Self { self.style(rows(n)) }
-    fn grid_gap(self, val: f32) -> Self { self.style(grid_gap(val)) }
+    fn grid_gap(self, val: impl Into<Unit>) -> Self { self.style(grid_gap(val)) }
     
     fn col_span(self, n: u16) -> Self { self.style(col_span(n)) }
     fn row_span(self, n: u16) -> Self { self.style(row_span(n)) }
@@ -176,7 +178,7 @@ pub trait ChainedLayout: Stylable {
     fn items_end(self) -> Self { self.style(items_end()) }
     fn items_stretch(self) -> Self { self.style(items_stretch()) }
 
-    fn gap(self, val: impl Into<Scale>) -> Self { self.style(gap(val)) }
+    fn gap(self, val: impl Into<Unit>) -> Self { self.style(gap(val)) }
     fn flex_grow(self, val: f32) -> Self { self.style(flex_grow(val)) }
     fn flex_shrink(self, val: f32) -> Self { self.style(flex_shrink(val)) }
     fn wrap(self) -> Self { self.style(wrap()) }

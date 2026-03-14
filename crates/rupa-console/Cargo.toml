@@ -10,6 +10,7 @@ readme = "README.md"
 
 [dependencies]
 rupa-core.workspace = true
+rupa-vnode.workspace = true
 rupa-signals.workspace = true
 rupa-base.workspace = true
 crossterm.workspace = true

@@ -1,0 +1,24 @@
+use rupa::prelude::*;
+
+fn main() {
+    // 1. Initial State
+    let count = Signal::new(0);
+
+    // 2. Build Artisan App
+    App::new("{{title}}")
+        .root(
+            VStack::new()
+                .p(Step::S4)
+                .items_center()
+                .gap(Step::S2)
+                .child(Text::new("🎨 RUPA NATIVE").font_bold())
+                .child(Text::new(Memo::new({
+                    let count = count.clone();
+                    move || format!("Reactive Count: {}", count.get())
+                })))
+                .child(Button::new("Increment")
+                    .on_click(move |_| count.update(|v| *v += 1))
+                )
+        )
+        .run();
+}

@@ -36,7 +36,7 @@ impl Text {
     pub fn lead(self) -> Self { self.size(20.0).light() }
     pub fn small(self) -> Self { self.size(12.0).muted() }
     pub fn mono(self) -> Self {
-        self.get_style().write().unwrap().typography.family = FontFamily::Mono;
+        self.style.write().unwrap().typography.family = FontFamily::Mono;
         self
     }
 
@@ -50,39 +50,39 @@ impl Text {
     pub fn black(self) -> Self { self.weight(FontWeight::Black) }
 
     fn weight(self, weight: FontWeight) -> Self {
-        self.get_style().write().unwrap().typography.weight = weight;
+        self.style.write().unwrap().typography.weight = weight;
         self
     }
 
     // --- Style & Decoration ---
     pub fn italic(self) -> Self {
-        self.get_style().write().unwrap().typography.italic = true;
+        self.style.write().unwrap().typography.italic = true;
         self
     }
 
     pub fn underline(self) -> Self {
-        self.get_style().write().unwrap().typography.decoration = TextDecoration::Underline;
+        self.style.write().unwrap().typography.decoration = TextDecoration::Underline;
         self
     }
 
     pub fn strikethrough(self) -> Self {
-        self.get_style().write().unwrap().typography.decoration = TextDecoration::LineThrough;
+        self.style.write().unwrap().typography.decoration = TextDecoration::LineThrough;
         self
     }
 
     // --- Transform ---
     pub fn uppercase(self) -> Self {
-        self.get_style().write().unwrap().typography.transform = TextTransform::Uppercase;
+        self.style.write().unwrap().typography.transform = TextTransform::Uppercase;
         self
     }
 
     pub fn lowercase(self) -> Self {
-        self.get_style().write().unwrap().typography.transform = TextTransform::Lowercase;
+        self.style.write().unwrap().typography.transform = TextTransform::Lowercase;
         self
     }
 
     pub fn capitalize(self) -> Self {
-        self.get_style().write().unwrap().typography.transform = TextTransform::Capitalize;
+        self.style.write().unwrap().typography.transform = TextTransform::Capitalize;
         self
     }
 
@@ -93,23 +93,23 @@ impl Text {
     pub fn justify(self) -> Self { self.align(TextAlign::Justify) }
 
     fn align(self, align: TextAlign) -> Self {
-        self.get_style().write().unwrap().typography.align = align;
+        self.style.write().unwrap().typography.align = align;
         self
     }
 
     // --- Layout Behavior ---
     pub fn wrap(self) -> Self {
-        self.get_style().write().unwrap().typography.wrap = TextWrap::Wrap;
+        self.style.write().unwrap().typography.wrap = TextWrap::Wrap;
         self
     }
 
     pub fn no_wrap(self) -> Self {
-        self.get_style().write().unwrap().typography.wrap = TextWrap::NoWrap;
+        self.style.write().unwrap().typography.wrap = TextWrap::NoWrap;
         self
     }
 
     pub fn truncate(self) -> Self {
-        let mut style = self.get_style().write().unwrap();
+        let mut style = self.style.write().unwrap();
         style.typography.overflow = TextOverflow::Ellipsis;
         style.typography.wrap = TextWrap::NoWrap;
         drop(style);
@@ -125,29 +125,29 @@ impl Text {
     pub fn dim(self) -> Self { self.color(Color::Semantic("text-dim".into(), None)) }
 
     pub fn color(self, color: Color) -> Self {
-        self.get_style().write().unwrap().typography.color = Some(color);
+        self.style.write().unwrap().typography.color = Some(color);
         self
     }
 
     pub fn size(self, size: f32) -> Self {
-        self.get_style().write().unwrap().typography.size = size;
+        self.style.write().unwrap().typography.size = rupa_vnode::types::Unit::Absolute(size);
         self
     }
 }
 
 impl Component for Text {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("span")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_child(VNode::text(self.content.get()))
             .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Text {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.get_style().write().unwrap() }
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }

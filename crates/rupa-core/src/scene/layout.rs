@@ -1,4 +1,5 @@
 use rupa_vnode::{VNode, Style};
+use rupa_vnode::style::types::Unit;
 use rupa_base::Vec2;
 use crate::renderer::TextMeasurer;
 use super::SceneNode;
@@ -92,6 +93,24 @@ impl TaffySolver {
         }
     }
 
+    fn resolve_unit(&self, unit: Unit) -> taffy::prelude::LengthPercentage {
+        use taffy::prelude::LengthPercentage;
+        match unit {
+            Unit::Absolute(v) => {
+                if v < 0.0 {
+                    // Mapping -1.0 to 100%
+                    LengthPercentage::Percent(1.0)
+                } else {
+                    LengthPercentage::Length(v)
+                }
+            }
+            Unit::Step(s) => {
+                // Base step is 4.0 units
+                LengthPercentage::Length(Unit::Step(s).resolve(4.0))
+            }
+        }
+    }
+
     fn translate_style(&self, rupa: &Style) -> taffy::prelude::Style {
         use taffy::prelude::*;
         use rupa_vnode::layout::{Display, Position};
@@ -127,15 +146,42 @@ impl TaffySolver {
         };
 
         if let Some(w) = rupa.sizing.width { 
-            s.size.width = if w < 0.0 { Dimension::Percent(1.0) } else { LengthPercentage::Length(w).into() }; 
+            s.size.width = match w {
+                Unit::Absolute(v) if v < 0.0 => Dimension::Percent(1.0),
+                _ => self.resolve_unit(w).into(),
+            };
         }
         if let Some(h) = rupa.sizing.height { 
-            s.size.height = if h < 0.0 { Dimension::Percent(1.0) } else { LengthPercentage::Length(h).into() }; 
+            s.size.height = match h {
+                Unit::Absolute(v) if v < 0.0 => Dimension::Percent(1.0),
+                _ => self.resolve_unit(h).into(),
+            };
         }
 
-        s.gap = Size {
-            width: LengthPercentage::Length(rupa.flex.gap.unwrap_or(0.0)),
-            height: LengthPercentage::Length(rupa.flex.gap.unwrap_or(0.0)),
+        if let Some(gap) = rupa.flex.gap {
+            s.gap = Size {
+                width: self.resolve_unit(Unit::Absolute(gap)), // gap is still f32 in Flex model
+                height: self.resolve_unit(Unit::Absolute(gap)),
+            };
+        }
+
+        if let Some(ref _align) = rupa_vnode::style::flex::Flex::default().align_items { 
+             // ... align mapping
+        }
+        
+        // Spacing & Padding
+        s.padding = Rect {
+            left: self.resolve_unit(rupa.padding.left),
+            right: self.resolve_unit(rupa.padding.right),
+            top: self.resolve_unit(rupa.padding.top),
+            bottom: self.resolve_unit(rupa.padding.bottom),
+        };
+        
+        s.margin = Rect {
+            left: self.resolve_unit(rupa.margin.left).into(),
+            right: self.resolve_unit(rupa.margin.right).into(),
+            top: self.resolve_unit(rupa.margin.top).into(),
+            bottom: self.resolve_unit(rupa.margin.bottom).into(),
         };
 
         if let Some(ref align) = rupa.flex.align_items {
@@ -167,7 +213,6 @@ impl TaffySolver {
                 GridAutoFlow::RowDense => taffy::prelude::GridAutoFlow::RowDense,
                 GridAutoFlow::ColumnDense => taffy::prelude::GridAutoFlow::ColumnDense,
             };
-            // ... (Template mapping would go here)
         }
 
         s

@@ -1,29 +1,31 @@
 use serde::{Serialize, Deserialize};
 use crate::color::Color;
+use crate::types::Unit;
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Border {
-    pub width: f32,
+    pub width: Unit,
     pub color: Option<Color>,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Rounding {
-    pub nw: f32,
-    pub ne: f32,
-    pub se: f32,
-    pub sw: f32,
+    pub nw: Unit,
+    pub ne: Unit,
+    pub se: Unit,
+    pub sw: Unit,
 }
 
 impl Rounding {
-    pub fn all(val: f32) -> Self {
-        Self { nw: val, ne: val, se: val, sw: val }
+    pub fn all(val: impl Into<Unit>) -> Self {
+        let u = val.into();
+        Self { nw: u, ne: u, se: u, sw: u }
     }
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Outline {
-    pub width: f32,
-    pub offset: f32,
+    pub width: Unit,
+    pub offset: Unit,
     pub color: Option<Color>,
 }

@@ -27,13 +27,11 @@ impl Label {
 }
 
 impl Component for Label {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("label")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_attr("text", self.text.clone())
             .with_child(VNode::text(self.text.clone()))
             .with_key(self.id.clone())
@@ -41,6 +39,8 @@ impl Component for Label {
 }
 
 impl Stylable for Label {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
@@ -63,7 +63,7 @@ impl Input {
         let mut style = Style::default();
         Theme::current().apply_defaults(&mut style);
         // Inputs typically have borders in TUI
-        style.border.width = 1.0;
+        style.border.width = rupa_vnode::types::Unit::Absolute(1.0);
         
         Self {
             id: Id::next().to_string(),
@@ -104,8 +104,6 @@ impl Input {
 }
 
 impl Component for Input {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
@@ -114,7 +112,7 @@ impl Component for Input {
         let on_submit_handler = self.on_submit.clone();
 
         let mut node = VNode::element("input")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_attr("placeholder", self.placeholder.clone())
             .with_attr("value", self.value.get())
             .with_key(self.id.clone())
@@ -144,6 +142,8 @@ impl Component for Input {
 }
 
 impl Stylable for Input {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
@@ -171,19 +171,19 @@ impl Checkbox {
 }
 
 impl Component for Checkbox {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("checkbox")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_attr("checked", self.checked.get().to_string())
             .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Checkbox {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
@@ -211,19 +211,19 @@ impl Switch {
 }
 
 impl Component for Switch {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("switch")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_attr("active", self.active.get().to_string())
             .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Switch {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
@@ -251,19 +251,19 @@ impl Radio {
 }
 
 impl Component for Radio {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("radio")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_attr("selected", self.selected.get().to_string())
             .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Radio {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
@@ -293,18 +293,18 @@ impl Select {
 }
 
 impl Component for Select {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("select")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_attr("options_count", self.options.len().to_string())
             .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Select {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }

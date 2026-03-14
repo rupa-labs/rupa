@@ -1,0 +1,11 @@
+use rupa::prelude::*;
+mod components;
+
+fn main() {
+    env_logger::init();
+    
+    // Fullstack Fusion: Shared logic between Server and Client
+    App::new("{{title}} Fullstack")
+        .root(components::AppRoot::new())
+        .run();
+}

@@ -1,0 +1,6 @@
+use rupa_signals::Signal;
+
+fn main() {
+    let state = Signal::new("Pure Logic".to_string());
+    println!("Rupa Pure State: {}", state.get());
+}

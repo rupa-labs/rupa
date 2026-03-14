@@ -1,5 +1,4 @@
 use rupa_core::component::{Component, ComponentPtr};
-use std::sync::Arc;
 
 /// # Rupa Element Tree 🌳
 /// 

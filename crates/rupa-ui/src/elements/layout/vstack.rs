@@ -32,19 +32,19 @@ impl<'a> VStack<'a> {
 }
 
 impl<'a> Component for VStack<'a> {
-    fn id(&self) -> &str { &self.id }
-    fn get_style(&self) -> Arc<RwLock<Style>> { self.inner.get_style() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
-    fn children(&self) -> Vec<&dyn Component> { self.inner.children() }
+    fn children(&self) -> Vec<&dyn Component> { self.inner.children.as_refs() }
     
     fn render(&self) -> VNode {
         VNode::element("div")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.inner.get_style().read().unwrap().clone())
             .with_children(self.inner.children.render_all())
             .with_key(self.id.clone())
     }
 }
 
 impl<'a> Stylable for VStack<'a> {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.inner.get_style() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.inner.get_style_mut() }
 }

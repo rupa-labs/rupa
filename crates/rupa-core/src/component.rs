@@ -1,5 +1,4 @@
 use rupa_vnode::{VNode, Style};
-use std::any::Any;
 
 /// # Rupa Component 🎨
 /// 
@@ -62,9 +61,6 @@ pub trait Component: Send + Sync {
         false
     }
 
-    /// Allows downcasting this trait object to a concrete type.
-    fn as_any(&self) -> &dyn Any;
-
     // --- Infrastructure (Internal) ---
 
     fn prev_vnode(&self) -> std::sync::Arc<std::sync::RwLock<Option<VNode>>>;
@@ -76,6 +72,8 @@ pub trait Component: Send + Sync {
     fn is_dirty(&self) -> bool {
         true
     }
+
+    fn mark_dirty(&self) {}
 
     fn clear_dirty(&self) {}
 }

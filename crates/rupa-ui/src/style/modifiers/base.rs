@@ -1,6 +1,5 @@
 use rupa_vnode::Style;
 use rupa_core::Component;
-use std::sync::RwLockWriteGuard;
 
 /// A trait for modifying styles in a functional or chaining manner.
 pub trait StyleModifier: Send + Sync {
@@ -65,8 +64,14 @@ where A: StyleModifier, B: StyleModifier, C: StyleModifier, D: StyleModifier, E:
 /// A trait for components that can be styled.
 /// This provides the glue between the component and the modifier system.
 pub trait Stylable: Component + Sized {
+    /// Returns the unique ID of the component.
+    fn id(&self) -> &str;
+
+    /// Returns a thread-safe handle to the component's internal style.
+    fn get_style(&self) -> std::sync::Arc<std::sync::RwLock<rupa_vnode::Style>>;
+
     /// Returns a write lock guard to the component's internal style.
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style>;
+    fn get_style_mut(&self) -> std::sync::RwLockWriteGuard<'_, rupa_vnode::Style>;
 
     /// Applies a style modifier to the component.
     fn style(self, modifier: impl StyleModifier) -> Self {

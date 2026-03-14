@@ -1,51 +1,46 @@
 # Plugin System Architecture 🧩
 
-The **Plugin System** is the primary mechanism for extending the Rupa Framework. It follows a modular "Plug-and-Play" model, allowing Artisans to inject custom logic, themes, and sub-systems into the agnostic Kernel.
+The **Plugin System** is the extensibility gateway of the Rupa Framework. It allows Artisans to inject custom logic, global state, theme presets, or hardware Adapters into the agnostic Kernel.
 
 ---
 
-## 1. The Core Contract
+## 1. The Core Contract: `trait Plugin`
 
-The `Plugin` trait is the gateway for extensions. It provides a semantic interface for interacting with the `App` instance during its initialization.
+Any extension must implement the `Plugin` trait to participate in the application bootstrap.
 
-- **`name()`**: Returns a unique identifier for the plugin (e.g., `"AuthPlugin"`, `"WGPURenderer"`).
-- **`build()`**: The primary entry point. It receives a mutable reference to the `App`, allowing the plugin to:
-    - Register **Action Handlers** on the Bus.
-    - Inject **Global State** or Signals.
-    - Configure **Theme Defaults**.
-    - Initialize **Platform Runners** or Renderers.
+- **`name()`**: Returns a unique identifier (e.g., `"AuthPlugin"`, `"WGPURenderer"`).
+- **`build(app)`**: The primary entry point. It receives mutable access to the `App` instance to register services, handlers, or state.
 
 ---
 
-## 2. Plugin Hierarchy
+## 2. Technical Orchestration
 
-Following the **3-Tier Architecture**, plugins are typically categorized based on their scope:
+The `PluginRegistry` manages the lifecycle of all registered plugins:
 
-### A. Material Plugins (Tier 1)
-Inject low-level primitives or utilities.
-*Example*: A `MathPlugin` that provides specialized reactive calculation primitives.
-
-### B. Master's Craft Plugins (Tier 2)
-Add high-level systems or logic to the Kernel.
-*Example*: A `RouterPlugin` that adds navigation logic to the application.
-
-### C. Showroom Plugins (Tier 3)
-Connect the Kernel to the physical world. These are the most common plugins.
-*Example*: A `DesktopRendererPlugin` that initializes WGPU and windowing systems.
+1.  **Registration**: Plugins are added to the registry during `App` creation.
+2.  **Sequencing**: The `App` builds all plugins in the order they were registered.
+3.  **Bootstrap**: Once `build_all()` is complete, the Kernel is considered "Prime" and ready for execution.
 
 ---
 
-## 3. The Registration Pipeline
+## 3. Interaction Flow
 
-1. **Instantiation**: The Artisan creates instances of the desired plugins.
-2. **Registration**: Plugins are added to the `PluginRegistry` during the `App::new()` phase.
-3. **Orchestration**: The `App` calls `build()` on every registered plugin sequentially.
-4. **Activation**: Once all plugins are built, the `App` enters its execution loop.
+```mermaid
+graph LR
+    P[Plugin] --> |build| A[App Orchestrator]
+    A --> |register| B[Action Bus]
+    A --> |inject| S[Global Signals]
+    A --> |attach| R[Physical Adapter]
+```
+
+- **Modular Configuration**: Swap a `MemoryStorePlugin` for a `PostgresPlugin` without touching component code.
+- **Zero-Knot Coupling**: The Kernel (`rupa-engine`) remains agnostic of specific technologies (like WGPU or SQL) by letting plugins handle the heavy lifting.
 
 ---
 
-## 4. Why Use Plugins?
+## 4. Plugin Hierarchy
 
-1. **Zero-Knot Coupling**: The Kernel (`rupa-engine`) doesn't need to know that `WGPU` exists. It just knows it has plugins that might provide a renderer.
-2. **Modular Configuration**: You can easily swap a `MockAuthPlugin` for a `FirebaseAuthPlugin` just by changing the plugin registration.
-3. **Community Extensibility**: Third-party artisans can build and share their own plugins as independent crates.
+Following the **3-Tier Architecture**, plugins are typically scoped:
+- **Tier 1 (Material)**: Low-level utility injection (e.g., Math, Encryption).
+- **Tier 2 (Craft)**: High-level Kernel features (e.g., Router, Forms).
+- **Tier 3 (Showroom)**: Hardware manifestation (e.g., Desktop Adapter, Terminal Adapter).

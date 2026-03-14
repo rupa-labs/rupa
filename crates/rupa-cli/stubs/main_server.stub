@@ -1,0 +1,14 @@
+use rupa::prelude::*;
+
+fn main() {
+    // Server Authority: SSR Boilerplate
+    let app = App::new("{{title}} Server")
+        .root(
+            VStack::new()
+                .child(Text::new("🛡️ SERVER AUTHORITY").font_bold())
+                .child(Text::new("Rendering Artisan components to HTML..."))
+        );
+        
+    println!("Rupa Server active. Initializing HTML stream...");
+    app.run();
+}

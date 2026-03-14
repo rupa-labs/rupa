@@ -1,0 +1,16 @@
+use rupa::prelude::*;
+
+fn main() {
+    App::with_mode("{{title}}", LayoutMode::Cell)
+        .root(
+            VStack::new()
+                .p(Step::S1)
+                .child(Text::new("📟 TERMINAL ARTS").font_bold())
+                .child(Text::new("Navigate using your keyboard:"))
+                .child(Divider::new())
+                .child(Button::new("Finish Crafting")
+                    .on_click(|_| std::process::exit(0))
+                )
+        )
+        .run();
+}

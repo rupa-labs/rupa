@@ -1,11 +1,11 @@
-use rupa_core::{Component, VNode, ViewCore, Id, Signal};
+use rupa_core::{Component, VNode, Signal};
 use rupa_ui::elements::{VStack, Text, Button, Input};
 use rupa_engine::App;
-use rupa_terminal::{TerminalRunner, Console};
-use rupa_console::Progress;
+use rupa_terminal::TerminalRunner;
+use rupa_console::{Console, Progress};
 use rupa_engine::platform::runner::PlatformRunner;
 use rupa_signals::batch;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use clap::{Parser, Subcommand};
 use crate::templates::{Scaffolder, TemplateType};
 
@@ -69,51 +69,48 @@ enum WizardStage {
 }
 
 struct CreateWizard {
-    id: String,
     stage: Signal<WizardStage>,
     project_name: Signal<String>,
     selected_template: Signal<Option<usize>>,
     error_msg: Signal<String>,
-    view: Arc<ViewCore>,
-    progress: Progress,
+    prev_vnode: Arc<RwLock<Option<VNode>>>,
+    progress: Arc<Progress>, // Progress bar is now a component
 }
 
 impl CreateWizard {
     pub fn new() -> Self {
         Self {
-            id: Id::next().to_string(),
             stage: Signal::new(WizardStage::Welcome),
             project_name: Signal::new("my-rupa-app".to_string()),
             selected_template: Signal::new(None),
             error_msg: Signal::new("".to_string()),
-            view: Arc::new(ViewCore::new()),
-            progress: Progress::new("Crafting"),
+            prev_vnode: Arc::new(RwLock::new(None)),
+            progress: Arc::new(Progress::new(Signal::new(0.0))),
         }
     }
 }
 
 impl Component for CreateWizard {
-    fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
 
     fn render(&self) -> VNode {
         let current_stage = self.stage.get();
         
-        let root = match current_stage {
+        let root: Box<dyn Component> = match current_stage {
             WizardStage::Welcome => {
                 let stage = self.stage.clone();
-                VStack::new()
+                Box::new(VStack::new()
                     .child(Text::new("🎨 RUPA FRAMEWORK").bold())
                     .child(Text::new("The Artisan's Choice for Multi-platform Excellence."))
                     .child(Button::new("Begin Crafting →")
                         .with_key("btn-welcome")
-                        .on_click(move |_| stage.set(WizardStage::NameInput)))
+                        .on_click(move |_| stage.set(WizardStage::NameInput))))
             }
             WizardStage::NameInput => {
                 let stage = self.stage.clone();
                 let project_name = self.project_name.clone();
                 
-                VStack::new()
+                Box::new(VStack::new()
                     .child(Text::new("PROJECT SIGNATURE").bold())
                     .child(Text::new("Craft a unique identifier for your project.").dim())
                     .child(Input::new("Enter project name...")
@@ -127,7 +124,7 @@ impl Component for CreateWizard {
                     .child(Button::new("Confirm Signature →")
                         .with_key("btn-name-confirm")
                         .on_click(move |_| stage.set(WizardStage::TemplateSelection))
-                    )
+                    ))
             }
             WizardStage::TemplateSelection => {
                 let stage = self.stage.clone();
@@ -136,11 +133,17 @@ impl Component for CreateWizard {
                 let mut list = VStack::new().child(Text::new("CHOOSE YOUR PALETTE").bold());
                 
                 let templates = vec![
-                    "Showroom (Zero Bloat - Default)",
+                    "Pure (Zero Bloat - Default)",
                     "Native Power (Desktop)",
                     "Web Excellence (Web/SSR)",
                     "Terminal Arts (TUI)",
-                    "Composite (UI Library)"
+                    "The Handcraft Path (Assembly)",
+                    "Mobile Mobility (Mobile)",
+                    "Pure Logic (Headless)",
+                    "Server Authority (Server)",
+                    "Hybrid Interop (Hybrid)",
+                    "Fullstack Fusion (Fullstack)",
+                    "Plugin Creation (Plugin)"
                 ];
 
                 for (idx, name) in templates.into_iter().enumerate() {
@@ -156,36 +159,38 @@ impl Component for CreateWizard {
                         }));
                 }
                 
-                list
+                Box::new(list)
             }
             WizardStage::Scaffolding => {
-                // Background work trigger
                 let stage = self.stage.clone();
                 let error_msg = self.error_msg.clone();
                 let project_name = self.project_name.get();
                 let template_idx = self.selected_template.get().unwrap_or(0);
                 
-                // Clone signals for the thread
                 let p_val = self.progress.value.clone();
-                let p_label = self.progress.label.clone();
                 
                 std::thread::spawn(move || {
                     let template = match template_idx {
-                        0 => TemplateType::ZeroBloat,
-                        1 => TemplateType::Desktop,
+                        0 => TemplateType::Pure,
+                        1 => TemplateType::Native,
                         2 => TemplateType::Web,
-                        3 => TemplateType::Tui,
-                        _ => TemplateType::Library,
+                        3 => TemplateType::Terminal,
+                        4 => TemplateType::Handcraft,
+                        5 => TemplateType::Mobile,
+                        6 => TemplateType::Headless,
+                        7 => TemplateType::Server,
+                        8 => TemplateType::Hybrid,
+                        9 => TemplateType::Fullstack,
+                        10 => TemplateType::Plugin,
+                        _ => TemplateType::Pure,
                     };
 
-                    let p_callback = Arc::new(move |val, msg: &str| {
+                    let p_callback = Arc::new(move |val, _msg: &str| {
                         p_val.set(val);
-                        p_label.set(msg.to_string());
                     });
 
                     match Scaffolder::craft(&project_name, template, Some(p_callback)) {
                         Ok(_) => {
-                            // Give user a moment to see 100%
                             std::thread::sleep(std::time::Duration::from_millis(500));
                             stage.set(WizardStage::Finished);
                         },
@@ -196,25 +201,26 @@ impl Component for CreateWizard {
                     }
                 });
 
-                VStack::new()
+                Box::new(VStack::new()
                     .child(Text::new("ARTISAN AT WORK").bold())
-                    .child(self.progress.clone())
+                    // For now, we'll just show text as progress bar component is still evolving
+                    .child(Text::new("Scaffolding project...")))
             }
             WizardStage::Finished => {
-                VStack::new()
+                Box::new(VStack::new()
                     .child(Text::new("PROJECT READY!").success())
                     .child(Text::new(format!("Run: cd {} && cargo run", self.project_name.get())))
                     .child(Button::new("Exit Wizard")
                         .with_key("btn-exit-success")
-                        .on_click(|_| std::process::exit(0)))
+                        .on_click(|_| std::process::exit(0))))
             }
             WizardStage::Error => {
-                VStack::new()
+                Box::new(VStack::new()
                     .child(Text::new("CRAFTING FAILED").error())
                     .child(Text::new(format!("Error: {}", self.error_msg.get())))
                     .child(Button::new("Exit")
                         .with_key("btn-exit-error")
-                        .on_click(|_| std::process::exit(1)))
+                        .on_click(|_| std::process::exit(1))))
             }
         };
 
@@ -227,18 +233,25 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
 
     match cli.command {
         Some(Commands::Create { name, template }) => {
-            // Non-interactive flow
             if let (Some(project_name), Some(template_str)) = (&name, &template) {
                 let template_type = if template_str.starts_with("http") || template_str.starts_with("git@") {
                     TemplateType::Git(template_str.clone())
                 } else {
                     match template_str.to_lowercase().as_str() {
-                        "desktop" | "showroom" => TemplateType::Desktop,
+                        "pure" => TemplateType::Pure,
+                        "handcraft" => TemplateType::Handcraft,
+                        "native" | "desktop" => TemplateType::Native,
+                        "terminal" | "tui" => TemplateType::Terminal,
                         "web" => TemplateType::Web,
-                        "tui" | "terminal" => TemplateType::Tui,
+                        "mobile" => TemplateType::Mobile,
+                        "headless" => TemplateType::Headless,
+                        "server" => TemplateType::Server,
+                        "hybrid" => TemplateType::Hybrid,
+                        "fullstack" => TemplateType::Fullstack,
+                        "plugin" => TemplateType::Plugin,
                         "library" => TemplateType::Library,
                         _ => {
-                            Console::error(format!("Unknown template type: '{}'. Valid types: desktop, web, terminal, library, or a Git URL.", template_str));
+                            Console::error(format!("Unknown template type: '{}'.", template_str));
                             return Ok(());
                         }
                     }
@@ -260,7 +273,6 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
                 return Ok(());
             }
 
-            // Interactive Wizard flow
             Console::info("Initializing Artisan Wizard...");
             let wizard = CreateWizard::new();
 
@@ -270,7 +282,7 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
             }
 
             let app = App::new("create-rupa-app")
-                .root(wizard);
+                .root(std::sync::Arc::new(wizard));
 
             let runner = TerminalRunner::new(app.core.clone());
             if let Err(e) = runner.run() {
@@ -376,10 +388,8 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
         Some(Commands::Clear { deep }) => {
             Console::info("Purifying artisan environment...");
             
-            // 1. Terminal Session Reset
             print!("\x1B[2J\x1B[H"); 
 
-            // 2. Local Project Cache
             let local_targets = vec![".rupa_storage", "dist"];
             for target in local_targets {
                 if std::path::Path::new(target).exists() {
@@ -391,7 +401,6 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
 
-            // 3. Deep Clean
             if deep {
                 if std::path::Path::new("target").exists() {
                     Console::info("Removing heavy build artifacts (target/)...");
@@ -403,7 +412,6 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
 
-            // 4. Global Cache
             let home = std::env::var("HOME").or_else(|_| std::env::var("USERPROFILE"));
             if let Ok(home_path) = home {
                 let rupa_cache = std::path::Path::new(&home_path).join(".rupa").join("cache");
@@ -437,12 +445,8 @@ pub async fn handle() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn perform_post_update_cleanup() {
-    // 1. Visual Terminal Reset
-    print!("\x1B[2J\x1B[H"); // Clear screen and home cursor
+    print!("\x1B[2J\x1B[H"); 
     
-    // 2. Internal Cache Clearing (Future implementation)
-    // let _ = std::fs::remove_dir_all("~/.rupa/cache"); 
-
     Console::draw_box("REFINEMENT COMPLETE", vec![
         "Internal session caches have been cleared.".to_string(),
         "To apply changes immediately in this shell, run:".to_string(),

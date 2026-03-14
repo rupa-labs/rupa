@@ -1,5 +1,5 @@
 use rupa_core::{Component, VNode, Id};
-use rupa_vnode::{Style, Theme, Color, Display};
+use rupa_vnode::{Style, Theme, Color, Display, types::Unit};
 use crate::style::modifiers::Stylable;
 use std::sync::{RwLockWriteGuard, Arc, RwLock};
 
@@ -25,8 +25,8 @@ impl Divider {
         let palette = theme.active_palette();
         
         style.layout.display = Display::Block;
-        style.sizing.height = Some(1.0);
-        style.sizing.width = Some(-1.0); // 100%
+        style.sizing.height = Some(Unit::Absolute(1.0));
+        style.sizing.width = Some(Unit::Absolute(-1.0)); // 100%
         style.background.color = Some(palette.border.clone());
         
         Self {
@@ -39,32 +39,32 @@ impl Divider {
 
     pub fn vertical(self) -> Self {
         {
-            let mut style = self.get_style().write().unwrap();
-            style.sizing.width = Some(1.0);
-            style.sizing.height = Some(-1.0); // 100%
+            let mut style = self.style.write().unwrap();
+            style.sizing.width = Some(Unit::Absolute(1.0));
+            style.sizing.height = Some(Unit::Absolute(-1.0)); // 100%
             style.layout.display = Display::InlineBlock;
         }
         Self { orientation: Orientation::Vertical, ..self }
     }
 
     pub fn color(self, color: Color) -> Self {
-        self.get_style().write().unwrap().background.color = Some(color);
+        self.style.write().unwrap().background.color = Some(color);
         self
     }
 }
 
 impl Component for Divider {
-    fn id(&self) -> &str { &self.id }
-    fn style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         VNode::element("divider")
-            .with_style(self.get_style().read().unwrap().clone())
+            .with_style(self.style.read().unwrap().clone())
             .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Divider {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
     fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }

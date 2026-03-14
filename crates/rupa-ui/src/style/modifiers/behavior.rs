@@ -1,12 +1,13 @@
-use rupa_vnode::Style;
 use rupa_core::events::{use_hover, use_active, use_focus};
-use rupa_signals::{Effect, Readable};
+use rupa_signals::Effect;
 use crate::style::modifiers::base::{StyleModifier, Stylable};
 
 /// A trait for components that support high-level behaviors.
+/// It uses the internal id() and get_style() methods from the struct implementation.
 pub trait Behavioral: Stylable + Sized {
     /// Reactive hover behavior.
     fn on_hover_style(self, modifier: impl StyleModifier + Send + Sync + 'static) -> Self {
+        // Accessing methods from the concrete struct (via Stylable constraint)
         let id = self.id().to_string();
         let style = self.get_style();
         let is_hovered = use_hover(id);

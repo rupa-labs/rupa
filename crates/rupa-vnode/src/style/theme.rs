@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 use crate::color::Color;
+use crate::types::{Unit, FontWeight};
+use crate::style::typography::FontFamily;
 use rupa_signals::Signal;
 use once_cell::sync::Lazy;
 
@@ -53,14 +55,14 @@ impl Palette {
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
-pub struct SpacingScale { pub base: f32, pub unit: f32 }
+pub struct SpacingScale { pub base: Unit, pub unit: Unit }
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
-pub struct BorderScale { pub radius: f32, pub width: f32 }
+pub struct BorderScale { pub radius: Unit, pub width: Unit }
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
 pub struct TypographyScale { 
-    pub base_size: f32, 
-    pub base_weight: crate::types::FontWeight,
-    pub base_family: crate::style::typography::FontFamily,
+    pub base_size: Unit, 
+    pub base_weight: FontWeight,
+    pub base_family: FontFamily,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, PartialEq)]
@@ -84,12 +86,12 @@ static THEME: Lazy<Signal<Theme>> = Lazy::new(|| {
         dark: Palette::dark(),
         colors: HashMap::new(),
         variants,
-        spacing: SpacingScale { base: 16.0, unit: 4.0 },
-        borders: BorderScale { radius: 8.0, width: 1.0 },
+        spacing: SpacingScale { base: Unit::Absolute(16.0), unit: Unit::Absolute(4.0) },
+        borders: BorderScale { radius: Unit::Absolute(8.0), width: Unit::Absolute(1.0) },
         typography: TypographyScale { 
-            base_size: 16.0, 
-            base_weight: crate::types::FontWeight::Normal,
-            base_family: crate::style::typography::FontFamily::Sans,
+            base_size: Unit::Absolute(16.0), 
+            base_weight: FontWeight::Normal,
+            base_family: FontFamily::Sans,
         },
     })
 });
@@ -126,11 +128,11 @@ impl Theme {
 
     pub fn apply_defaults(&self, style: &mut crate::style::style::Style) {
         let palette = self.active_palette();
-        style.rounding = crate::border::Rounding::all(self.borders.radius);
-        style.padding = crate::spacing::Spacing::all(self.spacing.base);
+        style.rounding = crate::border::Rounding::all(self.borders.radius.clone());
+        style.padding = crate::spacing::Spacing::all(self.spacing.base.clone());
         style.background.color = Some(palette.background.clone());
         style.typography.color = Some(palette.text.clone());
-        style.typography.size = self.typography.base_size;
+        style.typography.size = self.typography.base_size.clone();
         style.typography.weight = self.typography.base_weight;
         style.typography.family = self.typography.base_family;
     }

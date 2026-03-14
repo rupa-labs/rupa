@@ -1,0 +1,46 @@
+use rupa::prelude::*;
+use std::sync::{Arc, RwLock};
+
+/// # Artisan Root Component
+pub struct AppRoot {
+    pub id: String,
+    pub count: Signal<i32>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
+}
+
+impl AppRoot {
+    pub fn new() -> Self {
+        Self {
+            id: Id::next().to_string(),
+            count: Signal::new(0),
+            style: Arc::new(RwLock::new(Style::default())),
+            prev_vnode: Arc::new(RwLock::new(None)),
+        }
+    }
+}
+
+impl Component for AppRoot {
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
+
+    fn render(&self) -> VNode {
+        let count = self.count.clone();
+        
+        VStack::new()
+            .p(Step::S4)
+            .items_center()
+            .gap(Step::S2)
+            .child(Text::new("🧩 HANDCRAFTED ASSEMBLY").font_bold())
+            .child(Text::new(Memo::new(move || format!("Reactive Count: {}", count.get()))))
+            .child(Button::new("Update Masterpiece")
+                .on_click(move |_| count.update(|v| *v += 1))
+            )
+            .render()
+    }
+}
+
+impl rupa_ui::style::Stylable for AppRoot {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn get_style_mut(&self) -> std::sync::RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
+}

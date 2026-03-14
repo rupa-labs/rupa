@@ -32,7 +32,21 @@ pub mod prelude;
 
 // Global exports for convenience
 pub use rupa_engine::App;
-pub use rupa_ui::Body;
+pub use rupa_ui::body::Body;
 pub use rupa_signals::{Signal, Memo, Effect, Readable};
-pub use rupa_vnode::{Style, Color};
+pub use rupa_vnode::{Style, Color, Step, Unit};
 pub use rupa_ui::style::{Theme, Variant, ColorMode};
+
+/// Extension trait to provide ergonomic methods to the [App] orchestrator.
+pub trait AppExt {
+    /// Sets the root content of the application. 
+    /// Automatically wraps the component in a [Body] for aesthetic management.
+    fn root(self, component: impl rupa_core::component::Component + 'static) -> Self;
+}
+
+impl AppExt for App {
+    fn root(self, component: impl rupa_core::component::Component + 'static) -> Self {
+        let body = Body::new(component);
+        self.root(std::sync::Arc::new(body))
+    }
+}
