@@ -34,7 +34,7 @@ pub mod prelude;
 pub use rupa_engine::App;
 pub use rupa_ui::body::Body;
 pub use rupa_signals::{Signal, Memo, Effect, Readable};
-pub use rupa_vnode::{Style, Color, Step, Unit};
+pub use rupa_vnode::{Style, Color, Scale, Unit};
 pub use rupa_ui::style::{Theme, Variant, ColorMode};
 
 /// Extension trait to provide ergonomic methods to the [App] orchestrator.

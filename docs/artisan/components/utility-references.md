@@ -122,7 +122,7 @@ Conditional modifiers that apply styles only when a specific interaction occurs.
 
 ---
 
-## 📱 Responsive Design (10-Step Breakpoints)
+## 📱 Responsive Design (10-Scale Breakpoints)
 Apply conditional styles based on the window width. Rupa Framework follows a mobile-first approach with 10 granular steps.
 
 | Breakpoint | Min-Width | Description | Example |

@@ -6,7 +6,8 @@ pub fn start() {
     App::new("{{title}} Web")
         .root(
             VStack::new()
-                .p(Step::S4)
+                .p(Scale::Md)
+
                 .items_center()
                 .child(Text::new("🌐 WEB EXCELLENCE").font_bold())
                 .child(Text::new("Built with Rust & WASM"))

@@ -4,7 +4,8 @@ fn main() {
     App::with_mode("{{title}}", LayoutMode::Cell)
         .root(
             VStack::new()
-                .p(Step::S1)
+                .p(Scale::Xs)
+
                 .child(Text::new("📟 TERMINAL ARTS").font_bold())
                 .child(Text::new("Navigate using your keyboard:"))
                 .child(Divider::new())

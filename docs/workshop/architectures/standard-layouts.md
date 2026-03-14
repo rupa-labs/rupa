@@ -16,5 +16,5 @@
 
 These are high-level **Agnostic UI** components that abstract away the complexity of raw Taffy style declarations into a semantic, fluent API.
 ```rust
-VStack::new().items_center().gap(Step::S2)
+VStack::new().items_center().gap(Scale::S2)
 ```

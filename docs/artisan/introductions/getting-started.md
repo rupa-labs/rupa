@@ -71,9 +71,9 @@ fn main() {
     App::new("Artisan Counter")
         .root(
             VStack::new()
-                .p(Step::S4)      // Aesthetic padding
+                .p(Scale::S4)      // Aesthetic padding
                 .items_center()
-                .gap(Step::S2)    // Standardized spacing
+                .gap(Scale::S2)    // Standardized spacing
                 .child(Box::new(Text::new(Memo::new({
                     let count = count.clone();
                     move || format!("Current Value: {}", count.get())
@@ -107,7 +107,7 @@ The **Showroom** is where your creation is displayed. By changing the **Adapter*
 
 ---
 
-## 🚀 Next Steps
+## 🚀 Next Scales
 
 Now that you have your first app running, it's time to dive deeper:
 

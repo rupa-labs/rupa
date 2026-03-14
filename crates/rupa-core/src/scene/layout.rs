@@ -98,15 +98,14 @@ impl TaffySolver {
         match unit {
             Unit::Absolute(v) => {
                 if v < 0.0 {
-                    // Mapping -1.0 to 100%
                     LengthPercentage::Percent(1.0)
                 } else {
                     LengthPercentage::Length(v)
                 }
             }
-            Unit::Step(s) => {
-                // Base step is 4.0 units
-                LengthPercentage::Length(Unit::Step(s).resolve(4.0))
+            Unit::Scale(s) => {
+                // Base scale is 16.0 units
+                LengthPercentage::Length(Unit::Scale(s).resolve(16.0))
             }
         }
     }

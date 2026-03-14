@@ -58,37 +58,40 @@ impl Breakpoint {
     }
 }
 
-/// # Rupa Step 📐
+/// # Rupa Scale 📐
 /// 
-/// A semantic, multi-step scaling system for spacing and sizing.
-/// Ensures aesthetic consistency across the entire application.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum Step {
-    Zero,
-    S1, S2, S3, S4, S5, S6, S7, S8, S9, S10,
-    S12, S16, S20, S24, S32, S40, S48, S56, S64,
-}
-
-impl Default for Step {
-    fn default() -> Self {
-        Step::Zero
-    }
+/// The official 10-step semantic scaling system of the Rupa Framework.
+/// Ensures aesthetic consistency through curated size classes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
+pub enum Scale {
+    #[default]
+    None,
+    Xs,
+    Sm,
+    Md,
+    Lg,
+    Xl,
+    Xl2,
+    Xl3,
+    Xl4,
+    Xl5,
+    Xl6,
 }
 
 /// # Rupa Unit 📏
 /// 
-/// A flexible unit that can be either a semantic [Step] or an [Absolute] decimal value.
+/// A flexible unit that can be either a semantic [Scale] or an [Absolute] decimal value.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Unit {
-    /// A semantic step in the unified scale.
-    Step(Step),
+    /// A semantic size class in the 10-step scale.
+    Scale(Scale),
     /// An absolute decimal value (Pixels in GUI, Cells in TUI).
     Absolute(f32),
 }
 
 impl Default for Unit {
     fn default() -> Self {
-        Unit::Absolute(0.0)
+        Unit::Scale(Scale::None)
     }
 }
 
@@ -98,39 +101,30 @@ impl From<f32> for Unit {
     }
 }
 
-impl From<Step> for Unit {
-    fn from(s: Step) -> Self {
-        Unit::Step(s)
+impl From<Scale> for Unit {
+    fn from(s: Scale) -> Self {
+        Unit::Scale(s)
     }
 }
 
 impl Unit {
     /// Resolves the unit into a physical f32 value.
-    /// [Step] values are multiplied by the provided base (usually 4.0 or 8.0).
+    /// [Scale] variants map to an opinionated geometric progression.
     pub fn resolve(&self, base: f32) -> f32 {
         match self {
             Unit::Absolute(v) => *v,
-            Unit::Step(s) => match s {
-                Step::Zero => 0.0,
-                Step::S1 => base * 1.0,
-                Step::S2 => base * 2.0,
-                Step::S3 => base * 3.0,
-                Step::S4 => base * 4.0,
-                Step::S5 => base * 5.0,
-                Step::S6 => base * 6.0,
-                Step::S7 => base * 7.0,
-                Step::S8 => base * 8.0,
-                Step::S9 => base * 9.0,
-                Step::S10 => base * 10.0,
-                Step::S12 => base * 12.0,
-                Step::S16 => base * 16.0,
-                Step::S20 => base * 20.0,
-                Step::S24 => base * 24.0,
-                Step::S32 => base * 32.0,
-                Step::S40 => base * 40.0,
-                Step::S48 => base * 48.0,
-                Step::S56 => base * 56.0,
-                Step::S64 => base * 64.0,
+            Unit::Scale(s) => match s {
+                Scale::None => 0.0,
+                Scale::Xs => base * 0.25,  // 4
+                Scale::Sm => base * 0.5,   // 8
+                Scale::Md => base,         // 16
+                Scale::Lg => base * 1.5,   // 24
+                Scale::Xl => base * 2.0,   // 32
+                Scale::Xl2 => base * 3.0,  // 48
+                Scale::Xl3 => base * 4.0,  // 64
+                Scale::Xl4 => base * 6.0,  // 96
+                Scale::Xl5 => base * 8.0,  // 128
+                Scale::Xl6 => base * 12.0, // 192
             }
         }
     }
@@ -138,12 +132,7 @@ impl Unit {
 
 impl std::ops::Mul<f32> for Unit {
     type Output = f32;
-
     fn mul(self, rhs: f32) -> Self::Output {
-        self.resolve(4.0) * rhs
+        self.resolve(16.0) * rhs
     }
 }
-
-// Deprecating old Scale in favor of Step/Unit
-#[deprecated(note = "Use Step and Unit instead")]
-pub type Scale = Step;
