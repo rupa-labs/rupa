@@ -21,7 +21,7 @@ pub use content::{Card, Table, Accordion};
 pub use control_flow::{Show, ForEach};
 pub use feedback::{Progress, Skeleton, Badge, Spinner, Alert};
 pub use forms::{Label, Checkbox, Radio, Select, Switch, Input};
-pub use layout::{Container, Section, VStack, HStack};
+pub use layout::{Container, Div, Grid, Section, VStack, HStack, Row, Col, Fieldset, Divider, Spacer};
 pub use navigation::{Navbar, Tabs, Breadcrumb};
 pub use overlay::{Modal, Tooltip};
 pub use svg::{Svg, Icon};

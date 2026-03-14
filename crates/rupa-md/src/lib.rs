@@ -93,6 +93,8 @@ impl Engine {
                         motion: None,
                         children: Vec::new(),
                         key: None,
+                        label: None,
+                        label_align: rupa_vnode::TextAlign::Left,
                     });
                 }
                 Event::End(_) => {
@@ -122,6 +124,8 @@ impl Engine {
                         motion: None,
                         children: vec![VNode::text(code.to_string())],
                         key: None,
+                        label: None,
+                        label_align: rupa_vnode::TextAlign::Left,
                     });
                     if let Some(parent) = stack.last_mut() {
                         parent.children.push(node);

@@ -1,48 +1,84 @@
-use rupa_vnode::VNode;
-use std::sync::Arc;
-use crate::view::ViewCore;
+use rupa_vnode::{VNode, Style};
+use std::any::Any;
 
-/// The core trait for all UI elements in Rupa.
-/// Focuses on logical state and producing a Virtual Node representation.
+/// # Rupa Component 🎨
+/// 
+/// The Artisan's Blueprint for UI elements. 
+/// A component integrates five core pillars: Logic, State, Attributes, Behavior, and Styling.
 pub trait Component: Send + Sync {
-    /// Returns a unique identifier for this component instance.
-    fn id(&self) -> &str;
+    /// --- Semantic Identity ---
 
-    /// Returns the reactive core of the component.
-    fn view_core(&self) -> Arc<ViewCore>;
-
-    /// Produces a Virtual Node representation of this component.
-    /// This is the "Universal Language" used for SSR, DOM, and GPU rendering.
-    fn render(&self) -> VNode;
-
-    /// Optional: Returns logical children components (not VNodes).
-    fn children(&self) -> Vec<&dyn Component> { Vec::new() }
-
-    /// Optional: Allows downcasting trait objects to concrete types.
-    fn as_any(&self) -> Option<&dyn std::any::Any> { None }
-
-    /// If true, this component acts as a focus trap and blocks input to layers below.
-    fn is_modal(&self) -> bool { false }
-
-    // --- Lifecycle Helpers ---
-
-    fn get_prev_vnode(&self) -> VNode {
-        self.view_core().get_prev_vnode()
+    /// Returns a unique debug name for this component.
+    fn debug_name(&self) -> &str {
+        std::any::type_name::<Self>()
     }
 
-    fn set_prev_vnode(&self, node: VNode) {
-        self.view_core().set_prev_vnode(node);
+    /// --- Pillar 1: Logic (Lifecycle) ---
+
+    /// Called when the component is mounted. Use this to trigger [listen] 
+    /// or perform one-time initializations.
+    fn mount(&self) {
+        self.listen();
+    }
+
+    /// Called before the component is destroyed.
+    fn unmount(&self) {}
+
+    /// --- Pillar 2: Styling (Visual DNA) ---
+
+    /// Defines the base aesthetic rules for this component.
+    /// Standardizing this allows for theme injection and consistent scaling.
+    fn style(&self) -> Style {
+        Style::default()
+    }
+
+    /// --- Pillar 3: Behavior (Events & Reactivity) ---
+
+    /// Used to register global listeners, signal effects, or internal bus subscriptions.
+    /// By default, this is called during [mount].
+    fn listen(&self) {}
+
+    /// --- Pillar 4 & 5: Visual Structure & State ---
+
+    /// Called immediately before [render].
+    fn rendering(&self) {}
+
+    /// The mandatory visual contract. Produces the [VNode] tree.
+    /// State and Attributes (fields) are consumed here to drive the UI.
+    fn render(&self) -> VNode;
+
+    /// Called after the changes have been patched to the platform.
+    fn rendered(&self) {}
+
+    // --- State Hooks (Inter-signal Coordination) ---
+
+    fn updating(&self) {}
+    fn updated(&self) {}
+
+    // --- Capabilities ---
+
+    /// If true, this component acts as a modal / focus trap.
+    fn is_modal(&self) -> bool {
+        false
+    }
+
+    /// Allows downcasting this trait object to a concrete type.
+    fn as_any(&self) -> &dyn Any;
+
+    // --- Infrastructure (Internal) ---
+
+    fn prev_vnode(&self) -> std::sync::Arc<std::sync::RwLock<Option<VNode>>>;
+    
+    fn children(&self) -> Vec<&dyn Component> {
+        Vec::new()
     }
 
     fn is_dirty(&self) -> bool {
-        self.view_core().is_dirty()
+        true
     }
 
-    fn mark_dirty(&self) {
-        self.view_core().mark_dirty();
-    }
-
-    fn clear_dirty(&self) {
-        self.view_core().clear_dirty();
-    }
+    fn clear_dirty(&self) {}
 }
+
+/// A thread-safe, heap-allocated component handle.
+pub type ComponentPtr = std::sync::Arc<dyn Component>;

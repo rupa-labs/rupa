@@ -1,12 +1,11 @@
 use std::collections::HashMap;
-use taffy::prelude::*;
 use crate::spacing::Spacing;
 use crate::border::{Border, Rounding, Outline};
 use crate::background::Background;
 use crate::color::Color;
-use crate::layout::{Layout as RupaLayout, Display as RupaDisplay, Position as RupaPosition};
-use crate::flex::{Flex as RupaFlex, FlexDirection as RupaFlexDirection, AlignItems as RupaAlignItems, JustifyContent as RupaJustifyContent};
-use crate::grid::Grid as RupaGrid;
+use crate::layout::{Layout as RupaLayout};
+use crate::flex::{Flex as RupaFlex};
+use crate::grid::{Grid as RupaGrid, GridPlacement as RupaGridPlacement};
 use crate::sizing::Sizing as RupaSizing;
 use crate::typography::TypographyStyle;
 use crate::interactivity::Interactivity;
@@ -16,11 +15,17 @@ use crate::motion::Motion;
 use crate::types::Breakpoint;
 use serde::{Serialize, Deserialize};
 
+/// # Rupa Style 🎨
+/// 
+/// The platform-agnostic visual DNA of an element. 
+/// It contains layout rules, colors, borders, and effects but is 
+/// entirely decoupled from any specific layout or rendering engine.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Style {
     pub layout: RupaLayout,
     pub flex: RupaFlex,
     pub grid: RupaGrid,
+    pub grid_item: RupaGridPlacement,
     pub sizing: RupaSizing,
     pub spacing: Spacing,
     pub padding: Spacing,
@@ -38,10 +43,6 @@ pub struct Style {
     pub group_hover: Option<Box<Style>>,
     pub responsive: HashMap<Breakpoint, Box<Style>>,
     pub variants: HashMap<String, Style>,
-}
-
-fn length(v: f32) -> LengthPercentage {
-    LengthPercentage::Length(v)
 }
 
 impl Style {
@@ -64,86 +65,9 @@ impl Style {
     pub fn w(mut self, val: f32) -> Self { self.sizing.width = Some(val); self }
     pub fn h(mut self, val: f32) -> Self { self.sizing.height = Some(val); self }
     
-    /// Sets width to 100%.
-    pub fn w_full(mut self) -> Self { self.sizing.width = Some(-1.0); self } // -1.0 as convention for 100% in our internal atom
-    /// Sets height to 100%.
+    pub fn w_full(mut self) -> Self { self.sizing.width = Some(-1.0); self } 
     pub fn h_full(mut self) -> Self { self.sizing.height = Some(-1.0); self }
 
     pub fn bg(mut self, color: Color) -> Self { self.background.color = Some(color); self }
     pub fn rounded(mut self, val: f32) -> Self { self.rounding = Rounding::all(val); self }
-
-    /// Converts the Rupa Style into a Taffy Style for the layout engine.
-    pub fn to_taffy(&self) -> taffy::style::Style {
-        let mut s = taffy::style::Style::default();
-        
-        s.display = match self.layout.display {
-            RupaDisplay::Flex => Display::Flex,
-            RupaDisplay::Grid => Display::Grid,
-            RupaDisplay::None => Display::None,
-            _ => Display::Block,
-        };
-
-        s.position = match self.layout.position {
-            RupaPosition::Relative => Position::Relative,
-            RupaPosition::Absolute => Position::Absolute,
-            _ => Position::Relative, 
-        };
-
-        s.padding = Rect {
-            left: length(self.padding.left),
-            right: length(self.padding.right),
-            top: length(self.padding.top),
-            bottom: length(self.padding.bottom),
-        };
-
-        s.margin = Rect {
-            left: length(self.margin.left).into(),
-            right: length(self.margin.right).into(),
-            top: length(self.margin.top).into(),
-            bottom: length(self.margin.bottom).into(),
-        };
-
-        if let Some(w) = self.sizing.width { 
-            s.size.width = if w < 0.0 { Dimension::Percent(1.0) } else { length(w).into() }; 
-        }
-        if let Some(h) = self.sizing.height { 
-            s.size.height = if h < 0.0 { Dimension::Percent(1.0) } else { length(h).into() }; 
-        }
-
-        s.flex_direction = match self.flex.flex_direction {
-            RupaFlexDirection::Row => FlexDirection::Row,
-            RupaFlexDirection::Col => FlexDirection::Column,
-            RupaFlexDirection::RowReverse => FlexDirection::RowReverse,
-            RupaFlexDirection::ColReverse => FlexDirection::ColumnReverse,
-        };
-
-        // Gaps
-        s.gap = Size {
-            width: length(self.flex.gap.unwrap_or(0.0)),
-            height: length(self.flex.gap.unwrap_or(0.0)),
-        };
-
-        if let Some(ref align) = self.flex.align_items {
-            s.align_items = Some(match align {
-                RupaAlignItems::FlexStart => AlignItems::FlexStart,
-                RupaAlignItems::Center => AlignItems::Center,
-                RupaAlignItems::FlexEnd => AlignItems::FlexEnd,
-                RupaAlignItems::Stretch => AlignItems::Stretch,
-                RupaAlignItems::Baseline => AlignItems::Baseline,
-            });
-        }
-
-        if let Some(ref justify) = self.flex.justify_content {
-            s.justify_content = Some(match justify {
-                RupaJustifyContent::FlexStart => JustifyContent::FlexStart,
-                RupaJustifyContent::Center => JustifyContent::Center,
-                RupaJustifyContent::FlexEnd => JustifyContent::FlexEnd,
-                RupaJustifyContent::SpaceBetween => JustifyContent::SpaceBetween,
-                RupaJustifyContent::SpaceAround => JustifyContent::SpaceAround,
-                RupaJustifyContent::SpaceEvenly => JustifyContent::SpaceEvenly,
-            });
-        }
-
-        s
-    }
 }

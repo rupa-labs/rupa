@@ -103,8 +103,8 @@ impl Component for CreateWizard {
             WizardStage::Welcome => {
                 let stage = self.stage.clone();
                 VStack::new()
-                    .child(Text::bold("🎨 RUPA FRAMEWORK"))
-                    .child(Text::plain("The Artisan's Choice for Multi-platform Excellence."))
+                    .child(Text::new("🎨 RUPA FRAMEWORK").bold())
+                    .child(Text::new("The Artisan's Choice for Multi-platform Excellence."))
                     .child(Button::new("Begin Crafting →")
                         .with_key("btn-welcome")
                         .on_click(move |_| stage.set(WizardStage::NameInput)))
@@ -114,8 +114,8 @@ impl Component for CreateWizard {
                 let project_name = self.project_name.clone();
                 
                 VStack::new()
-                    .child(Text::bold("PROJECT SIGNATURE"))
-                    .child(Text::dim("Craft a unique identifier for your project."))
+                    .child(Text::new("PROJECT SIGNATURE").bold())
+                    .child(Text::new("Craft a unique identifier for your project.").dim())
                     .child(Input::new("Enter project name...")
                         .with_key("project-name-input")
                         .value(project_name)
@@ -133,7 +133,7 @@ impl Component for CreateWizard {
                 let stage = self.stage.clone();
                 let selected = self.selected_template.clone();
                 
-                let mut list = VStack::new().child(Text::bold("CHOOSE YOUR PALETTE"));
+                let mut list = VStack::new().child(Text::new("CHOOSE YOUR PALETTE").bold());
                 
                 let templates = vec![
                     "Showroom (Zero Bloat - Default)",
@@ -197,21 +197,21 @@ impl Component for CreateWizard {
                 });
 
                 VStack::new()
-                    .child(Text::bold("ARTISAN AT WORK"))
+                    .child(Text::new("ARTISAN AT WORK").bold())
                     .child(self.progress.clone())
             }
             WizardStage::Finished => {
                 VStack::new()
-                    .child(Text::success("PROJECT READY!"))
-                    .child(Text::plain(format!("Run: cd {} && cargo run", self.project_name.get())))
+                    .child(Text::new("PROJECT READY!").success())
+                    .child(Text::new(format!("Run: cd {} && cargo run", self.project_name.get())))
                     .child(Button::new("Exit Wizard")
                         .with_key("btn-exit-success")
                         .on_click(|_| std::process::exit(0)))
             }
             WizardStage::Error => {
                 VStack::new()
-                    .child(Text::error("CRAFTING FAILED"))
-                    .child(Text::plain(format!("Error: {}", self.error_msg.get())))
+                    .child(Text::new("CRAFTING FAILED").error())
+                    .child(Text::new(format!("Error: {}", self.error_msg.get())))
                     .child(Button::new("Exit")
                         .with_key("btn-exit-error")
                         .on_click(|_| std::process::exit(1)))

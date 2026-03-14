@@ -2,86 +2,75 @@ use rupa_base::Vec2;
 use std::sync::Arc;
 use serde::{Serialize, Deserialize};
 
-/// The UIEvent passed to components during dispatch.
-/// Contains rich context about the user interaction.
-#[derive(Clone)]
-pub struct UIEvent {
-    pub consumed: bool,
-    pub local_pos: Vec2,
-    pub modifiers: Modifiers,
-    pub button: Option<PointerButton>,
-    pub button_state: Option<ButtonState>,
-    pub capture_request: Option<bool>,
-    pub focus_request: Option<bool>, // Some(true) to request focus, Some(false) to blur
-}
+pub use rupa_vnode::style::events::{UIEvent, PointerButton, ButtonState, Modifiers};
 
-impl UIEvent {
-    pub fn new(local_pos: Vec2) -> Self {
-        Self { 
-            consumed: false, 
-            local_pos,
-            modifiers: Modifiers::default(),
-            button: None,
-            button_state: None,
-            capture_request: None,
-            focus_request: None,
-        }
-    }
-
-    pub fn with_context(mut self, modifiers: Modifiers, button: Option<PointerButton>, state: Option<ButtonState>) -> Self {
-        self.modifiers = modifiers;
-        self.button = button;
-        self.button_state = state;
-        self
-    }
-
-    pub fn consume(&mut self) { self.consumed = true; }
-    pub fn capture_pointer(&mut self) { self.capture_request = Some(true); }
-    pub fn release_pointer(&mut self) { self.capture_request = Some(false); }
-    pub fn request_focus(&mut self) { self.focus_request = Some(true); }
-    pub fn blur(&mut self) { self.focus_request = Some(false); }
-}
-
-/// Standardized input events that are platform-agnostic.
+/// # Rupa Unified Input Model 🎮
+/// 
+/// High-level input events that abstract away the hardware (Mouse, Keyboard, Touch) 
+/// into semantic "Intents" (Pointer, Focus, System).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum InputEvent {
-    // Pointer Events (Mouse, Touch, Pen)
-    PointerMove { position: Vec2 },
-    PointerButton { button: PointerButton, state: ButtonState },
-    PointerScroll { delta: Vec2 },
+    /// --- Pillar 1: Pointer Events (Positional) ---
+    /// Represent inputs with spatial coordinates (Mouse, Touch, Pen).
+    Pointer {
+        position: Vec2,
+        action: PointerAction,
+        button: Option<PointerButton>,
+        modifiers: Modifiers,
+    },
     
-    // Keyboard Events
-    Key { key: KeyCode, state: ButtonState, modifiers: Modifiers },
-    Ime(String),
-    
-    // System Events
+    /// --- Pillar 2: Focus & Navigation (Logical) ---
+    /// Represent logical movement and keyboard interactions (Tab, Arrows, Keys).
+    Focus {
+        action: FocusAction,
+        modifiers: Modifiers,
+    },
+
+    /// Raw keyboard input for text processing or specialized hotkeys.
+    Key { 
+        key: KeyCode, 
+        state: ButtonState, 
+        modifiers: Modifiers 
+    },
+
+    /// --- Pillar 3: System Events ---
+    /// Physical environment changes.
+    System(SystemEvent),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum PointerAction {
+    Down,
+    Up,
+    Move,
+    Hover,
+    Scroll { delta: Vec2 },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FocusAction {
+    /// Focus moved into an element.
+    Enter,
+    /// Focus moved out of an element.
+    Leave,
+    /// Logical navigation intent (e.g., Tab/Shift+Tab).
+    Next,
+    Prev,
+    /// Directional navigation (e.g., Arrow Keys).
+    Direction(NavigationDirection),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum NavigationDirection {
+    Up, Down, Left, Right
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum SystemEvent {
     Resize { size: Vec2, scale_factor: f64 },
     SafeArea { top: f32, right: f32, bottom: f32, left: f32 },
-    Focus(bool),
+    WindowFocus(bool),
     Quit,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
-pub enum PointerButton {
-    #[default]
-    Primary,   // Left click
-    Secondary, // Right click
-    Auxiliary, // Middle click
-    Extra(u16),
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum ButtonState {
-    Pressed,
-    Released,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
-pub struct Modifiers {
-    pub shift: bool,
-    pub ctrl: bool,
-    pub alt: bool,
-    pub logo: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -98,18 +87,26 @@ pub enum KeyCode {
     Unknown,
 }
 
-/// A container for common event callbacks used by components.
+/// A semantic container for intent-based event listeners.
+/// Components use these to define THEIR behavior without knowing 
+/// if the trigger was a pointer or a key.
 #[derive(Default)]
 pub struct EventListeners {
-    pub on_click: Option<Arc<dyn Fn(&mut UIEvent) + Send + Sync>>,
-    pub on_release: Option<Arc<dyn Fn(&mut UIEvent) + Send + Sync>>,
-    pub on_scroll: Option<Arc<dyn Fn(&mut UIEvent, f32) + Send + Sync>>,
-    pub on_drag: Option<Arc<dyn Fn(&mut UIEvent, Vec2) + Send + Sync>>,
-    pub on_key: Option<Arc<dyn Fn(&mut UIEvent, KeyCode) + Send + Sync>>,
-    pub on_text: Option<Arc<dyn Fn(&mut UIEvent, &str) + Send + Sync>>,
-    /// Triggered when text input occurs (e.g., in an Input field).
-    pub on_input: Option<Arc<dyn Fn(String) + Send + Sync>>,
-    /// Triggered when a form action is submitted (e.g., Enter in an Input).
-    pub on_submit: Option<Arc<dyn Fn(String) + Send + Sync>>,
+    /// High-level intent to "Activate" or "Go" (e.g., Enter key or Click).
+    pub on_submit: Option<Arc<dyn Fn(&mut UIEvent) + Send + Sync>>,
+    /// High-level intent to "Exit" or "Close" (e.g., Escape key).
+    pub on_cancel: Option<Arc<dyn Fn(&mut UIEvent) + Send + Sync>>,
+    /// Intent to select or highlight an item (e.g., Hover or Tab-focus).
+    pub on_select: Option<Arc<dyn Fn(&mut UIEvent) + Send + Sync>>,
+    
+    // --- Detailed Listeners ---
+    pub on_pointer_down: Option<Arc<dyn Fn(&mut UIEvent) + Send + Sync>>,
+    pub on_pointer_up: Option<Arc<dyn Fn(&mut UIEvent) + Send + Sync>>,
+    pub on_key_down: Option<Arc<dyn Fn(&mut UIEvent, KeyCode) + Send + Sync>>,
+    pub on_text_input: Option<Arc<dyn Fn(String) + Send + Sync>>,
 }
+
 pub mod dispatcher;
+pub mod interaction;
+
+pub use interaction::*;

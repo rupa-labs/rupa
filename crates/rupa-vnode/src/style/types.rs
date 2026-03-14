@@ -11,7 +11,7 @@ pub enum TextAlign {
 }
 
 /// Font weight definitions following standard CSS-like values.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub enum FontWeight {
     Thin = 100,
     Light = 300,

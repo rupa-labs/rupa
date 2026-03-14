@@ -18,3 +18,4 @@ rupa-ui.workspace = true
 rupa-motion.workspace = true
 crossterm.workspace = true
 taffy.workspace = true
+unicode-width.workspace = true

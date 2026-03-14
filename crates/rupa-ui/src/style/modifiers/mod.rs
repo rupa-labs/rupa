@@ -6,6 +6,7 @@ mod visual;
 mod animation;
 mod responsive;
 mod state;
+mod behavior;
 
 pub use rupa_vnode::theme;
 pub use rupa_vnode::theme::*;
@@ -18,3 +19,4 @@ pub use visual::*;
 pub use animation::*;
 pub use responsive::*;
 pub use state::*;
+pub use behavior::*;

@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use crate::events::UIEvent;
+use crate::style::events::UIEvent;
 
 pub type EventHandler = Arc<dyn Fn(UIEvent) + Send + Sync>;
 

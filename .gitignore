@@ -1,3 +1,6 @@
+# --- End-Products & Ecosystem ---
+ecosystems/
+
 # --- Rust / Cargo ---
 /target/
 **/*.rs.bk

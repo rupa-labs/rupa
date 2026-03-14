@@ -3,13 +3,13 @@ use rupa_core::Component;
 use std::sync::RwLockWriteGuard;
 
 /// A trait for modifying styles in a functional or chaining manner.
-pub trait StyleModifier {
+pub trait StyleModifier: Send + Sync {
     fn apply(&self, style: &mut Style);
 }
 
 impl<F> StyleModifier for F
 where
-    F: Fn(&mut Style),
+    F: Fn(&mut Style) + Send + Sync,
 {
     fn apply(&self, style: &mut Style) {
         (self)(style);

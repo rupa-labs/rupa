@@ -28,9 +28,18 @@ pub enum JustifyContent {
     SpaceEvenly,
 }
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum FlexWrap {
+    #[default]
+    NoWrap,
+    Wrap,
+    WrapReverse,
+}
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Flex {
     pub flex_direction: FlexDirection,
+    pub flex_wrap: FlexWrap,
     pub align_items: Option<AlignItems>,
     pub justify_content: Option<JustifyContent>,
     pub flex_grow: f32,

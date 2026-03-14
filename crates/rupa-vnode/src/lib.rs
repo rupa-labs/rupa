@@ -49,6 +49,10 @@ pub struct VElement {
     pub children: Vec<VNode>,
     /// Unique key for efficient reconciliation.
     pub key: Option<String>,
+    /// Optional text label drawn on the border (TUI specific).
+    pub label: Option<String>,
+    /// Alignment of the border label.
+    pub label_align: crate::style::types::TextAlign,
 }
 
 #[derive(Default, Clone)]
@@ -85,10 +89,9 @@ pub struct VComponent {
     pub props: serde_json::Value,
 }
 
-impl VNode {
-    /// Creates a new Element node.
-    pub fn element(tag: impl Into<String>) -> Self {
-        VNode::Element(VElement {
+impl VElement {
+    pub fn new(tag: impl Into<String>) -> Self {
+        Self {
             tag: tag.into(),
             style: Style::default(),
             attributes: Attributes::default(),
@@ -96,7 +99,16 @@ impl VNode {
             motion: None,
             children: Vec::new(),
             key: None,
-        })
+            label: None,
+            label_align: crate::style::types::TextAlign::Left,
+        }
+    }
+}
+
+impl VNode {
+    /// Creates a new Element node.
+    pub fn element(tag: impl Into<String>) -> Self {
+        VNode::Element(VElement::new(tag))
     }
 
     /// Creates a new Text node.
@@ -113,6 +125,22 @@ impl VNode {
     pub fn with_style(mut self, style: Style) -> Self {
         if let VNode::Element(ref mut el) = self {
             el.style = style;
+        }
+        self
+    }
+
+    /// Fluent API: Assigns event handlers to the element.
+    pub fn with_handlers(mut self, handlers: EventHandlers) -> Self {
+        if let VNode::Element(ref mut el) = self {
+            el.handlers = handlers;
+        }
+        self
+    }
+
+    /// Fluent API: Assigns a click handler using an existing Arc.
+    pub fn with_arc_handler(mut self, handler: std::sync::Arc<dyn Fn(UIEvent) + Send + Sync + 'static>) -> Self {
+        if let VNode::Element(ref mut el) = self {
+            el.handlers.on_click = Some(handler);
         }
         self
     }
@@ -157,6 +185,14 @@ impl VNode {
         self
     }
 
+    /// Fluent API: Sets the children of the element.
+    pub fn with_children(mut self, children: Vec<VNode>) -> Self {
+        if let VNode::Element(ref mut el) = self {
+            el.children = children;
+        }
+        self
+    }
+
     /// Fluent API: Adds an attribute to the element.
     pub fn with_attr(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         if let VNode::Element(ref mut el) = self {
@@ -169,6 +205,22 @@ impl VNode {
     pub fn with_key(mut self, key: impl Into<String>) -> Self {
         if let VNode::Element(ref mut el) = self {
             el.key = Some(key.into());
+        }
+        self
+    }
+
+    /// Fluent API: Assigns a label to be drawn on the border.
+    pub fn with_label(mut self, label: impl Into<String>) -> Self {
+        if let VNode::Element(ref mut el) = self {
+            el.label = Some(label.into());
+        }
+        self
+    }
+
+    /// Fluent API: Assigns alignment for the border label.
+    pub fn with_label_align(mut self, align: crate::style::types::TextAlign) -> Self {
+        if let VNode::Element(ref mut el) = self {
+            el.label_align = align;
         }
         self
     }

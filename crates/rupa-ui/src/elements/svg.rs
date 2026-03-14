@@ -1,49 +1,43 @@
-use rupa_core::{Component, VNode, VElement, ViewCore, Id};
-use rupa_vnode::{Style, Attributes};
+use rupa_core::{Component, VNode, Id};
+use rupa_vnode::{Style};
 use crate::style::modifiers::Stylable;
-use std::sync::{RwLockWriteGuard, Arc};
+use std::sync::{RwLockWriteGuard, Arc, RwLock};
 
 // --- SVG ---
 
 pub struct Svg {
     pub id: String,
-    pub path: String,
-    pub view: Arc<ViewCore>,
+    pub content: String,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl Svg {
-    pub fn new(path: impl Into<String>) -> Self {
+    pub fn new(content: impl Into<String>) -> Self {
         Self {
             id: Id::next().to_string(),
-            path: path.into(),
-            view: Arc::new(ViewCore::new()),
+            content: content.into(),
+            style: Arc::new(RwLock::new(Style::default())),
+            prev_vnode: Arc::new(RwLock::new(None)),
         }
     }
 }
 
 impl Component for Svg {
     fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { 
-            handlers: Default::default(), 
-            tag: "svg".to_string(),
-            style: self.view.style.read().unwrap().clone(),
-            attributes: {
-                let mut attr = Attributes::new();
-                attr.insert("path", self.path.clone());
-                attr
-            },
-            motion: None,
-            children: vec![],
-            key: Some(self.id.clone()),
-        })
+        VNode::element("svg")
+            .with_style(self.get_style().read().unwrap().clone())
+            .with_attr("content", self.content.clone())
+            .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Svg {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
 // --- ICON ---
@@ -51,7 +45,8 @@ impl Stylable for Svg {
 pub struct Icon {
     pub id: String,
     pub name: String,
-    pub view: Arc<ViewCore>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl Icon {
@@ -59,28 +54,25 @@ impl Icon {
         Self {
             id: Id::next().to_string(),
             name: name.into(),
-            view: Arc::new(ViewCore::new()),
+            style: Arc::new(RwLock::new(Style::default())),
+            prev_vnode: Arc::new(RwLock::new(None)),
         }
     }
 }
 
 impl Component for Icon {
     fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { 
-            handlers: Default::default(), 
-            tag: "icon".to_string(),
-            style: self.view.style.read().unwrap().clone(),
-            attributes: {
-                let mut attr = Attributes::new();
-                attr.insert("name", self.name.clone());
-                attr
-            },
-            motion: None,
-            children: vec![],
-            key: Some(self.id.clone()),
-        })
+        VNode::element("icon")
+            .with_style(self.get_style().read().unwrap().clone())
+            .with_attr("name", self.name.clone())
+            .with_key(self.id.clone())
     }
+}
+
+impl Stylable for Icon {
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }

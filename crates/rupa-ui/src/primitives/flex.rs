@@ -1,52 +1,50 @@
-use rupa_core::{Component, VNode, VElement, ViewCore, Id};
-use rupa_vnode::{Style, Attributes};
+use rupa_core::{Component, VNode, Id};
+use rupa_vnode::{Style, Display};
 use crate::style::modifiers::Stylable;
 use crate::elements::Children;
-use std::sync::{RwLockWriteGuard, Arc};
+use std::sync::{RwLockWriteGuard, Arc, RwLock};
 
 /// A container that uses Flexbox layout.
 pub struct Flex<'a> {
     pub id: String,
     pub children: Children<'a>,
-    pub view: Arc<ViewCore>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl<'a> Flex<'a> {
     pub fn new() -> Self {
-        let view = Arc::new(ViewCore::new());
-        view.style().layout.display = rupa_vnode::Display::Flex;
+        let mut style = Style::default();
+        style.layout.display = Display::Flex;
         Self {
             id: Id::next().to_string(),
             children: Children::new(),
-            view,
+            style: Arc::new(RwLock::new(style)),
+            prev_vnode: Arc::new(RwLock::new(None)),
         }
     }
 
-    pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self {
-        self.children.push(child);
-        self.view.mark_dirty();
+    /// Adds a child component to the Flex container.
+    pub fn child(mut self, child: impl Component + 'a) -> Self {
+        self.children.push(std::boxed::Box::new(child));
         self
     }
 }
 
 impl<'a> Component for Flex<'a> {
     fn id(&self) -> &str { &self.id }
+    fn style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     fn children(&self) -> Vec<&dyn Component> { self.children.as_refs() }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { 
-            handlers: Default::default(), 
-            tag: "flex".to_string(),
-            style: self.view.style.read().unwrap().clone(),
-            attributes: Attributes::default(),
-            motion: None,
-            children: self.children.render_all(),
-            key: Some(self.id.clone()),
-        })
+        VNode::element("div")
+            .with_style(self.get_style().read().unwrap().clone())
+            .with_children(self.children.render_all())
+            .with_key(self.id.clone())
     }
 }
 
 impl<'a> Stylable for Flex<'a> {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }

@@ -1,83 +1,153 @@
-use rupa_core::{Component, VNode, VElement, ViewCore, Id, Signal};
-use rupa_vnode::{Style, Color, FontWeight};
+use rupa_core::{Component, VNode, Id, Signal};
+use rupa_vnode::{Style, Color, FontWeight, TextAlign};
+use rupa_vnode::style::typography::{TextDecoration, TextTransform, FontFamily, TextWrap, TextOverflow};
 use crate::style::modifiers::Stylable;
-use std::sync::{RwLockWriteGuard, Arc};
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub enum TextVariant {
-    #[default]
-    Plain,
-    Info,
-    Success,
-    Warning,
-    Error,
-    Bold,
-    Dim,
-}
+use std::sync::{RwLockWriteGuard, Arc, RwLock};
 
 pub struct Text {
     pub id: String,
     pub content: Signal<String>,
-    pub variant: Signal<TextVariant>,
-    pub view: Arc<ViewCore>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl Text {
     pub fn new(content: impl Into<String>) -> Self {
+        let mut style = Style::default();
+        rupa_vnode::style::theme::Theme::current().apply_defaults(&mut style);
+        
         Self {
             id: Id::next().to_string(),
             content: Signal::new(content.into()),
-            variant: Signal::new(TextVariant::Plain),
-            view: Arc::new(ViewCore::new()),
+            style: Arc::new(RwLock::new(style)),
+            prev_vnode: Arc::new(RwLock::new(None)),
         }
     }
 
-    pub fn variant(self, variant: TextVariant) -> Self {
-        self.variant.set(variant);
+    // --- Heading Presets ---
+    pub fn h1(self) -> Self { self.size(48.0).black() }
+    pub fn h2(self) -> Self { self.size(36.0).bold() }
+    pub fn h3(self) -> Self { self.size(30.0).bold() }
+    pub fn h4(self) -> Self { self.size(24.0).semibold() }
+    pub fn h5(self) -> Self { self.size(20.0).semibold() }
+    pub fn h6(self) -> Self { self.size(16.0).semibold() }
+
+    // --- Semantic Presets ---
+    pub fn lead(self) -> Self { self.size(20.0).light() }
+    pub fn small(self) -> Self { self.size(12.0).muted() }
+    pub fn mono(self) -> Self {
+        self.get_style().write().unwrap().typography.family = FontFamily::Mono;
         self
     }
 
-    // Helper builders
-    pub fn plain(content: impl Into<String>) -> Self { Self::new(content) }
-    pub fn info(content: impl Into<String>) -> Self { Self::new(content).variant(TextVariant::Info) }
-    pub fn success(content: impl Into<String>) -> Self { Self::new(content).variant(TextVariant::Success) }
-    pub fn warning(content: impl Into<String>) -> Self { Self::new(content).variant(TextVariant::Warning) }
-    pub fn error(content: impl Into<String>) -> Self { Self::new(content).variant(TextVariant::Error) }
-    pub fn bold(content: impl Into<String>) -> Self { Self::new(content).variant(TextVariant::Bold) }
-    pub fn dim(content: impl Into<String>) -> Self { Self::new(content).variant(TextVariant::Dim) }
+    // --- Weight Variants ---
+    pub fn thin(self) -> Self { self.weight(FontWeight::Thin) }
+    pub fn light(self) -> Self { self.weight(FontWeight::Light) }
+    pub fn normal(self) -> Self { self.weight(FontWeight::Normal) }
+    pub fn medium(self) -> Self { self.weight(FontWeight::Medium) }
+    pub fn semibold(self) -> Self { self.weight(FontWeight::SemiBold) }
+    pub fn bold(self) -> Self { self.weight(FontWeight::Bold) }
+    pub fn black(self) -> Self { self.weight(FontWeight::Black) }
+
+    fn weight(self, weight: FontWeight) -> Self {
+        self.get_style().write().unwrap().typography.weight = weight;
+        self
+    }
+
+    // --- Style & Decoration ---
+    pub fn italic(self) -> Self {
+        self.get_style().write().unwrap().typography.italic = true;
+        self
+    }
+
+    pub fn underline(self) -> Self {
+        self.get_style().write().unwrap().typography.decoration = TextDecoration::Underline;
+        self
+    }
+
+    pub fn strikethrough(self) -> Self {
+        self.get_style().write().unwrap().typography.decoration = TextDecoration::LineThrough;
+        self
+    }
+
+    // --- Transform ---
+    pub fn uppercase(self) -> Self {
+        self.get_style().write().unwrap().typography.transform = TextTransform::Uppercase;
+        self
+    }
+
+    pub fn lowercase(self) -> Self {
+        self.get_style().write().unwrap().typography.transform = TextTransform::Lowercase;
+        self
+    }
+
+    pub fn capitalize(self) -> Self {
+        self.get_style().write().unwrap().typography.transform = TextTransform::Capitalize;
+        self
+    }
+
+    // --- Alignment ---
+    pub fn left(self) -> Self { self.align(TextAlign::Left) }
+    pub fn center(self) -> Self { self.align(TextAlign::Center) }
+    pub fn right(self) -> Self { self.align(TextAlign::Right) }
+    pub fn justify(self) -> Self { self.align(TextAlign::Justify) }
+
+    fn align(self, align: TextAlign) -> Self {
+        self.get_style().write().unwrap().typography.align = align;
+        self
+    }
+
+    // --- Layout Behavior ---
+    pub fn wrap(self) -> Self {
+        self.get_style().write().unwrap().typography.wrap = TextWrap::Wrap;
+        self
+    }
+
+    pub fn no_wrap(self) -> Self {
+        self.get_style().write().unwrap().typography.wrap = TextWrap::NoWrap;
+        self
+    }
+
+    pub fn truncate(self) -> Self {
+        let mut style = self.get_style().write().unwrap();
+        style.typography.overflow = TextOverflow::Ellipsis;
+        style.typography.wrap = TextWrap::NoWrap;
+        drop(style);
+        self
+    }
+
+    // --- Color Utilities ---
+    pub fn primary(self) -> Self { self.color(Color::Semantic("primary".into(), None)) }
+    pub fn success(self) -> Self { self.color(Color::Semantic("success".into(), None)) }
+    pub fn warning(self) -> Self { self.color(Color::Semantic("warning".into(), None)) }
+    pub fn error(self) -> Self { self.color(Color::Semantic("danger".into(), None)) }
+    pub fn muted(self) -> Self { self.color(Color::Semantic("text-muted".into(), None)) }
+    pub fn dim(self) -> Self { self.color(Color::Semantic("text-dim".into(), None)) }
+
+    pub fn color(self, color: Color) -> Self {
+        self.get_style().write().unwrap().typography.color = Some(color);
+        self
+    }
+
+    pub fn size(self, size: f32) -> Self {
+        self.get_style().write().unwrap().typography.size = size;
+        self
+    }
 }
 
 impl Component for Text {
     fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
-        let variant = self.variant.get();
-        let mut style = self.view.style().clone();
-
-        // Map variants to standard artisan colors
-        match variant {
-            TextVariant::Info => style.typography.color = Some(Color::Rgba(0.2, 0.6, 1.0, 1.0)),
-            TextVariant::Success => style.typography.color = Some(Color::Rgba(0.2, 0.8, 0.2, 1.0)),
-            TextVariant::Warning => style.typography.color = Some(Color::Rgba(1.0, 0.8, 0.0, 1.0)),
-            TextVariant::Error => style.typography.color = Some(Color::Rgba(1.0, 0.2, 0.2, 1.0)),
-            TextVariant::Bold => style.typography.weight = FontWeight::Bold,
-            TextVariant::Dim => style.typography.color = Some(Color::Rgba(0.5, 0.5, 0.5, 1.0)),
-            _ => {}
-        }
-
-        VNode::Element(VElement {
-            tag: "span".to_string(),
-            style,
-            attributes: Default::default(),
-            handlers: Default::default(),
-            motion: None,
-            children: vec![VNode::text(self.content.get())],
-            key: Some(self.id.clone()),
-        })
+        VNode::element("span")
+            .with_style(self.get_style().read().unwrap().clone())
+            .with_child(VNode::text(self.content.get()))
+            .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Text {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.get_style().write().unwrap() }
 }

@@ -6,7 +6,7 @@ Thank you for your interest in contributing to **Rupa Framework**! We are buildi
 
 ## 🛠️ Engineering Standards
 
-Before you start, please read our [Engineering Standards](./docs/engineering-standards.md). Adherence to these principles is mandatory for all contributions:
+Before you start, please read our [Engineering Standards](./docs/workshop/standards/engineering-standards.md). Adherence to these principles is mandatory for all contributions:
 
 1.  **VNode Rendering Architecture:** Always follow the `render() -> VNode` pattern for components.
 2.  **Agnostic Separation:** Ensure that core component logic does not depend on platform-specific libraries (WGPU/Winit/Crossterm).

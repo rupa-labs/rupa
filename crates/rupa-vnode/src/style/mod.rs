@@ -16,6 +16,7 @@ pub mod motion;
 pub mod sizing;
 pub mod spacing;
 pub mod style;
+pub use self::style::Style;
 pub mod svg;
 pub mod theme;
 pub mod types;
@@ -38,7 +39,6 @@ pub use layout::*;
 pub mod motion_mod { pub use crate::style::motion::*; }
 pub use sizing::*;
 pub use spacing::*;
-pub use style::*;
 pub use theme::*;
 pub use types::*;
 pub use typography::*;

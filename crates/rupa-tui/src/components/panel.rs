@@ -1,5 +1,4 @@
-use rupa_core::{Component, VNode, VElement, ViewCore, Id};
-use rupa_vnode::{Attributes};
+use rupa_core::{Component, VNode, ViewCore, Id};
 use std::sync::Arc;
 
 /// A terminal-specific panel with customizable borders.
@@ -38,18 +37,11 @@ impl<'a> Component for Panel<'a> {
     fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
 
     fn render(&self) -> VNode {
-        VNode::Element(VElement {
-            handlers: Default::default(),
-            tag: "panel".to_string(),
-            style: self.view.style.read().unwrap().clone(),
-            attributes: {
-                let mut attr = Attributes::new();
-                attr.insert("title", self.title.clone());
-                attr
-            },
-            motion: None,
-            children: self.children.iter().map(|c| c.render()).collect(),
-            key: Some(self.id.clone()),
-        })
+        VNode::element("panel")
+            .with_style(self.view.style().clone())
+            .with_attr("title", self.title.clone())
+            .with_children(self.children.iter().map(|c| c.render()).collect())
+            .with_key(self.id.clone())
+            .with_label(self.title.clone()) // Automatically use title as border label
     }
 }

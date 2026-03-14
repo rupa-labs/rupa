@@ -46,11 +46,6 @@ pub fn pl(val: impl Into<Scale>) -> impl StyleModifier {
     move |s: &mut Style| s.padding.left = scale.value(16.0)
 }
 
-pub fn gap(val: impl Into<Scale>) -> impl StyleModifier {
-    let scale = val.into();
-    move |s: &mut Style| s.flex.gap = Some(scale.value(16.0))
-}
-
 // --- Chaining API ---
 
 pub trait ChainedSpacing: Stylable {
@@ -61,7 +56,6 @@ pub trait ChainedSpacing: Stylable {
     fn pr(self, val: impl Into<Scale>) -> Self { self.style(pr(val)) }
     fn pb(self, val: impl Into<Scale>) -> Self { self.style(pb(val)) }
     fn pl(self, val: impl Into<Scale>) -> Self { self.style(pl(val)) }
-    fn gap(self, val: impl Into<Scale>) -> Self { self.style(gap(val)) }
 }
 
 impl<T: Stylable> ChainedSpacing for T {}

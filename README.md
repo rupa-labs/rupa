@@ -32,7 +32,7 @@ Launch the crafting wizard and follow the intuitive steps:
 rupa create
 ```
 
-For more detailed instructions, see the [**Getting Started Guide**](./docs/getting-started.md).
+For more detailed instructions, see the [**Getting Started Guide**](./docs/artisan/introductions/getting-started.md).
 
 ---
 
@@ -82,13 +82,13 @@ fn main() {
 - `docs/`: In-depth architectural guides and standards.
 - `examples/`: Multi-platform implementation demos.
 
-Learn more about how we build crates in [**Crate Construction**](./docs/crate-construction.md).
+Learn more about how we build crates in [**Crate Construction**](./docs/workshop/internals/crate-construction.md).
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions from everyone! Please see our [**CONTRIBUTING.md**](./CONTRIBUTING.md) and [**Engineering Standards**](./docs/engineering-standards.md) to get started.
+We welcome contributions from everyone! Please see our [**CONTRIBUTING.md**](./CONTRIBUTING.md) and [**Engineering Standards**](./docs/workshop/standards/engineering-standards.md) to get started.
 
 ## ⚖️ License
 

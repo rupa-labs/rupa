@@ -1,7 +1,7 @@
-use rupa_core::{Component, VNode, VElement, ViewCore, Id, Signal};
-use rupa_vnode::{Style, Theme, Attributes};
+use rupa_core::{Component, VNode, Id, Signal};
+use rupa_vnode::{Style, Theme, TextAlign};
 use crate::style::modifiers::Stylable;
-use std::sync::{RwLockWriteGuard, Arc};
+use std::sync::{RwLockWriteGuard, Arc, RwLock};
 
 // --- LABEL ---
 
@@ -9,44 +9,39 @@ use std::sync::{RwLockWriteGuard, Arc};
 pub struct Label {
     pub id: String,
     pub text: String,
-    pub view: Arc<ViewCore>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl Label {
     pub fn new(text: impl Into<String>) -> Self {
-        let view = Arc::new(ViewCore::new());
-        Theme::current().apply_defaults(&mut view.style());
+        let mut style = Style::default();
+        Theme::current().apply_defaults(&mut style);
         Self {
             id: Id::next().to_string(),
             text: text.into(),
-            view,
+            style: Arc::new(RwLock::new(style)),
+            prev_vnode: Arc::new(RwLock::new(None)),
         }
     }
 }
 
 impl Component for Label {
     fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { 
-            handlers: Default::default(), 
-            tag: "label".to_string(),
-            style: self.view.style.read().unwrap().clone(),
-            attributes: {
-                let mut attr = Attributes::new();
-                attr.insert("text", self.text.clone());
-                attr
-            },
-            motion: None,
-            children: vec![VNode::text(self.text.clone())],
-            key: Some(self.id.clone()),
-        })
+        VNode::element("label")
+            .with_style(self.get_style().read().unwrap().clone())
+            .with_attr("text", self.text.clone())
+            .with_child(VNode::text(self.text.clone()))
+            .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Label {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
 // --- INPUT ---
@@ -55,24 +50,36 @@ impl Stylable for Label {
 pub struct Input {
     pub id: String,
     pub value: Signal<String>,
+    pub label: Option<String>,
     pub placeholder: String,
     pub on_input: Option<Arc<dyn Fn(String) + Send + Sync>>,
     pub on_submit: Option<Arc<dyn Fn(String) + Send + Sync>>,
-    pub view: Arc<ViewCore>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl Input {
     pub fn new(placeholder: impl Into<String>) -> Self {
-        let view = Arc::new(ViewCore::new());
-        Theme::current().apply_defaults(&mut view.style());
+        let mut style = Style::default();
+        Theme::current().apply_defaults(&mut style);
+        // Inputs typically have borders in TUI
+        style.border.width = 1.0;
+        
         Self {
             id: Id::next().to_string(),
             value: Signal::new(String::new()),
+            label: None,
             placeholder: placeholder.into(),
             on_input: None,
             on_submit: None,
-            view,
+            style: Arc::new(RwLock::new(style)),
+            prev_vnode: Arc::new(RwLock::new(None)),
         }
+    }
+
+    pub fn label(mut self, label: impl Into<String>) -> Self {
+        self.label = Some(label.into());
+        self
     }
 
     pub fn value(mut self, value: Signal<String>) -> Self {
@@ -98,27 +105,26 @@ impl Input {
 
 impl Component for Input {
     fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         let value_signal = self.value.clone();
-        let mut node = VNode::Element(VElement { 
-            handlers: Default::default(), 
-            tag: "input".to_string(),
-            style: self.view.style.read().unwrap().clone(),
-            attributes: {
-                let mut attr = Attributes::new();
-                attr.insert("placeholder", self.placeholder.clone());
-                attr.insert("value", self.value.get());
-                attr
-            },
-            motion: None,
-            children: vec![],
-            key: Some(self.id.clone()),
-        });
+        let on_input_handler = self.on_input.clone();
+        let on_submit_handler = self.on_submit.clone();
+
+        let mut node = VNode::element("input")
+            .with_style(self.get_style().read().unwrap().clone())
+            .with_attr("placeholder", self.placeholder.clone())
+            .with_attr("value", self.value.get())
+            .with_key(self.id.clone())
+            .with_label_align(TextAlign::Left);
+
+        if let Some(ref l) = self.label {
+            node = node.with_label(l.clone());
+        }
 
         // Always sync signal on input
-        let on_input_handler = self.on_input.clone();
         node = node.on_input(move |v| {
             value_signal.set(v.clone());
             if let Some(ref h) = on_input_handler {
@@ -126,7 +132,7 @@ impl Component for Input {
             }
         });
 
-        if let Some(ref h) = self.on_submit {
+        if let Some(ref h) = on_submit_handler {
             node = node.on_submit({
                 let h = h.clone();
                 move |v| h(v)
@@ -138,7 +144,7 @@ impl Component for Input {
 }
 
 impl Stylable for Input {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
 // --- CHECKBOX ---
@@ -147,44 +153,38 @@ impl Stylable for Input {
 pub struct Checkbox {
     pub id: String,
     pub checked: Signal<bool>,
-    pub view: Arc<ViewCore>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl Checkbox {
     pub fn new() -> Self {
-        let view = Arc::new(ViewCore::new());
-        Theme::current().apply_defaults(&mut view.style());
+        let mut style = Style::default();
+        Theme::current().apply_defaults(&mut style);
         Self {
             id: Id::next().to_string(),
             checked: Signal::new(false),
-            view,
+            style: Arc::new(RwLock::new(style)),
+            prev_vnode: Arc::new(RwLock::new(None)),
         }
     }
 }
 
 impl Component for Checkbox {
     fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { 
-            handlers: Default::default(), 
-            tag: "checkbox".to_string(),
-            style: self.view.style.read().unwrap().clone(),
-            attributes: {
-                let mut attr = Attributes::new();
-                attr.insert("checked", self.checked.get().to_string());
-                attr
-            },
-            motion: None,
-            children: vec![],
-            key: Some(self.id.clone()),
-        })
+        VNode::element("checkbox")
+            .with_style(self.get_style().read().unwrap().clone())
+            .with_attr("checked", self.checked.get().to_string())
+            .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Checkbox {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
 // --- SWITCH ---
@@ -193,44 +193,38 @@ impl Stylable for Checkbox {
 pub struct Switch {
     pub id: String,
     pub active: Signal<bool>,
-    pub view: Arc<ViewCore>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl Switch {
     pub fn new() -> Self {
-        let view = Arc::new(ViewCore::new());
-        Theme::current().apply_defaults(&mut view.style());
+        let mut style = Style::default();
+        Theme::current().apply_defaults(&mut style);
         Self {
             id: Id::next().to_string(),
             active: Signal::new(false),
-            view,
+            style: Arc::new(RwLock::new(style)),
+            prev_vnode: Arc::new(RwLock::new(None)),
         }
     }
 }
 
 impl Component for Switch {
     fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { 
-            handlers: Default::default(), 
-            tag: "switch".to_string(),
-            style: self.view.style.read().unwrap().clone(),
-            attributes: {
-                let mut attr = Attributes::new();
-                attr.insert("active", self.active.get().to_string());
-                attr
-            },
-            motion: None,
-            children: vec![],
-            key: Some(self.id.clone()),
-        })
+        VNode::element("switch")
+            .with_style(self.get_style().read().unwrap().clone())
+            .with_attr("active", self.active.get().to_string())
+            .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Switch {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
 // --- RADIO ---
@@ -239,44 +233,38 @@ impl Stylable for Switch {
 pub struct Radio {
     pub id: String,
     pub selected: Signal<bool>,
-    pub view: Arc<ViewCore>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl Radio {
     pub fn new() -> Self {
-        let view = Arc::new(ViewCore::new());
-        Theme::current().apply_defaults(&mut view.style());
+        let mut style = Style::default();
+        Theme::current().apply_defaults(&mut style);
         Self {
             id: Id::next().to_string(),
             selected: Signal::new(false),
-            view,
+            style: Arc::new(RwLock::new(style)),
+            prev_vnode: Arc::new(RwLock::new(None)),
         }
     }
 }
 
 impl Component for Radio {
     fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { 
-            handlers: Default::default(), 
-            tag: "radio".to_string(),
-            style: self.view.style.read().unwrap().clone(),
-            attributes: {
-                let mut attr = Attributes::new();
-                attr.insert("selected", self.selected.get().to_string());
-                attr
-            },
-            motion: None,
-            children: vec![],
-            key: Some(self.id.clone()),
-        })
+        VNode::element("radio")
+            .with_style(self.get_style().read().unwrap().clone())
+            .with_attr("selected", self.selected.get().to_string())
+            .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Radio {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }
 
 // --- SELECT ---
@@ -286,43 +274,37 @@ pub struct Select {
     pub id: String,
     pub options: Vec<String>,
     pub selected_index: Signal<Option<usize>>,
-    pub view: Arc<ViewCore>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl Select {
     pub fn new() -> Self {
-        let view = Arc::new(ViewCore::new());
-        Theme::current().apply_defaults(&mut view.style());
+        let mut style = Style::default();
+        Theme::current().apply_defaults(&mut style);
         Self {
             id: Id::next().to_string(),
             options: vec![],
             selected_index: Signal::new(None),
-            view,
+            style: Arc::new(RwLock::new(style)),
+            prev_vnode: Arc::new(RwLock::new(None)),
         }
     }
 }
 
 impl Component for Select {
     fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { 
-            handlers: Default::default(), 
-            tag: "select".to_string(),
-            style: self.view.style.read().unwrap().clone(),
-            attributes: {
-                let mut attr = Attributes::new();
-                attr.insert("options_count", self.options.len().to_string());
-                attr
-            },
-            motion: None,
-            children: vec![],
-            key: Some(self.id.clone()),
-        })
+        VNode::element("select")
+            .with_style(self.get_style().read().unwrap().clone())
+            .with_attr("options_count", self.options.len().to_string())
+            .with_key(self.id.clone())
     }
 }
 
 impl Stylable for Select {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }

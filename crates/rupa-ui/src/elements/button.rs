@@ -1,31 +1,31 @@
-use crate::Children;
-use rupa_core::{Component, VNode, ViewCore, Id, Signal};
-use rupa_vnode::{Style, Theme, Variant, Accessibility, Attributes};
+use crate::elements::children::Children;
+use rupa_core::{Component, VNode, Id, Signal};
+use rupa_vnode::{Style, Theme, Variant};
 use crate::style::modifiers::Stylable;
-use std::sync::{RwLockWriteGuard, Arc};
+use std::sync::{RwLockWriteGuard, Arc, RwLock};
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub enum ButtonSize { Xs, Sm, #[default] Md, Lg, Xl, Xl2, Xl3, Xl4, Xl5, Xl6 }
 
 /// A standard interactive button.
-pub struct Button {
+pub struct Button<'a> {
     pub id: String,
     pub label: String,
     pub variant: Variant,
     pub size: ButtonSize,
     pub disabled: Signal<bool>,
-    pub on_click: Option<Arc<dyn Fn(rupa_vnode::UIEvent) + Send + Sync>>,
-    pub accessibility: Accessibility,
-    pub view: Arc<ViewCore>,
+    pub on_click: Option<Arc<dyn Fn(rupa_core::events::UIEvent) + Send + Sync>>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
+    pub children: Children<'a>,
 }
 
-impl Button {
+impl<'a> Button<'a> {
     pub fn new(label: impl Into<String>) -> Self {
         let label = label.into();
-        let view = Arc::new(ViewCore::new());
+        let mut style = Style::default();
         let variant = Variant::Primary;
-        
-        view.style().background.color = Some(Theme::variant(variant.clone()));
+        style.background.color = Some(Theme::variant(variant.clone()));
 
         Self {
             id: Id::next().to_string(),
@@ -34,18 +34,18 @@ impl Button {
             size: ButtonSize::Md,
             disabled: Signal::new(false),
             on_click: None,
-            accessibility: Accessibility::default(),
-            view,
+            style: Arc::new(RwLock::new(style)),
+            prev_vnode: Arc::new(RwLock::new(None)),
+            children: Children::new(),
         }
     }
 
     pub fn variant(self, v: Variant) -> Self { 
-        self.view.style().background.color = Some(Theme::variant(v.clone()));
-        self.view.mark_dirty();
+        self.get_style().write().unwrap().background.color = Some(Theme::variant(v.clone()));
         Self { variant: v, ..self }
     }
 
-    pub fn on_click(mut self, f: impl Fn(rupa_vnode::UIEvent) + Send + Sync + 'static) -> Self { 
+    pub fn on_click(mut self, f: impl Fn(rupa_core::events::UIEvent) + Send + Sync + 'static) -> Self { 
         self.on_click = Some(Arc::new(f)); 
         self 
     }
@@ -61,34 +61,27 @@ impl Button {
     }
 }
 
-impl Stylable for Button {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
+impl<'a> Stylable for Button<'a> {
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.get_style().write().unwrap() }
 }
 
-impl Component for Button {
+impl<'a> Component for Button<'a> {
     fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
         let is_disabled = self.disabled.get();
         let mut node = VNode::element("button")
-            .with_key(self.id.clone())
-            .with_style(self.view.style.read().unwrap().clone())
+            .with_style(self.get_style().read().unwrap().clone())
             .with_attr("disabled", if is_disabled { "true" } else { "false" })
-            .with_child(VNode::text(self.label.clone()));
+            .with_children(self.children.render_all())
+            .with_child(VNode::text(self.label.clone()))
+            .with_key(self.id.clone());
 
         if !is_disabled {
             if let Some(ref handler) = self.on_click {
-                let h = handler.clone();
-                // Pointer Interaction
-                node = node.with_handler({
-                    let h = h.clone();
-                    move |e| h(e)
-                });
-                
-                // Keyboard Interaction (Accessibility)
-                // In a future update, this will be handled by a dedicated InputBroker
-                // but for now we attach it directly to the VNode DNA.
+                node = node.with_arc_handler(handler.clone());
             }
         }
 
@@ -99,27 +92,33 @@ impl Component for Button {
 /// A specialized red button for destructive actions.
 pub struct CloseButton {
     pub id: String,
-    pub view: Arc<ViewCore>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl CloseButton {
     pub fn new() -> Self {
-        let view = Arc::new(ViewCore::new());
-        view.style().background.color = Some(rupa_vnode::Color::Rgba(1.0, 0.0, 0.0, 1.0));
-        Self { id: Id::next().to_string(), view }
+        let mut style = Style::default();
+        style.background.color = Some(rupa_vnode::Color::Rgba(1.0, 0.0, 0.0, 1.0));
+        Self { 
+            id: Id::next().to_string(), 
+            style: Arc::new(RwLock::new(style)),
+            prev_vnode: Arc::new(RwLock::new(None)),
+        }
     }
 }
 
-impl Stylable for CloseButton { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() } }
+impl Stylable for CloseButton { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.get_style().write().unwrap() } }
 
 impl Component for CloseButton {
     fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     fn render(&self) -> VNode {
         VNode::element("button")
-            .with_key(self.id.clone())
-            .with_style(self.view.style.read().unwrap().clone())
+            .with_style(self.get_style().read().unwrap().clone())
             .with_child(VNode::text("×"))
+            .with_key(self.id.clone())
     }
 }
 
@@ -127,37 +126,39 @@ impl Component for CloseButton {
 pub struct ButtonGroup<'a> {
     pub id: String,
     pub children: Children<'a>,
-    pub view: Arc<ViewCore>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl<'a> ButtonGroup<'a> {
     pub fn new() -> Self {
-        let view = Arc::new(ViewCore::new());
-        view.style().flex.flex_direction = rupa_vnode::FlexDirection::Row;
-        Self { id: Id::next().to_string(), children: Children::new(), view }
+        let mut style = Style::default();
+        style.flex.flex_direction = rupa_vnode::FlexDirection::Row;
+        Self { 
+            id: Id::next().to_string(), 
+            children: Children::new(), 
+            style: Arc::new(RwLock::new(style)),
+            prev_vnode: Arc::new(RwLock::new(None)),
+        }
     }
-    pub fn child(mut self, child: Button) -> Self {
+    
+    pub fn child(mut self, child: impl Component + 'a) -> Self {
         self.children.push(Box::new(child));
-        self.view.mark_dirty();
         self
     }
 }
 
-impl<'a> Stylable for ButtonGroup<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() } }
+impl<'a> Stylable for ButtonGroup<'a> { fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.get_style().write().unwrap() } }
 
 impl<'a> Component for ButtonGroup<'a> {
     fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     fn children(&self) -> Vec<&dyn Component> { self.children.as_refs() }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
     fn render(&self) -> VNode {
-        VNode::Element(rupa_vnode::VElement { 
-            handlers: Default::default(), 
-            tag: "button-group".to_string(),
-            style: self.view.style.read().unwrap().clone(),
-            attributes: Attributes::default(),
-            motion: None,
-            children: self.children.render_all(),
-            key: Some(self.id.clone()),
-        })
+        VNode::element("div")
+            .with_style(self.get_style().read().unwrap().clone())
+            .with_children(self.children.render_all())
+            .with_key(self.id.clone())
     }
 }

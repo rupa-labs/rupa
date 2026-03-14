@@ -1,4 +1,4 @@
-use crate::style::theme::{Theme, ColorMode};
+use crate::style::theme::Theme;
 use rupa_base::Color as RgbaColor;
 
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -18,31 +18,24 @@ impl Color {
                 [rgba.r, rgba.g, rgba.b, rgba.a]
             },
             Color::Semantic(name, alpha) => {
-                let mode = Theme::current().mode;
+                let theme = Theme::current();
+                let palette = theme.active_palette();
                 let a = alpha.unwrap_or(1.0);
-                match name.as_str() {
-                    "primary" => match mode {
-                        ColorMode::Light => [0.3, 0.4, 0.9, a],
-                        _ => [0.39, 0.45, 1.0, a],
-                    },
-                    "background" => match mode {
-                        ColorMode::Light => [0.98, 0.98, 0.98, a],
-                        _ => [0.05, 0.05, 0.05, a],
-                    },
-                    "surface" => match mode {
-                        ColorMode::Light => [1.0, 1.0, 1.0, a],
-                        _ => [0.12, 0.12, 0.12, a],
-                    },
-                    "text" => match mode {
-                        ColorMode::Light => [0.1, 0.1, 0.1, a],
-                        _ => [0.95, 0.95, 0.95, a],
-                    },
-                    "text-muted" => match mode {
-                        ColorMode::Light => [0.4, 0.4, 0.4, a],
-                        _ => [0.6, 0.6, 0.6, a],
-                    },
-                    _ => [1.0, 1.0, 1.0, a],
-                }
+                
+                let mut rgba = match name.as_str() {
+                    "primary" => palette.primary.to_rgba(),
+                    "background" => palette.background.to_rgba(),
+                    "surface" => palette.surface.to_rgba(),
+                    "text" => palette.text.to_rgba(),
+                    "text-muted" | "text-dim" => palette.text_dim.to_rgba(),
+                    "success" => palette.success.to_rgba(),
+                    "warning" => palette.warning.to_rgba(),
+                    "danger" | "error" => palette.danger.to_rgba(),
+                    "border" => palette.border.to_rgba(),
+                    _ => [1.0, 1.0, 1.0, 1.0],
+                };
+                rgba[3] *= a;
+                rgba
             },
             Color::Transparent => [0.0, 0.0, 0.0, 0.0],
         }

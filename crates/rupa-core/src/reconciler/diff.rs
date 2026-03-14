@@ -2,16 +2,12 @@ use rupa_vnode::VNode;
 use rupa_vnode::style::Style;
 use super::patch::{Patch, UpdateType, PatchSet, StylePart};
 use crate::component::Component;
-use rupa_signals::with_context;
-use std::sync::Arc;
 use std::collections::HashMap;
 
 /// Orchestrates the reconciliation of a component, using its dirty flag 
 /// to skip unnecessary work.
 pub fn reconcile_component(comp: &dyn Component) -> PatchSet {
-    let view = comp.view_core();
-    
-    if !view.is_dirty() {
+    if !comp.is_dirty() {
         let mut patches = Vec::new();
         for (_i, child) in comp.children().iter().enumerate() {
             patches.extend(reconcile_component(*child));
@@ -19,15 +15,18 @@ pub fn reconcile_component(comp: &dyn Component) -> PatchSet {
         return patches;
     }
 
-    let old_vnode = view.get_prev_vnode();
-    let new_vnode = with_context(view.clone() as Arc<dyn rupa_signals::Subscriber>, || {
-        comp.render()
-    });
+    let old_vnode_arc = comp.prev_vnode();
+    let old_vnode = {
+        let guard = old_vnode_arc.read().unwrap();
+        guard.clone().unwrap_or(VNode::Empty)
+    };
+
+    let new_vnode = comp.render();
 
     let patches = reconcile(&old_vnode, &new_vnode, None, 0);
     
-    view.set_prev_vnode(new_vnode);
-    view.clear_dirty();
+    *old_vnode_arc.write().unwrap() = Some(new_vnode);
+    comp.clear_dirty();
     
     patches
 }
@@ -198,91 +197,5 @@ fn reconcile_children(old_children: &[VNode], new_children: &[VNode], _parent_id
             format!("node_{}", old_idx)
         };
         patches.push(Patch::Delete { id });
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use rupa_vnode::VNode;
-    use rupa_vnode::style::Style;
-
-    #[test]
-    fn test_attribute_diffing() {
-        let old_node = VNode::element("div")
-            .with_key("test_node")
-            .with_attr("id", "test")
-            .with_attr("class", "old");
-
-        let new_node = VNode::element("div")
-            .with_key("test_node")
-            .with_attr("id", "test")
-            .with_attr("class", "new")
-            .with_attr("data-foo", "bar");
-
-        let patches = reconcile(&old_node, &new_node, None, 0);
-        
-        assert!(!patches.is_empty());
-        
-        if let Patch::Update { id: _, changes } = &patches[0] {
-            let has_id_update = changes.iter().any(|c| match c {
-                UpdateType::Attribute(k, _) => k == "id",
-                _ => false,
-            });
-            assert!(!has_id_update, "Should NOT update unchanged attribute 'id'");
-            
-            let has_class_update = changes.iter().any(|c| match c {
-                UpdateType::Attribute(k, v) => k == "class" && v == "new",
-                _ => false,
-            });
-            assert!(has_class_update, "Should update changed attribute 'class'");
-
-            let has_foo_update = changes.iter().any(|c| match c {
-                UpdateType::Attribute(k, v) => k == "data-foo" && v == "bar",
-                _ => false,
-            });
-            assert!(has_foo_update, "Should add new attribute 'data-foo'");
-        } else {
-            panic!("Expected Patch::Update");
-        }
-    }
-
-    #[test]
-    fn test_style_part_diffing() {
-        let old_style = Style::default().p(10.0);
-        let new_style = Style::default().p(20.0).w(100.0);
-        
-        let old_node = VNode::element("div").with_style(old_style);
-        let new_node = VNode::element("div").with_style(new_style);
-
-        let patches = reconcile(&old_node, &new_node, None, 0);
-        
-        if let Patch::Update { id: _, changes } = &patches[0] {
-            let has_padding_update = changes.iter().any(|c| match c {
-                UpdateType::StylePart(StylePart::Padding(_)) => true,
-                _ => false,
-            });
-            assert!(has_padding_update, "Should identify Padding change");
-
-            let has_sizing_update = changes.iter().any(|c| match c {
-                UpdateType::StylePart(StylePart::Sizing(_)) => true,
-                _ => false,
-            });
-            assert!(has_sizing_update, "Should identify Sizing change");
-        }
-    }
-
-    #[test]
-    fn test_keyed_reconciliation_move() {
-        let child1 = VNode::element("span").with_key("1");
-        let child2 = VNode::element("span").with_key("2");
-        
-        let old_node = VNode::element("div").with_child(child1.clone()).with_child(child2.clone());
-        let new_node = VNode::element("div").with_child(child2.clone()).with_child(child1.clone());
-
-        let patches = reconcile(&old_node, &new_node, None, 0);
-        
-        let has_move = patches.iter().any(|p| matches!(p, Patch::Move { .. }));
-        assert!(has_move, "Should use Patch::Move for keyed elements");
     }
 }

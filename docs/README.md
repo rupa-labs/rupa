@@ -1,56 +1,34 @@
 # Rupa Framework Documentation 📚
 
-Welcome to the official documentation for the **Rupa Framework**, a modular meta-framework engineered for Rust artisans.
+Welcome to the official documentation for the **Rupa Framework**, a modular meta-framework engineered for Rust artisans. 
+
+Choose your path based on your role in the ecosystem:
 
 ---
 
-## 🏁 Getting Started
-Quick paths to get you up and running with Rupa.
+## 🎨 The Artisan's Path (User Guide)
+For developers building applications, interfaces, and systems *using* the Rupa Framework. Focuses on "Take what you want" and rapid, ergonomic development.
 
-*   **[Overview](./overview.md)**: What is Rupa and why does it exist?
-*   **[Philosophy](./philosophy.md)**: The "Artisan" mindset and the "Take what you want" principle.
-*   **[Installation](./installation.md)**: Setting up your development environment.
-*   **[Getting Started](./getting-started.md)**: Build your first Rupa application.
-
----
-
-## 🏛️ Architecture & Blueprints
-Deep dives into how the framework is built and governed.
-
-*   **[Blueprint](./blueprint.md)**: The macro-view of the entire system architecture.
-*   **[Architecture](./architecture.md)**: Hexagonal 3-Tier model (Ports & Adapters).
-*   **[Engineering Standards](./engineering-standards.md)**: Mandatory principles and TDD mandate.
-*   **[Workshop Tiers](./architectures/README.md)**: Detailed breakdown of Atoms, Composites, and Showrooms.
+*   **[Introductions](./artisan/introductions/overview.md)**: What is Rupa and why does it exist?
+*   **[Getting Started](./artisan/introductions/getting-started.md)**: Build your first Rupa application.
+*   **[Component Library](./artisan/components/README.md)**: UI components, primitives, and styling.
+*   **[Reactivities & Events](./artisan/reactivities/README.md)**: Signals, Memos, and the UI interaction model.
+*   **[Platform Showrooms](./artisan/showrooms/README.md)**: Running on Desktop, Web, or Terminal.
+*   **[Ecosystems & Tooling](./artisan/ecosystems/README.md)**: CLI, bundlers, and third-party integrations.
 
 ---
 
-## 🧱 The Ecosystem (Atomic Materials)
-Reference for the independent crates that power the framework.
+## 🛠️ The Workshop Blueprint (Contributor Guide)
+For developers building, maintaining, or extending the **Rupa Framework itself**. Focuses on "The Master's Craft", 3S standards, and the internal Kernel logic.
 
-*   **[Crate References](./crate-references.md)**: Full registry of all workspace crates.
-*   **[Crate Guide](./crates/README.md)**: Detailed 1:1 documentation for every Tier 1 material.
-*   **[Support Systems](./support-references.md)**: Reactivity, Types, and Infrastructure.
-
----
-
-## 🎨 UI & Design System
-Building beautiful, reactive, and accessible interfaces.
-
-*   **[Component References](./component-references.md)**: Index of all available UI components.
-*   **[Style Utilities](./utility-references.md)**: Responsive layout and visual styling API.
-*   **[Motion & Animation](./motion-references.md)**: Creating fluid physics-based transitions.
-*   **[Accessibility](./event-references.md)**: Handling events and ensuring inclusivity.
+*   **[Core Architectures](./workshop/architectures/architecture.md)**: 3-Tier Atoms & Composites model.
+*   **[Engineering Standards](./workshop/standards/engineering-standards.md)**: Mandatory 3S Doctrine & TDD.
+*   **[Internal Specs](./workshop/internals/README.md)**: Reconciliation, VNode design, and the Action Bus.
+*   **[Crate Construction](./workshop/internals/crate-construction.md)**: How to build new Atoms or Showroom adapters.
+*   **[Contribution Workflow](../../CONTRIBUTING.md)**: How to submit your craft to the main repository.
 
 ---
 
-## 🛠️ Tooling & Integration
-Developer experience and external system connections.
-
-*   **[Plugin System](./plugin-references.md)**: Extending the framework with custom logic.
-*   **[Platform Reference](./platform-references.md)**: Entry points for Web, Desktop, and Terminal.
-*   **[Tooling & DX](./tooling/README.md)**: CLI, Testing, and debugging utilities.
-
----
-
-## 📖 Comprehensive Index
-*   **[Full Documentation Index](./doc-references.md)**: A complete list of all technical documents.
+## 🧭 Global Navigation
+*   **[Philosophy](./artisan/introductions/philosophy.md)**: The "Artisan" mindset.
+*   **[Full Index](./workshop/standards/doc-references.md)**: Complete registry of all technical documents.

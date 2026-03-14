@@ -1,53 +1,45 @@
-use rupa_core::{Component, VNode, VElement, ViewCore, Id};
-use rupa_vnode::{Style, Attributes};
+use rupa_core::{Component, VNode, Id, Signal};
+use rupa_vnode::{Style};
 use crate::style::modifiers::Stylable;
-use crate::elements::Children;
-use std::sync::{RwLockWriteGuard, Arc};
+use std::sync::{RwLockWriteGuard, Arc, RwLock};
 
 pub struct RouterState {
-    pub current_route: String,
+    pub current_path: Signal<String>,
 }
 
-pub struct Router<'a> {
+pub struct Router {
     pub id: String,
-    pub children: Children<'a>,
-    pub view: Arc<ViewCore>,
+    pub state: Arc<RouterState>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
-impl<'a> Router<'a> {
-    pub fn new() -> Self {
+impl Router {
+    pub fn new(initial_path: impl Into<String>) -> Self {
         Self {
             id: Id::next().to_string(),
-            children: Children::new(),
-            view: Arc::new(ViewCore::new()),
+            state: Arc::new(RouterState {
+                current_path: Signal::new(initial_path.into()),
+            }),
+            style: Arc::new(RwLock::new(Style::default())),
+            prev_vnode: Arc::new(RwLock::new(None)),
         }
     }
-
-    pub fn child(mut self, child: Box<dyn Component + 'a>) -> Self {
-        self.children.push(child);
-        self.view.mark_dirty();
-        self
-    }
 }
 
-impl<'a> Component for Router<'a> {
+impl Component for Router {
     fn id(&self) -> &str { &self.id }
-    fn children(&self) -> Vec<&dyn Component> { self.children.as_refs() }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
     
     fn render(&self) -> VNode {
-        VNode::Element(VElement { 
-            handlers: Default::default(), 
-            tag: "router".to_string(),
-            style: self.view.style.read().unwrap().clone(),
-            attributes: Attributes::default(),
-            motion: None,
-            children: self.children.render_all(),
-            key: Some(self.id.clone()),
-        })
+        VNode::element("router")
+            .with_style(self.get_style().read().unwrap().clone())
+            .with_attr("path", self.state.current_path.get())
+            .with_key(self.id.clone())
     }
 }
 
-impl<'a> Stylable for Router<'a> {
-    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.view.style() }
+impl Stylable for Router {
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
 }

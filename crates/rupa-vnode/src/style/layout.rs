@@ -5,9 +5,11 @@ pub enum Display {
     #[default]
     Flex,
     Grid,
-    None,
     Block,
+    InlineBlock,
+    None,
 }
+
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Position {

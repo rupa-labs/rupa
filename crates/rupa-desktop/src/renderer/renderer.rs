@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::collections::HashMap;
 use wgpu::*;
 use wgpu::util::StagingBelt;
-use rupa_core::{Vec2, Patch, UpdateType, renderer::{Renderer as BaseRenderer, RenderCore, TextMeasurer}, vnode::TextAlign};
+use rupa_core::{Vec2, Patch, UpdateType, renderer::{Renderer as BaseRenderer, RenderCore, TextMeasurer}};
 use super::batcher::{Batcher, Vertex};
 use super::texture::Texture;
 use super::text_renderer::TextRenderer;
@@ -184,16 +184,39 @@ impl BaseRenderer for Renderer {
         ]);
     }
 
-    fn draw_text(&mut self, content: &str, x: f32, y: f32, width: f32, size: f32, color: [f32; 4], _align: TextAlign) {
+    fn draw_text(&mut self, content: &str, x: f32, y: f32, width: f32, style: &rupa_core::renderer::TypographyStyle) {
         let scale = self.core.scale_factor;
         let tx = (x + self.core.camera_offset.x) * self.core.camera_zoom * scale; 
         let ty = (y + self.core.camera_offset.y) * self.core.camera_zoom * scale;
-        let tsize = size * self.core.camera_zoom * scale;
+        let tsize = style.size * self.core.camera_zoom * scale;
         let twidth = width * self.core.camera_zoom * scale;
+        let color = style.color.as_ref().map(|c| c.to_rgba()).unwrap_or([1.0, 1.0, 1.0, 1.0]);
 
         let mut buffer = glyphon::Buffer::new(&mut self.text_renderer.font_system, glyphon::Metrics::new(tsize, tsize));
         buffer.set_size(&mut self.text_renderer.font_system, twidth, self.core.logical_size.y * scale);
-        buffer.set_text(&mut self.text_renderer.font_system, content, glyphon::Attrs::new().family(glyphon::Family::SansSerif), glyphon::Shaping::Advanced);
+        
+        let family = match style.family {
+            rupa_core::vnode::style::typography::FontFamily::Sans => glyphon::Family::SansSerif,
+            rupa_core::vnode::style::typography::FontFamily::Serif => glyphon::Family::Serif,
+            rupa_core::vnode::style::typography::FontFamily::Mono => glyphon::Family::Monospace,
+        };
+
+        let weight = match style.weight {
+            rupa_core::vnode::FontWeight::Thin => glyphon::Weight::THIN,
+            rupa_core::vnode::FontWeight::Light => glyphon::Weight::LIGHT,
+            rupa_core::vnode::FontWeight::Normal => glyphon::Weight::NORMAL,
+            rupa_core::vnode::FontWeight::Medium => glyphon::Weight::MEDIUM,
+            rupa_core::vnode::FontWeight::SemiBold => glyphon::Weight::SEMIBOLD,
+            rupa_core::vnode::FontWeight::Bold => glyphon::Weight::BOLD,
+            rupa_core::vnode::FontWeight::Black => glyphon::Weight::BLACK,
+        };
+
+        let attrs = glyphon::Attrs::new()
+            .family(family)
+            .weight(weight)
+            .style(if style.italic { glyphon::Style::Italic } else { glyphon::Style::Normal });
+
+        buffer.set_text(&mut self.text_renderer.font_system, content, attrs, glyphon::Shaping::Advanced);
         buffer.shape_until_scroll(&mut self.text_renderer.font_system);
 
         self.text_entries.push(StoredText { buffer, pos: Vec2::new(tx, ty), color });

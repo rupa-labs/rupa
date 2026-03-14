@@ -1,5 +1,5 @@
-use rupa_core::{Component, VNode, ViewCore, Id, Signal};
-use std::sync::Arc;
+use rupa_core::{Component, VNode, Id, Signal, Style};
+use std::sync::{Arc, RwLock};
 
 /// A reactive progress bar component for the terminal.
 #[derive(Clone)]
@@ -7,7 +7,8 @@ pub struct Progress {
     pub id: String,
     pub label: Signal<String>,
     pub value: Signal<f32>, // 0.0 to 1.0
-    pub view: Arc<ViewCore>,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
 }
 
 impl Progress {
@@ -16,7 +17,8 @@ impl Progress {
             id: Id::next().to_string(),
             label: Signal::new(label.into()),
             value: Signal::new(0.0),
-            view: Arc::new(ViewCore::new()),
+            style: Arc::new(RwLock::new(Style::default())),
+            prev_vnode: Arc::new(RwLock::new(None)),
         }
     }
 
@@ -31,7 +33,8 @@ impl Progress {
 
 impl Component for Progress {
     fn id(&self) -> &str { &self.id }
-    fn view_core(&self) -> Arc<ViewCore> { self.view.clone() }
+    fn style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
 
     fn render(&self) -> VNode {
         let label = self.label.get();
@@ -46,7 +49,8 @@ impl Component for Progress {
         );
 
         VNode::element("div")
-            .with_style(self.view.style().clone())
+            .with_style(self.style().read().unwrap().clone())
             .with_child(VNode::text(format!("{}: {}", label, bar)))
+            .with_key(self.id.clone())
     }
 }
