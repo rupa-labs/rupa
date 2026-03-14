@@ -52,6 +52,7 @@ impl InputDispatcher {
                                 if let VNode::Element(el) = node {
                                     if let Some(handler) = &el.handlers.on_hover {
                                         handler(ui_ev.clone());
+                                        if ui_ev.consumed { break; }
                                     }
                                 }
                             }
@@ -70,6 +71,7 @@ impl InputDispatcher {
                                 if let VNode::Element(el) = node {
                                     if let Some(handler) = &el.handlers.on_click {
                                         handler(ui_ev.clone());
+                                        if ui_ev.consumed { break; }
                                     }
                                 }
                             }

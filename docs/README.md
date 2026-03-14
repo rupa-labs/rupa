@@ -14,6 +14,7 @@ For developers building applications, interfaces, and systems *using* the Rupa F
 *   **[Component Library](./artisan/components/README.md)**: UI components, primitives, and styling.
 *   **[Reactivities & Events](./artisan/reactivities/README.md)**: Signals, Memos, and the UI interaction model.
 *   **[Project Templates](./artisan/introductions/templates/README.md)**: Choose your starting material.
+*   **[Hardware Adapters](./artisan/adapters/README.md)**: Understand target-specific manifestation.
 *   **[Ecosystems & Tooling](./artisan/ecosystems/README.md)**: CLI, bundlers, and third-party integrations.
 
 ---

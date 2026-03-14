@@ -1,62 +1,63 @@
-# Event System Reference 🎯
+# Interaction & Events Reference 🎯
 
-Rupa Framework provides a sophisticated event routing system that bridges raw Operating System signals with your UI components. This document details the types of events you can handle and how they propagate.
+Rupa Framework abstracts raw hardware signals (Mouse, Keyboard, Touch) into **Semantic Intents**. This ensures that your component's behavior remains consistent across all platforms.
 
 ---
 
-## 🖱️ Interaction Types
-Agnostic events translated from raw OS signals.
+## 🏗️ The Unified Input Model
 
-| Event Type | Properties | Description |
+Events are categorized into three primary pillars based on the type of interaction:
+
+### 1. Pointer Events (Positional)
+Represent inputs with spatial coordinates.
+- **Actions**: `Down`, `Up`, `Move`, `Hover`, `Scroll`.
+- **Properties**: `position: Vec2`, `button: Option<PointerButton>`, `modifiers: Modifiers`.
+
+### 2. Focus & Navigation (Logical)
+Represent movement through the UI tree.
+- **Actions**: `Enter` (Focus Gain), `Leave` (Focus Loss), `Next/Prev` (Tab cycling), `Directional` (Arrow navigation).
+
+### 3. System Events
+Physical environment changes like `Resize`, `Quit`, or `WindowFocus`.
+
+---
+
+## ⚡ Semantic Intent Listeners
+
+Artisans should prioritize **Intent Listeners**. These methods trigger based on the user's *goal*, regardless of the input device.
+
+| Listener | Trigger (GUI / Desktop) | Trigger (TUI / Terminal) |
 | :--- | :--- | :--- |
-| `Pointer` | `pos`, `delta`, `button` | Clicks, movements, and scrolling. |
-| `Key` | `key`, `pressed`, `modifiers` | Keyboard input and hotkeys. |
-| `Focus` | `bool` | Element focus and blur events. |
+| **`.on_submit(f)`** | Primary Click (Left Click) | `Enter` or `Space` key |
+| **`.on_cancel(f)`** | Click Outside / Backdrop | `Escape` key |
+| **`.on_select(f)`** | Hover / Mouse Enter | `Tab` or `Arrow` focus |
 
 ---
 
-## 🏗️ The `UIEvent` Schema
-Every event handler in a component receives a `UIEvent`.
+## ⌨️ Keyboard & Text API
 
-### `struct PointerEvent`
-- **`.pos`**: The (x, y) coordinates relative to the component.
-- **`.modifiers`**: Access state of `Shift`, `Ctrl`, `Alt`, and `Meta`.
-- **`.button`**: Identification of `Primary`, `Secondary`, or `Middle` buttons.
+For components that require direct character input (like `Input` or `TextArea`):
+
+| Method | Description |
+| :--- | :--- |
+| **`.on_key_down(f)`** | Triggers on any key press. Receives `KeyCode`. |
+| **`.on_text_input(f)`**| Triggers when a completed character is produced. |
 
 ---
 
-## ⚡ Event Handlers
-Components store reactive callbacks in the `handlers` field of a `VElement`.
+## 🔄 Propagation & Bubbling
 
+1.  **Hit-Testing**: The framework identifies the target component based on Pointer coordinates or current Focus.
+2.  **Bubbling**: Events bubble from the target up to the Root. You can call `event.stop_propagation()` to halt this process and prevent parent handlers from triggering.
+3.  **Agnostic Routing**: The same `on_submit` logic will work whether the user clicked a pixel on a screen or pressed Enter in a terminal.
+
+### Example: Stopping Propagation
 ```rust
-Button::new("Click Me")
+Button::new("Internal Action")
     .on_click(|event| {
-        if let UIEvent::Pointer(e) = event {
-            println!("Clicked at {:?}", e.pos);
-        }
+        event.stop_propagation(); // Parent containers won't see this click
+        log::info!("Inner button clicked!");
     })
 ```
 
----
-
-## 🔄 Propagation Logic
-
-### 1. Capture & Bubble
-Input events follow a standard two-phase lifecycle:
-- **Capture Phase**: The event travels from the Root down to the target component.
-- **Bubble Phase**: The event travels from the target back up to the Root. Most component handlers (`on_click`, `on_hover`) operate during this phase.
-
-### 2. Event Consumption
-If any handler calls `.consume()` during propagation, the event is immediately halted and will not reach further components in the pipeline.
-
-### 3. Focused Routing
-Keyboard and text input events are sent directly to the component that has requested focus (e.g., an `Input` field), bypassing hit-testing.
-
----
-
-## 📱 Platform Mapping (The Agnostic Bridge)
-
-Rupa Framework Runners (Desktop, Web, Mobile) perform automated translation:
-- **Winit (Desktop)**: Mouse movements and clicks are mapped to `PointerMove` and `PointerButton`.
-- **Mobile (Touch)**: Single and multi-touch events are normalized into `Pointer` events by the `rupa-mobile-core` composite assembly.
-- **Web (JS)**: DOM events (PointerEvent, KeyboardEvent) are serialized and bridged into the WASM runner.
+*Learn more about the technical dispatcher in the [**Workshop: Input System**](../../workshop/architectures/input-system.md).*

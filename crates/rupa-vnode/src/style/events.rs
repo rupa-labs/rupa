@@ -35,6 +35,7 @@ impl UIEvent {
     }
 
     pub fn consume(&mut self) { self.consumed = true; }
+    pub fn stop_propagation(&mut self) { self.consumed = true; }
     pub fn capture_pointer(&mut self) { self.capture_request = Some(true); }
     pub fn release_pointer(&mut self) { self.capture_request = Some(false); }
     pub fn request_focus(&mut self) { self.focus_request = Some(true); }

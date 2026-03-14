@@ -1,61 +1,45 @@
-# Reactivity: Signals, Memos, and Effects 🧪
+# Signals 📶
 
-Rupa Framework uses a **Fine-Grained Reactivity** system powered by the `rupa-signals` atomic material. This system ensures that UI updates are surgical and only occur when the underlying data actually changes.
-
----
-
-## 1. Core Concepts
-
-### 1.1 Signals (`Signal<T>`)
-Signals are the primary source of truth. They hold a value and notify subscribers when that value is updated.
--   **Getter**: `signal.get()` tracks the dependency if called within a reactive context (inside an Effect or Memo).
--   **Setter**: `signal.set(value)` triggers updates to all subscribers.
-
-### 1.2 Memos (`Memo<T>`)
-Memos are derived reactive values. They compute a value based on other signals or memos and cache the result.
--   **Lazy Evaluation**: The computation only runs when a dependency changes.
--   **Efficiency**: If the dependencies haven't changed, the cached value is returned immediately.
-
-### 1.3 Effects (`Effect`)
-Effects are side-effects that run when their dependencies change. In Rupa Framework, the rendering engine is essentially a giant Effect that reacts to VNode changes.
+**Signals** are the primary source of truth in the Rupa Framework. They are reactive containers that hold a value and automatically notify anyone "listening" when that value changes.
 
 ---
 
-## 2. Technical Implementation: Dependency Tracking
+## 🏗️ Creation
+A signal can hold any type that implements `Clone`, `Send`, and `Sync`.
 
-`rupa-signals` implements automatic dependency tracking using a **Thread-Local Reactive Context**.
-
-### How it works:
-1.  **Context Stack**: When an `Effect` or `Memo` starts its computation, it pushes itself onto a global (thread-local) stack.
-2.  **Observation**: When `signal.get()` is called, it checks the top of the stack. If a reactive context exists, the signal adds that context as a subscriber.
-3.  **Notification**: When `signal.set()` is called, it iterates through its list of subscribers and tells them to re-run.
-4.  **Cleanup**: Subscribers automatically clear their previous dependencies before re-running to handle conditional logic (e.g., `if count.get() > 5 { other.get() }`).
+```rust
+let count = Signal::new(0);
+let name = Signal::new("Artisan".to_string());
+```
 
 ---
 
-## 3. Thread Safety & Concurrency
+## 🗝️ API Methods
 
-Unlike many JavaScript frameworks, Rupa's reactivity is designed for Rust's safety guarantees:
--   **Synchronization**: Internal state uses `Arc<RwLock<T>>` to allow safe multi-threaded access.
--   **Async Readiness**: The system is designed to eventually support async effects, allowing data fetching to trigger UI updates without blocking the main thread.
+| Method | Description |
+| :--- | :--- |
+| **`.get()`** | Returns a clone of the current value and tracks the dependency. |
+| **`.set(val)`** | Overwrites the value and notifies all subscribers. |
+| **`.update(f)`** | Mutates the value in-place using a closure. Efficient for collections. |
+| **`.with(f)`** | Accesses the value by reference for reading without cloning. |
 
 ---
 
-## 4. Usage Example
+## 🧬 Dependency Tracking
+The magic of signals lies in their ability to know **who** is using them. When you call `.get()` inside a `Memo`, `Effect`, or a Component's `render()` method, the signal automatically registers that caller as a subscriber.
 
 ```rust
 let count = Signal::new(0);
 
-// This memo will only re-calculate when 'count' changes.
-let is_even = Memo::new({
-    let count = count.clone();
-    move || count.get() % 2 == 0
-});
-
-// This effect runs once immediately, and again whenever 'is_even' changes.
+// This Effect now 'belongs' to the count signal
 Effect::new(move || {
-    println!("Is even? {}", is_even.get());
+    println!("The current count is: {}", count.get());
 });
 
-count.set(2); // Triggers re-run
+count.set(1); // Prints: "The current count is: 1"
 ```
+
+---
+
+## 📐 Thread Safety
+Rupa Signals are built using atomic primitives and synchronized containers, making them safe to use in multi-threaded environments (like a GPU-accelerated desktop app).
