@@ -11,7 +11,6 @@ fn main() {
                 .p(Scale::Md)
                 .items_center()
                 .gap(Scale::Sm)
-
                 .child(Text::new("🎨 RUPA NATIVE").font_bold())
                 .child(Text::new(Memo::new({
                     let count = count.clone();

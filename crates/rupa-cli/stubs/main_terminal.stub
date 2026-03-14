@@ -5,7 +5,6 @@ fn main() {
         .root(
             VStack::new()
                 .p(Scale::Xs)
-
                 .child(Text::new("📟 TERMINAL ARTS").font_bold())
                 .child(Text::new("Navigate using your keyboard:"))
                 .child(Divider::new())

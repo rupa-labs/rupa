@@ -1,40 +1,37 @@
-# Component System 🎨
+# Component Library (The Artisan's Materials) 🎨
 
-Documentation for the built-in, platform-agnostic UI components of the Rupa Framework.
-
----
-
-## 🏗️ Design & Implementation
-*   **[Component Design](./component-design.md)**: Guidelines for building consistent components.
-*   **[VNode First](./vnode-first-implementation.md)**: Strategy for VNode-driven development.
+Welcome to the central registry of UI materials. Every component in Rupa is engineered to be platform-agnostic, semantically meaningful, and highly aesthetic.
 
 ---
 
-## 📐 Layout Components
-Standard containers for organizing your UI.
+## 🧬 Component Primitives
+The underlying engines for layout and spatial logic.
 
-*   **[Layout](./layout.md)**: General layout principles.
-*   **[VStack](./vstack.md)**: Vertical stacking container.
-*   **[HStack](./hstack.md)**: Horizontal stacking container.
+*   **[Primitives Index](./primitives/README.md)**: Explore Flex, Grid, and Overlay engines.
 
 ---
 
-## 🏷️ Brand & Content
-Components for identity and messaging.
+## 🏗️ Layout Materials
+The foundational skeletal units for organizing your UI structure.
 
-*   **[Brand](./brand.md)**: Identity and logo components.
-*   **[Text](./text.md)**: Standardized typography elements.
-*   **[Svg](./svg.md)**: Scalable vector graphics container.
-*   **[Content](./content.md)**: Generic containers for various media.
+*   **[Layouts Index](./layouts/README.md)**: Explore all containers, stacks, and dividers.
 
 ---
 
-## ⚡ Interactive & Feedback
-Components that respond to user action.
+## 🏷️ UI Elements
+The functional materials that users interact with directly.
 
-*   **[Button](./button.md)**: Standard action element.
-*   **[Forms](./forms.md)**: Input and validation containers.
-*   **[Feedback](./feedback.md)**: Alerts, badges, and status indicators.
-*   **[Navigation](./navigation.md)**: Navbars, tabs, and menus.
-*   **[Overlay](./overlay.md)**: Modals, tooltips, and popovers.
-*   **[Theme Switcher](./theme-switcher.md)**: Built-in utility for toggling ColorModes.
+*   **[Elements Index](./elements/README.md)**: Explore Actions, Forms, Navigation, and Data views.
+
+---
+
+## 🛠️ References & Tools
+*   **[Component Registry](./component-references.md)**: Full list of all available materials.
+*   **[Style Utilities](./utilities/README.md)**: Fluent API for spacing, sizing, and visuals.
+*   **[Animation & Motion](./animations/README.md)**: Physics-based transitions and springs.
+
+---
+
+## 📐 Artisan Guidelines
+*   **[Component Design](../../workshop/standards/component-design.md)**: Master the art of building new materials.
+*   **[Styling & Units](./utilities/README.md)**: Understanding Scale, Color, and Spacing.

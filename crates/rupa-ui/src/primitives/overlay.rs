@@ -4,9 +4,10 @@ use crate::style::modifiers::Stylable;
 use crate::elements::Children;
 use std::sync::{RwLockWriteGuard, Arc, RwLock};
 
-/// # Primitive: Overlay
+/// # Primitive: Overlay Foundation
 /// 
-/// The low-level foundation for modals, tooltips, and popovers.
+/// The low-level engine for modals, tooltips, and popovers.
+/// It provides the base logic for visibility and absolute positioning.
 pub struct Overlay<'a> {
     pub id: String,
     pub children: Children<'a>,

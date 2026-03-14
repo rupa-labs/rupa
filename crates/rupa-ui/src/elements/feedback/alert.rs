@@ -1,0 +1,42 @@
+use rupa_core::{Component, VNode, Id};
+use rupa_vnode::{Style, Theme};
+use crate::style::modifiers::Stylable;
+use std::sync::{RwLockWriteGuard, Arc, RwLock};
+
+/// # Component: Alert ⚠️
+pub struct Alert {
+    pub id: String,
+    pub text: String,
+    pub style: Arc<RwLock<Style>>,
+    pub prev_vnode: Arc<RwLock<Option<VNode>>>,
+}
+
+impl Alert {
+    pub fn new(text: impl Into<String>) -> Self {
+        let mut style = Style::default();
+        Theme::current().apply_defaults(&mut style);
+        Self {
+            id: Id::next().to_string(),
+            text: text.into(),
+            style: Arc::new(RwLock::new(style)),
+            prev_vnode: Arc::new(RwLock::new(None)),
+        }
+    }
+}
+
+impl Component for Alert {
+    fn prev_vnode(&self) -> Arc<RwLock<Option<VNode>>> { self.prev_vnode.clone() }
+    
+    fn render(&self) -> VNode {
+        VNode::element("alert")
+            .with_style(self.style.read().unwrap().clone())
+            .with_child(VNode::text(self.text.clone()))
+            .with_key(self.id.clone())
+    }
+}
+
+impl Stylable for Alert {
+    fn id(&self) -> &str { &self.id }
+    fn get_style(&self) -> Arc<RwLock<Style>> { self.style.clone() }
+    fn get_style_mut(&self) -> RwLockWriteGuard<'_, Style> { self.style.write().unwrap() }
+}

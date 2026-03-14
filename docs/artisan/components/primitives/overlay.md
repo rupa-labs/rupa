@@ -1,43 +1,40 @@
-# Primitive: Overlay 🌫️
+# Overlay Materials 🌌
 
-The `Overlay` primitive is specialized for non-flow positioning. It is the structural basis for elements that need to break free from the normal Flex/Block layout, such as dropdowns, tooltips, or floating action buttons.
-
----
-
-## 🧠 Internal Anatomy
-
-### 1. OverlayLogic
-- **Role:** Floating child management.
-- **Responsibility:** Manages elements that exist visually "on top" of other layers.
-
-### 2. OverlayView
-- **Infrastructure:** Composes `ViewCore`.
-- **Taffy Mapping:** Sets the Taffy `Position` property to `Absolute`. This informs the layout engine to ignore this node when calculating the flow of sibling elements.
+Overlays are components that appear on top of the main application content. They manage their own spatial coordinates and Z-stacking priority.
 
 ---
 
-## 🗝️ Public API (Usage)
+## 🏗️ Core Materials
 
-### Constructor
-- `Overlay::new()`: Initializes an absolute positioning container.
+### `Overlay` (The Foundation)
+The low-level primitive for all floating elements. It provides the base logic for visibility and absolute positioning.
 
-### Methods
-- `.child(Box<dyn Component>)`: Appends a child to the overlay layer.
+### `Modal` (Dialog)
+A focused dialog box that captures the user's attention. Modals typically block interaction with the background content until they are dismissed.
+
+### `Tooltip` (Contextual Hint)
+A small, non-blocking label that appears when hovering or focusing on an element.
 
 ---
 
-## 🎨 Layout Constraints
-Users typically combine `Overlay` with specific coordinate modifiers:
+## 🗝️ API & Usage
+
+### Visibility Control
+Overlays are typically controlled via a `Signal<bool>`.
+
 ```rust
-Overlay::new()
-    .style((
-        bg(Color::Rgba(0.0, 0.0, 0.0, 0.5)), // Backdrop
-        w_full(),
-        h_full()
-    ))
+let is_modal_open = Signal::new(false);
+
+Modal::new()
+    .child(Text::new("Are you sure?"))
+    .on_click(|_| is_modal_open.set(false))
 ```
 
 ---
 
-## ⚡ Spatial Awareness
-Because it uses `Position::Absolute`, the `InputDispatcher` treats `Overlay` hits with high priority, ensuring that floating elements capture interactions before the background content.
+## 🎨 Layout & Positioning
+By default, overlays use `Position::Absolute`. Their exact location can be controlled using the `.absolute()` and `.z(val)` style utilities.
+
+- **`Modal`**: Usually centered in the viewport.
+- **`Tooltip`**: Positioned relative to its trigger component.
+- **`Toast`**: Positioned at the corners of the viewport.

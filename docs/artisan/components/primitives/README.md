@@ -1,16 +1,15 @@
-# UI Primitives 🧱
+# Component Primitives 🧬
 
-The most basic building blocks of the Rupa UI system. These map directly to structural VElements.
-
----
-
-## 🏗️ Design & Standards
-*   **[Primitive Design](./primitive-design.md)**: Principles for creating low-level primitives.
+Primitives are the foundational building blocks of the Rupa Framework. They implement the core engines for layout, layering, and complex spatial logic.
 
 ---
 
-## 📦 Available Primitives
-*   **[Div](./div.md)**: The basic structural container.
-*   **[Flex](./flex.md)**: A primitive for flexbox-based layouts.
-*   **[Grid](./grid.md)**: A primitive for grid-based layouts.
-*   **[Overlay](./overlay.md)**: A primitive for absolute-positioned elements.
+## 🏗️ Core Primitives
+*   **[Flex](./flex.md)**: The underlying engine for directional layout.
+*   **[Grid](./grid.md)**: The underlying engine for 2D structural grids.
+*   **[Overlay](./overlay.md)**: The foundation for all floating and stacked interfaces.
+
+---
+
+## 📐 Primitive Design
+Unlike semantic components, primitives provide direct access to the framework's internal capabilities. They are primarily used to build the higher-level materials found in the **Layouts** and **Elements** categories.

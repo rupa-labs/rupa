@@ -5,6 +5,7 @@
 //! and layout primitives.
 
 pub mod elements;
+pub mod layouts;
 pub mod primitives;
 pub mod style;
 pub mod body;

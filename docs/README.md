@@ -31,4 +31,3 @@ For developers building, maintaining, or extending the **Rupa Framework itself**
 
 ## 🧭 Global Navigation
 *   **[Philosophy](./artisan/introductions/philosophy.md)**: The "Artisan" mindset.
-*   **[Full Index](./workshop/standards/doc-references.md)**: Complete registry of all technical documents.

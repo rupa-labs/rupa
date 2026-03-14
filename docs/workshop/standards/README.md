@@ -13,8 +13,3 @@ This section defines the mandatory principles and technical standards for buildi
 ## 📐 Technical Standards
 *   **[Component Design](./component-design.md)**: How to build new Artisan components.
 *   **[VNode First](./vnode-first-implementation.md)**: Prioritizing UI contracts over manual painting.
-
----
-
-## 📖 Documentation
-*   **[Doc Standards](./doc-references.md)**: Rules for Rustdoc and technical writing.

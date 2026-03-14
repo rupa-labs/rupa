@@ -7,7 +7,6 @@ pub fn start() {
         .root(
             VStack::new()
                 .p(Scale::Md)
-
                 .items_center()
                 .child(Text::new("🌐 WEB EXCELLENCE").font_bold())
                 .child(Text::new("Built with Rust & WASM"))
